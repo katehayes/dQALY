@@ -1,4 +1,4 @@
-usethis::use_data(life_tables, qaly_norms, internal = TRUE, overwrite = TRUE)
+# usethis::use_data(life_tables, qaly_norms, internal = TRUE, overwrite = TRUE)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # English life tables from ONS
@@ -66,11 +66,12 @@ lt_male <- fread(file = temp)[, .(Location, Time, Sex, AgeGrpStart, qx)]
 
 
 # binding male/female tables together and only keeping the countries for which we have qaly norms
+# note - need to have run the code in qaly_norms.R & made the table
 # only keeping years from 2015 for the moment
 # need to discuss how much data to store?
 # for now removing the age group from 100 onwards
 un_lt <- rbind(lt_male, lt_female)[
-  Location %in% qaly_norms[, country] & Time >= 2015 & AgeGrpStart < 100
+  Location %in% qaly_norms[, c] & Time >= 2015 & AgeGrpStart < 100
 ][
   , Sex := fifelse(Sex == "Male", "male", "female")
 ] |>
