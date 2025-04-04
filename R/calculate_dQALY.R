@@ -3,7 +3,6 @@
 ## usethis namespace: end
 
 
-
 calculate_dQALY <- function(
     # dt = mod_output,
                             country, year,
@@ -12,7 +11,7 @@ calculate_dQALY <- function(
                             smr = 1, qcm = 1) {
 
   lt <- life_tables[c == country & y == year]
-  qaly_norms <- qaly_norms[name == norms]
+  qaly_norms <- qaly_norms[c == country & name == norms]
 
   # calculating l(x): the number surviving to age x >= 1 for a reference population of 1
   lt[, l_x := cumprod(exp(-shift(-log(1-q_x), type = "lag", fill = 0)*smr)), by = .(sex)]
@@ -29,9 +28,11 @@ calculate_dQALY <- function(
                        on = .(sex, age_low <= x, age_high >= x),
                        .(sex, x, L_x, qn)]
 
-
+  # discounting
   dQALY_table[, (paste("v", min_x:max_x, sep="")) := shift((1+r)^-x, n = x, type = "lag", fill = 0), by = .(sex)]
-  dQALY_table[, dQALY_x := t(as.matrix(.SD)) %*% (L_x*qn*qcm), .SDcols = patterns("^v"), by = .(sex)]
+  dQALY_table[, dQALY_x := t(.SD) %*% (L_x*qn*qcm), .SDcols = patterns("^v"), by = .(sex)]
+
+  # dropping cols we don't need anymore
   dQALY_table[, c(paste("v", min_x:max_x, sep=""), "L_x", "qn"):=NULL]
 
 
@@ -42,3 +43,6 @@ calculate_dQALY <- function(
   return(dQALY_table)
 
 }
+
+
+# check <- calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019)

@@ -1,3 +1,7 @@
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Norms from the 1993 Measurement and Valuation of Health Study
+# https://www.york.ac.uk/che/pdf/DP172.pdf
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 mvh <- data.table(sex = c(rep("male", 8), rep("female", 8)),
                   age_low = c(0, 18, 25, 35, 45, 55, 65, 75),
@@ -6,12 +10,16 @@ mvh <- data.table(sex = c(rep("male", 8), rep("female", 8)),
                         c(0.94, 0.94, 0.93, 0.91, 0.84, 0.78, 0.78, 0.75),
                         # female
                         c(0.94, 0.94, 0.93, 0.91, 0.85, 0.81, 0.78, 0.71)),
-                  name = "mvh")
+                  name = "mvh",
+                  c = "United Kingdom")
 
 
 
-
-
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Newer qaly norms from the 2023 Value in Health paper:
+# https://www.valueinhealthjournal.com/article/S1098-3015(22)02101-5/fulltext
+# extracted from their github repo: https://github.com/bitowaqr/shortfall/tree/main
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 temp <- tempfile()
 download.file(url = "https://raw.githubusercontent.com/bitowaqr/shortfall/main/src%20manuscript/output/hrqol_co_ci_df.csv", temp)
@@ -25,6 +33,7 @@ vih_primary[age_low == max(age_low), age_high := 200]
 vih_primary[, qn := sub(" .*", "", m_ci)]
 vih_primary[, c("age5_str", "m_ci", "n"):=NULL]
 vih_primary[, name := "vih"]
+vih_primary[, c := "England"]
 
 yg <- vih_primary[age_low == min(age_low)]
 yg[, age_high := age_low - 1]
@@ -33,16 +42,106 @@ yg[, age_low := 0]
 vih_primary <- rbind(vih_primary, yg)
 
 
-qaly_norms <- rbind(mvh, vih_primary) |>
-  setcolorder(c("name", "sex", "age_low", "age_high", "qn")) |>
-  setorder(name, age_low, sex)
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# janssen
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# # Table 3.5
+# # EQ-5D index population norms (European VAS value set)
+# "https://www.ncbi.nlm.nih.gov/books/NBK500364/table/ch3.Tab5/?report=objectonly"
+
+# # Table 3.6
+# # EQ-5D index population norms (country-specific TTO value sets)
+# "https://www.ncbi.nlm.nih.gov/books/NBK500364/table/ch3.Tab6/?report=objectonly"
+
+# # Table 3.7
+# # EQ-5D index population norms (country-specific VAS value set)
+# "https://www.ncbi.nlm.nih.gov/books/NBK500364/table/ch3.Tab7/?report=objectonly"
+
+
+# Norms used in NN's Covid dQALY code (https://github.com/LSHTM-GHECO/COVID19_QALY_App)
+# are from Janssen et al 2014 -- they are the UK estimates of EQ-5D valued via TTO
+
+
+extract_janssen_norms <- function(url) {
+
+  rvest::read_html(url) |>
+    rvest::html_element(".large_tbl") |>
+    rvest::html_table(fill = T) |>
+    as.data.table() -> norms
+
+}
+
+
+transform_janssen_norms <- function(norms, norm_name) {
+
+  names <- norms[1, ] |>
+    unlist()
+  names[1] <- "c"
+
+  setnames(norms, new = names)
+
+  n <- norms[c == "Regional", which = TRUE]
+
+  # only keeping the national-level norms for now
+  # melting wide to long
+  norms <- norms[-c(1:2, n:nrow(norms)), -9] |>
+    melt(measure = 2:8,
+         variable.name = "age_low",
+         value.name = "qn")
+
+  norms[, qn := as.numeric(qn)]
+  norms[grepl("England", c), c := "England"]
+
+  # changing country names so they line up with UN life tables
+  norms[c == "Korea", c := "Republic of Korea"]
+  norms[c == "UK", c := "United Kingdom"]
+  norms[c == "US", c := "United States of America"]
+
+  norms[, age_high := as.numeric(substring(age_low, 4, 5))]
+  norms[, age_low := as.numeric(substring(age_low, 1, 2))]
+  norms[age_low == max(age_low), age_high := 200]
+  norms[, name := norm_name]
+
+  yg <- norms[age_low == min(age_low)]
+  yg[, age_high := age_low - 1]
+  yg[, age_low := 0]
+
+  # Other norms are sex-specific
+  rbind(norms, yg, norms, yg) |>
+    cbind(data.table(sex = c(rep("male", nrow(norms) + nrow(yg)),
+                             rep("female", nrow(norms) + nrow(yg))))) -> norms
+
+}
+
+
+janssen <- extract_janssen_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK500364/table/ch3.Tab6/?report=objectonly") |>
+  transform_janssen_norms(norm_name = "janssen_tto") |>
+  rbind(extract_janssen_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK500364/table/ch3.Tab7/?report=objectonly") |>
+          transform_janssen_norms(norm_name = "janssen_vas")) |>
+  rbind(extract_janssen_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK500364/table/ch3.Tab5/?report=objectonly") |>
+          transform_janssen_norms(norm_name = "janssen_euvas"))
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# collecting into one table
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+qaly_norms <- rbind(mvh, vih_primary, janssen) |>
+  setcolorder(c("name", "c", "sex", "age_low", "age_high", "qn")) |>
+  setorder(c, name, age_low, sex)
 
 qaly_norms[, age_low := as.numeric(age_low)]
 qaly_norms[, age_high := as.numeric(age_high)]
 qaly_norms[, qn := as.numeric(qn)]
 
 
-usethis::use_data(qaly_norms, internal = TRUE, overwrite = TRUE)
+# usethis::use_data(qaly_norms, internal = TRUE, overwrite = TRUE)
 
 
 
