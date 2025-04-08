@@ -1,4 +1,4 @@
-# usethis::use_data(life_tables, qaly_norms, internal = TRUE, overwrite = TRUE)
+# usethis::use_data(life_tables, qaly_norms, populations, internal = TRUE, overwrite = TRUE)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # English life tables from ONS
