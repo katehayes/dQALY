@@ -13,6 +13,10 @@
 #' @param lt_increment Null or numeric - default NULL, if null then increment calculation
 #' done automatically - if not null, should be a number greater than 1 (e.g. 1.05 if you want
 #' mortality rates to get 5% bigger each year after the last year for which data is avail)
+#' @param qn_young Null/numeric - default is that the youngest age group (for which no qaly norm
+#' data is available) is assumed to have the same qn value as the youngest group for which we have data -
+#' you can change that assumption & set your own value with qn_young (most likely other assumption would be
+#' setting qn_young to 1)
 #'
 #' @returns either a datatable w columns age, sex and dQALY estimates, or adds
 #' a column dQALY to existing datatable mod_output
@@ -34,14 +38,15 @@ calculate_dQALY <- function(mod_output = NULL,
                             r = 0.035,
                             smr = 1, qcm = 1,
                             lt_extend = T,
-                            lt_increment = NULL) {
+                            lt_increment = NULL,
+                            qn_young = NULL) {
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # Filtering the package data to select the chosen country, year, instance of norms
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # (should we set default norms for each country?)
   lt <- life_tables[c == country & y == year][, c("c", "y"):=NULL]
-  qaly_norms <- qaly_norms[c == country & name == norms]
+  qaly_norms <- qaly_norms[c == country & name == norms][, c("c", "name"):=NULL]
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -63,7 +68,7 @@ calculate_dQALY <- function(mod_output = NULL,
   # of storing an additional life expectancy column for each set of life tables (or just e(100) for m/f))
   # (could add the ability to set the upper age limit - doesn't have to be 120)
 
-  # can come back here & clean up
+  # can come back here & clean up - could also pull out into seperate function
   if (lt_extend == T) {
 
     max_x <- max(lt$x, na.rm = TRUE)
@@ -88,8 +93,12 @@ calculate_dQALY <- function(mod_output = NULL,
                        x = c((max_x+1):120, (max_x+1):120),
                        q_x = NA))
 
-    lt[x > max_x & sex == "male", q_x := (1-exp(-qmax_male*incr_male^(x-max_x)))]
-    lt[x > max_x & sex == "female", q_x := (1-exp(-qmax_male*incr_female^(x-max_x)))]
+    # q(x) is the probability of dying within the year at age x
+    # to increment the probability without it exceeding 1, we convert to the instantaneous death rate,
+    # apply the increment, then convert back to a probability
+    lt[x > max_x & sex == "male", q_x := 1-exp(-(-log(1-qmax_male))*incr_male^(x-max_x))]
+    lt[x > max_x & sex == "female", q_x := 1-exp(-(-log(1-qmax_female))*incr_female^(x-max_x))]
+
 
   }
 
@@ -97,6 +106,9 @@ calculate_dQALY <- function(mod_output = NULL,
   # QALY norm options # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+  if(!is.null(qn_young)) {
+    qaly_norms[age_low == min(age_low), qn := qn_young]
+  }
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -111,6 +123,8 @@ calculate_dQALY <- function(mod_output = NULL,
   max_x <- max(lt$x, na.rm = TRUE)
 
   # first calculating l(x): the number surviving to age x >= 1 for a reference population of 1
+  # again we're converting to rate, adjusting the rate w parameter smr (if desired), then converting back
+  # (here to probability of surviving ie 1-prob of dying)
   # then calculating L(x): years lived between ages x & x+1 for x>=1: (l(x) + l(x+1))/2
   # Note: This calculation assumes a uniform distribution of deaths during the year
   lt[, l_x := cumprod(exp(-shift(-log(1-q_x), type = "lag", fill = 0)*smr)), by = .(sex)]
@@ -150,6 +164,7 @@ calculate_dQALY <- function(mod_output = NULL,
   dQALY_table
 
 }
+
 
 
 
