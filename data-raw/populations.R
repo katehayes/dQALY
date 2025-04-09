@@ -36,7 +36,7 @@ pop_90plus_male <- as.data.table(readxl::read_xls(temp, sheet = 6, range = "A4:T
        value.name = "count")
 
 
-pop_90plus_female <- as.data.table(readxl::read_xls(temp, sheet = 6, range = "A4:T26"))[
+pop_90plus_female <- as.data.table(readxl::read_xls(temp, sheet = 7, range = "A4:T26"))[
   , -c(2,3,4)
 ][
   , sex := "female"
@@ -69,7 +69,7 @@ download.file(url = "https://population.un.org/wpp/assets/Excel%20Files/1_Indica
 
 
 pop_male <- as.data.table(readxl::read_xlsx(temp, sheet = 1, range = "C17:DH22000"))[, -c(2:8)][
-  `Region, subregion, country or area *` %in% qaly_norms[, c] & Year >= 2015
+  `Region, subregion, country or area *` %in% utility_norms[, c] & Year >= 2015
 ][
   , sex := "male"
 ] |> melt(measure = 3:103,
@@ -85,7 +85,7 @@ download.file(url = "https://population.un.org/wpp/assets/Excel%20Files/1_Indica
 
 
 pop_female <- as.data.table(readxl::read_xlsx(temp, sheet = 1, range = "C17:DH22000"))[, -c(2:8)][
-  `Region, subregion, country or area *` %in% qaly_norms[, c] & Year >= 2015
+  `Region, subregion, country or area *` %in% utility_norms[, c] & Year >= 2015
 ][
   , sex := "female"
 ] |> melt(measure = 3:103,
