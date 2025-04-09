@@ -102,7 +102,9 @@ un_pop[, count := as.numeric(count)*1000]
 # Collecting together
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-populations <- rbind(ons_pop[y >= 2015], un_pop[x != "100+"]) |>
+populations <- rbind(ons_pop[y >= 2015], un_pop[x != "100+"])[
+  , x := as.numeric(x)
+] |>
   setcolorder(c("c", "y", "sex", "x", "count")) |>
   setorder(c, y, x, sex)
 
