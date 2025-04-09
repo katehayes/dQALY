@@ -1,4 +1,4 @@
-# usethis::use_data(life_tables, qaly_norms, populations, internal = TRUE, overwrite = TRUE)
+# usethis::use_data(life_tables, utility_norms, populations, internal = TRUE, overwrite = TRUE)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # English life tables from ONS
@@ -71,7 +71,7 @@ lt_male <- fread(file = temp)[, .(Location, Time, Sex, AgeGrpStart, qx)]
 # need to discuss how much data to store?
 # for now removing the age group from 100 onwards
 un_lt <- rbind(lt_male, lt_female)[
-  Location %in% qaly_norms[, c] & Time >= 2015 & AgeGrpStart < 100
+  Location %in% utility_norms[, c] & Time >= 2015 & AgeGrpStart < 100
 ][
   , Sex := fifelse(Sex == "Male", "male", "female")
 ] |>

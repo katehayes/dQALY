@@ -6,11 +6,11 @@
 mvh <- data.table(sex = c(rep("male", 8), rep("female", 8)),
                   age_low = c(0, 18, 25, 35, 45, 55, 65, 75),
                   age_high = c(17, 24, 34, 44, 54, 64, 74, 200),
-                  qn = c(# male
+                  un = c(# male
                         c(0.94, 0.94, 0.93, 0.91, 0.84, 0.78, 0.78, 0.75),
                         # female
                         c(0.94, 0.94, 0.93, 0.91, 0.85, 0.81, 0.78, 0.71)),
-                  name = "mvh",
+                  id = "mvh",
                   c = "United Kingdom")
 
 
@@ -30,9 +30,9 @@ vih_primary <- as.data.table(utils::read.csv(temp))
 vih_primary[, age_low := as.numeric(substring(age5_str, 1, 2))]
 vih_primary[, age_high := as.numeric(substring(age5_str, 4, 5))]
 vih_primary[age_low == max(age_low), age_high := 200]
-vih_primary[, qn := sub(" .*", "", m_ci)]
+vih_primary[, un := sub(" .*", "", m_ci)]
 vih_primary[, c("age5_str", "m_ci", "n"):=NULL]
-vih_primary[, name := "vih"]
+vih_primary[, id := "vih"]
 vih_primary[, c := "England"]
 
 yg <- vih_primary[age_low == min(age_low)]
@@ -90,9 +90,9 @@ transform_janssen_norms <- function(norms, norm_name) {
   norms <- norms[-c(1:2, n:nrow(norms)), -9] |>
     melt(measure = 2:8,
          variable.name = "age_low",
-         value.name = "qn")
+         value.name = "un")
 
-  norms[, qn := as.numeric(qn)]
+  norms[, un := as.numeric(un)]
   norms[grepl("England", c), c := "England"]
 
   # changing country names so they line up with UN life tables
@@ -103,7 +103,7 @@ transform_janssen_norms <- function(norms, norm_name) {
   norms[, age_high := as.numeric(substring(age_low, 4, 5))]
   norms[, age_low := as.numeric(substring(age_low, 1, 2))]
   norms[age_low == max(age_low), age_high := 200]
-  norms[, name := norm_name]
+  norms[, id := norm_name]
 
   yg <- norms[age_low == min(age_low)]
   yg[, age_high := age_low - 1]
@@ -132,16 +132,32 @@ janssen <- extract_janssen_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK50
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-qaly_norms <- rbind(mvh, vih_primary, janssen) |>
-  setcolorder(c("name", "c", "sex", "age_low", "age_high", "qn")) |>
-  setorder(c, name, age_low, sex)
+utility_norms <- rbind(mvh, vih_primary, janssen) |>
+  setcolorder(c("c", "id", "age_low", "age_high", "sex", "un")) |>
+  setorder(c, id, age_low, sex)
 
-qaly_norms[, age_low := as.numeric(age_low)]
-qaly_norms[, age_high := as.numeric(age_high)]
-qaly_norms[, qn := as.numeric(qn)]
+utility_norms[, age_low := as.numeric(age_low)]
+utility_norms[, age_high := as.numeric(age_high)]
+utility_norms[, un := as.numeric(un)]
 
 
-# usethis::use_data(qaly_norms, internal = TRUE, overwrite = TRUE)
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# info about the utility norms?
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+norm_info <- unique(utility_norms[, .(c, id)])[
+  , c("doi", "external_url"):=""
+][
+  , c("survey", "value_set"):=""
+][
+  , default:=.N, by=c
+][
+  , default:= ifelse(default==1, T, F)
+]
+
+
 
 
 

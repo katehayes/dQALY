@@ -36,7 +36,7 @@
 #' done automatically - if not null, should be a number greater than 1 (e.g. 1.05 if you want
 #' mortality rates to get 5% bigger each year after the last year for which data is avail)
 #'
-#' @param qn_young Null/numeric - default is that the youngest age group (for which no qaly norm
+#' @param un_young Null/numeric - default is that the youngest age group (for which no qaly norm
 #' data is available) is assumed to have the same qn value as the youngest group for which we have data -
 #' you can change that assumption & set your own value with qn_young (most likely other assumption would be
 #' setting qn_young to 1)
@@ -75,7 +75,7 @@ calculate_dQALY <- function(mod_output = NULL,
                             smr = 1, qcm = 1,
                             lt_extend = T,
                             lt_increment = NULL,
-                            qn_young = NULL,
+                            un_young = NULL,
                             age_groups = NULL,
                             sex_group = F,
                             cohort = NULL) {
@@ -85,7 +85,13 @@ calculate_dQALY <- function(mod_output = NULL,
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # (should we set default norms for each country?)
   lt <- life_tables[c == country & y == year][, c("c", "y"):=NULL]
-  qaly_norms <- qaly_norms[c == country & name == norms][, c("c", "name"):=NULL]
+
+  # if(is.null(norms)) {
+  #
+  # }
+
+
+  utility_norms <- utility_norms[c == country & id == norms][, c("c", "id"):=NULL]
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -107,7 +113,7 @@ calculate_dQALY <- function(mod_output = NULL,
   # of storing an additional life expectancy column for each set of life tables (or just e(100) for m/f))
   # (could add the ability to set the upper age limit - doesn't have to be 120)
 
-  # can come back here & clean up - could also pull out into separate function
+  # can come back here & clean up - or could also pull out into separate function
   if (lt_extend == T) {
 
     max_x <- max(lt$x, na.rm = TRUE)
@@ -145,8 +151,8 @@ calculate_dQALY <- function(mod_output = NULL,
   # QALY norm options # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-  if(!is.null(qn_young)) {
-    qaly_norms[age_low == min(age_low), qn := qn_young]
+  if(!is.null(un_young)) {
+    utility_norms[age_low == min(age_low), un := un_young]
   }
 
 
@@ -170,18 +176,18 @@ calculate_dQALY <- function(mod_output = NULL,
   lt[, L_x := (l_x + shift(l_x, type = "lead", fill = 0))/2, , by = .(sex)]
 
   # assigning the appropriate pop quality of life norm to corresponding age, sex
-  dQALY_table <- qaly_norms[lt,
-                       on = .(sex, age_low <= x, age_high >= x),
-                       .(sex, x, L_x, qn)]
+  dQALY_table <- utility_norms[lt,
+                         on = .(sex, age_low <= x, age_high >= x),
+                         .(sex, x, L_x, un)]
 
   # discounting
   # making a matrix of zeros and powers of 1/(1+r)
   # getting a discounted sum of life years lost from age x onwards via matrix multiplication
   dQALY_table[, (paste("v", min_x:max_x, sep="")) := shift((1+r)^-x, n = x, type = "lag", fill = 0), by = .(sex)]
-  dQALY_table[, dQALY_x := t(.SD) %*% (L_x*qn*qcm), .SDcols = patterns("^v"), by = .(sex)]
+  dQALY_table[, dQALY_x := t(.SD) %*% (L_x*un*qcm), .SDcols = patterns("^v"), by = .(sex)]
 
   # dropping cols we don't need anymore
-  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "L_x", "qn"):=NULL]
+  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "L_x", "un"):=NULL]
 
 
 
