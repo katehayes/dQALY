@@ -20,7 +20,11 @@
 #'
 #' @param r Numeric
 #' between 0 and 1, discount rate
-#'
+#' OR - recently added - its possible to have a discount rate that varies over time
+#' this requires supplying a value for r of the form data.table(r_break = numeric(), r_near = numeric(), r_far = numeric())
+#' where r_break is the number of years into the future that the discount rate changes,
+#' r_near is the discount rate in the near future/r_far is rate in far future
+#
 #' @param smr Numeric
 #' a 'mortality ratio' - default is 1 -
 #' if less than 1 then population is less likely to die than average (and vice versa)
@@ -54,6 +58,10 @@
 #' #Output a table of dQALY values for all ages/genders, minimally specifying year, country and norm
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019)
 #'
+#' #Calculate dQALY values using a variable discount rate
+#' declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03))
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = declining_r)
+#'
 #' #Calculate dQALY values for a datatable w model output
 #' my_mod_out <- data.table(sex = c(rep("male",8), rep("female",8)),
 #'                  age = c(0, 18, 25, 35, 45, 55, 65, 75))
@@ -70,6 +78,7 @@
 #' @export
 calculate_dQALY <- function(mod_output = NULL,
                             country, year,
+                            # life_tables,
                             norms,
                             r = 0.035,
                             smr = 1, qcm = 1,
@@ -80,24 +89,18 @@ calculate_dQALY <- function(mod_output = NULL,
                             sex_group = F,
                             cohort = NULL) {
 
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # Filtering the package data to select the chosen country, year, instance of norms
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # (should we set default norms for each country?)
-
-
-  # https://cran.r-project.org/web/packages/data.table/vignettes/datatable-programming.html
-
   env <- environment()
+
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # 1. Getting the life_tables that will be used in the main dQALY calculation
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+
+  # Filtering the package data to select the chosen country, year
+  # https://cran.r-project.org/web/packages/data.table/vignettes/datatable-programming.html
   lt <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
 
-
-  # lt <- life_tables[country == "United Kingdom" & year == 2019][, c("country", "year"):=NULL]
-  # if(is.null(norms)) {
-  #
-  # }
-
-  utility_norms <- utility_norms[country == get("country", env) & id == norms][, c("country", "id"):=NULL]
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -153,8 +156,32 @@ calculate_dQALY <- function(mod_output = NULL,
 
   }
 
+
+
+
+
+
+
+
+
+
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # QALY norm options # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # 2. Getting the utility norms that will be used in the main dQALY calculation
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+  # (should we set default norms for each country?)
+  # lt <- life_tables[country == "United Kingdom" & year == 2019][, c("country", "year"):=NULL]
+  # if(is.null(norms)) {
+  #
+  # }
+
+  utility_norms <- utility_norms[country == get("country", env) & id == norms][, c("country", "id"):=NULL]
+
+
+
+
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # Utility norm options # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   if(!is.null(avg_util_young)) {
@@ -162,8 +189,11 @@ calculate_dQALY <- function(mod_output = NULL,
   }
 
 
+
+
+
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # Calculating dQALY # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # 3. Calculating dQALY # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
@@ -190,22 +220,40 @@ calculate_dQALY <- function(mod_output = NULL,
                          on = .(sex, age_low <= x, age_high >= x),
                          .(sex, x, L_x, avg_util)]
 
+
   # We now have an estimate of the number of years lived between ages x & x+1
   # and a number between 0 and 1 representing the avg quality of life experienced at age x
 
-  # to calculate QALY loss due to death we need to discount
+  # to calculate QALY loss due to death we need to discount the future losses - get net present value of loss
   # making a matrix of zeros and powers of 1/(1+r)
   # getting a discounted sum of life years lost from age x onwards via matrix multiplication
-  dQALY_table[, (paste("v", min_x:max_x, sep="")) := shift((1+r)^-x, n = x, type = "lag", fill = 0), by = .(sex)]
+
+  # Added possibility of varying r over time in response to comments from health economists
+  # Should probably generalise so you can have any number of r's overtime (as opposed to just 2)
+  if(length(r) == 1) {
+
+    dQALY_table[, r_col := r, by = .(sex)]
+
+  } else {
+
+    dQALY_table[, r_col := ifelse(x <= r$r_break, r$r_near, r$r_far), by = .(sex)]
+
+  }
+
+  dQALY_table[, r_col := ifelse(x == 0, 0, r_col), by = .(sex)]
+
+  dQALY_table[, (paste("v", min_x:max_x, sep="")) := shift(1/cumprod(1+r_col), n = x, type = "lag", fill = 0), by = .(sex)]
   dQALY_table[, dQALY_x := t(.SD) %*% (L_x*avg_util*qcm), .SDcols = patterns("^v"), by = .(sex)]
 
   # dropping cols we don't need anymore
-  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "L_x", "avg_util"):=NULL]
+  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "r_col", "L_x", "avg_util"):=NULL]
+
+
 
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # Organising output # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # 4. Organising output # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   #if there is no grouping of dQALY values (values will be sex and year-of-age specific)
