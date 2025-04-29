@@ -36,10 +36,10 @@
 #' done automatically - if not null, should be a number greater than 1 (e.g. 1.05 if you want
 #' mortality rates to get 5% bigger each year after the last year for which data is avail)
 #'
-#' @param un_young Null/numeric - default is that the youngest age group (for which no qaly norm
-#' data is available) is assumed to have the same qn value as the youngest group for which we have data -
-#' you can change that assumption & set your own value with qn_young (most likely other assumption would be
-#' setting qn_young to 1)
+#' @param avg_util_young Null/numeric - default is that the youngest age group (for which no qaly norm
+#' data is available) is assumed to have the same avg util value as the youngest group for which we have data -
+#' you can change that assumption & set your own value with avg_util_young (most likely other assumption would be
+#' setting avg_util_young to 1)
 #'
 #' @param age_groups
 #' @param sex_group
@@ -75,7 +75,7 @@ calculate_dQALY <- function(mod_output = NULL,
                             smr = 1, qcm = 1,
                             lt_extend = T,
                             lt_increment = NULL,
-                            un_young = NULL,
+                            avg_util_young = NULL,
                             age_groups = NULL,
                             sex_group = F,
                             cohort = NULL) {
@@ -84,14 +84,20 @@ calculate_dQALY <- function(mod_output = NULL,
   # Filtering the package data to select the chosen country, year, instance of norms
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # (should we set default norms for each country?)
-  lt <- life_tables[c == country & y == year][, c("c", "y"):=NULL]
 
+
+  # https://cran.r-project.org/web/packages/data.table/vignettes/datatable-programming.html
+
+  env <- environment()
+  lt <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
+
+
+  # lt <- life_tables[country == "United Kingdom" & year == 2019][, c("country", "year"):=NULL]
   # if(is.null(norms)) {
   #
   # }
 
-
-  utility_norms <- utility_norms[c == country & id == norms][, c("c", "id"):=NULL]
+  utility_norms <- utility_norms[country == get("country", env) & id == norms][, c("country", "id"):=NULL]
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -151,8 +157,8 @@ calculate_dQALY <- function(mod_output = NULL,
   # QALY norm options # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-  if(!is.null(un_young)) {
-    utility_norms[age_low == min(age_low), un := un_young]
+  if(!is.null(avg_util_young)) {
+    utility_norms[age_low == min(age_low), avg_util := avg_util_young]
   }
 
 
@@ -167,27 +173,34 @@ calculate_dQALY <- function(mod_output = NULL,
   min_x <- min(lt$x, na.rm = TRUE)
   max_x <- max(lt$x, na.rm = TRUE)
 
-  # first calculating l(x): the number surviving to age x >= 1 for a reference population of 1
-  # again we're converting to rate, adjusting the rate w parameter smr (if desired), then converting back
+
+  # we have q(x) - probability of dying at age x
+  # first calculating l(x): the number surviving to age x >= 1 (in a population of 1)
+  # again we're converting the probability q(x) to an instantaneous death rate,
+  # adjusting the rate w parameter smr (if desired), then converting back to a probability
   # (here to probability of surviving ie 1-prob of dying)
   # then calculating L(x): years lived between ages x & x+1 for x>=1: (l(x) + l(x+1))/2
   # Note: This calculation assumes a uniform distribution of deaths during the year
   lt[, l_x := cumprod(exp(-shift(-log(1-q_x), type = "lag", fill = 0)*smr)), by = .(sex)]
   lt[, L_x := (l_x + shift(l_x, type = "lead", fill = 0))/2, , by = .(sex)]
 
-  # assigning the appropriate pop quality of life norm to corresponding age, sex
+  # assigning the appropriate population-level utility norm to corresponding age, sex
+  # dropping l(x) bc we only need L(x) for the QALY calculation
   dQALY_table <- utility_norms[lt,
                          on = .(sex, age_low <= x, age_high >= x),
-                         .(sex, x, L_x, un)]
+                         .(sex, x, L_x, avg_util)]
 
-  # discounting
+  # We now have an estimate of the number of years lived between ages x & x+1
+  # and a number between 0 and 1 representing the avg quality of life experienced at age x
+
+  # to calculate QALY loss due to death we need to discount
   # making a matrix of zeros and powers of 1/(1+r)
   # getting a discounted sum of life years lost from age x onwards via matrix multiplication
   dQALY_table[, (paste("v", min_x:max_x, sep="")) := shift((1+r)^-x, n = x, type = "lag", fill = 0), by = .(sex)]
-  dQALY_table[, dQALY_x := t(.SD) %*% (L_x*un*qcm), .SDcols = patterns("^v"), by = .(sex)]
+  dQALY_table[, dQALY_x := t(.SD) %*% (L_x*avg_util*qcm), .SDcols = patterns("^v"), by = .(sex)]
 
   # dropping cols we don't need anymore
-  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "L_x", "un"):=NULL]
+  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "L_x", "avg_util"):=NULL]
 
 
 
@@ -207,10 +220,9 @@ calculate_dQALY <- function(mod_output = NULL,
     # (allow grouped age too as long as they specify pop distribution? or accept
     # country-level population data as default distribution?)
     if (!is.null(mod_output)) {
-      dQALY_table[mod_output,
-                  on = .(sex, x = age)]
+      dQALY_table <- dQALY_table[mod_output,
+                        on = .(sex, x = age)]
     }
-
 
 
   # if dQALY values need to be calculated for a set of population groups
@@ -220,7 +232,7 @@ calculate_dQALY <- function(mod_output = NULL,
     # if the user doesn't supply a cohort with specific population distribution across age and sex
     # then use the population distribution of whatever country has been selected (this is the default)
     if(is.null(cohort)) {
-      cohort <- populations[c == country & y == year][, c("c", "y"):=NULL]
+      cohort <- populations[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
     }
 
 
@@ -241,7 +253,7 @@ calculate_dQALY <- function(mod_output = NULL,
     }
 
 
-    # asign a value to cols based on whether the user wants to collapse by age group, sex, or both
+    # assign a value to cols based on whether the user wants to collapse by age group, sex, or both
     # note: at present if the user wants to collapse age completely then they need to specify an age group like (0-120)
     cols <- c("x")
 
@@ -254,7 +266,7 @@ calculate_dQALY <- function(mod_output = NULL,
     }
 
     # calculate a weighted mean dQALY value for each population group
-    dQALY_table <- dQALY_table[, .(dQALY_grouped = sum(dQALY_x*count)/sum(count)), by = cols]
+    dQALY_table <- dQALY_table[, .(mean_dQALY = sum(dQALY_x*count)/sum(count)), by = cols]
 
   }
 

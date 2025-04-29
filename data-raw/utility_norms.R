@@ -6,12 +6,12 @@
 mvh <- data.table(sex = c(rep("male", 8), rep("female", 8)),
                   age_low = c(0, 18, 25, 35, 45, 55, 65, 75),
                   age_high = c(17, 24, 34, 44, 54, 64, 74, 200),
-                  un = c(# male
+                  avg_util = c(# male
                         c(0.94, 0.94, 0.93, 0.91, 0.84, 0.78, 0.78, 0.75),
                         # female
                         c(0.94, 0.94, 0.93, 0.91, 0.85, 0.81, 0.78, 0.71)),
                   id = "mvh",
-                  c = "United Kingdom")
+                  country = "United Kingdom")
 
 
 
@@ -30,10 +30,10 @@ vih_primary <- as.data.table(utils::read.csv(temp))
 vih_primary[, age_low := as.numeric(substring(age5_str, 1, 2))]
 vih_primary[, age_high := as.numeric(substring(age5_str, 4, 5))]
 vih_primary[age_low == max(age_low), age_high := 200]
-vih_primary[, un := sub(" .*", "", m_ci)]
+vih_primary[, avg_util := sub(" .*", "", m_ci)]
 vih_primary[, c("age5_str", "m_ci", "n"):=NULL]
 vih_primary[, id := "vih"]
-vih_primary[, c := "England"]
+vih_primary[, country := "England"]
 
 yg <- vih_primary[age_low == min(age_low)]
 yg[, age_high := age_low - 1]
@@ -79,26 +79,26 @@ transform_janssen_norms <- function(norms, norm_name) {
 
   names <- norms[1, ] |>
     unlist()
-  names[1] <- "c"
+  names[1] <- "country"
 
   setnames(norms, new = names)
 
-  n <- norms[c == "Regional", which = TRUE]
+  n <- norms[country == "Regional", which = TRUE]
 
   # only keeping the national-level norms for now
   # melting wide to long
   norms <- norms[-c(1:2, n:nrow(norms)), -9] |>
     melt(measure = 2:8,
          variable.name = "age_low",
-         value.name = "un")
+         value.name = "avg_util")
 
-  norms[, un := as.numeric(un)]
-  norms[grepl("England", c), c := "England"]
+  norms[, avg_util := as.numeric(avg_util)]
+  norms[grepl("England", country), country := "England"]
 
   # changing country names so they line up with UN life tables
-  norms[c == "Korea", c := "Republic of Korea"]
-  norms[c == "UK", c := "United Kingdom"]
-  norms[c == "US", c := "United States of America"]
+  norms[country == "Korea", country := "Republic of Korea"]
+  norms[country == "UK", country := "United Kingdom"]
+  norms[country == "US", country := "United States of America"]
 
   norms[, age_high := as.numeric(substring(age_low, 4, 5))]
   norms[, age_low := as.numeric(substring(age_low, 1, 2))]
@@ -133,12 +133,12 @@ janssen <- extract_janssen_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK50
 
 
 utility_norms <- rbind(mvh, vih_primary, janssen) |>
-  setcolorder(c("c", "id", "age_low", "age_high", "sex", "un")) |>
-  setorder(c, id, age_low, sex)
+  setcolorder(c("country", "id", "age_low", "age_high", "sex", "avg_util")) |>
+  setorder(country, id, age_low, sex)
 
 utility_norms[, age_low := as.numeric(age_low)]
 utility_norms[, age_high := as.numeric(age_high)]
-utility_norms[, un := as.numeric(un)]
+utility_norms[, avg_util := as.numeric(avg_util)]
 
 
 
@@ -147,12 +147,12 @@ utility_norms[, un := as.numeric(un)]
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-norm_info <- unique(utility_norms[, .(c, id)])[
+norm_info <- unique(utility_norms[, .(country, id)])[
   , c("doi", "external_url"):=""
 ][
-  , c("survey", "value_set"):=""
+  , c("eq5d_data", "value_set"):=""
 ][
-  , default:=.N, by=c
+  , default:=.N, by=country
 ][
   , default:= ifelse(default==1, T, F)
 ]

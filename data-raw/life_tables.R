@@ -1,6 +1,6 @@
 # usethis::use_data(life_tables, utility_norms, populations, internal = TRUE, overwrite = TRUE)
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # English life tables from ONS
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -8,7 +8,7 @@ temp <- tempfile(fileext = ".xlsx")
 download.file(url = "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/nationallifetablesenglandreferencetables/current/nlte198020213.xlsx",
               temp, mode = "wb")
 
-eng_lt <- data.table(sex = character(), age = integer(), qx = numeric(), y = integer(), c = character())
+eng_lt <- data.table(sex = character(), age = integer(), qx = numeric(), year = integer(), country = character())
 
 for (n in 5:9) {
 
@@ -21,8 +21,8 @@ for (n in 5:9) {
 
   lt_temp <- rbind(lt_male[, .(sex, age, qx)], lt_female[, .(sex, age, qx)])
 
-  lt_temp[, y := 2022-(n-5)]
-  lt_temp[, c := "England"]
+  lt_temp[, year := 2022-(n-5)]
+  lt_temp[, country := "England"]
 
   eng_lt  <- eng_lt |>
     rbind(lt_temp)
@@ -31,7 +31,7 @@ for (n in 5:9) {
 
 
 eng_lt  <- eng_lt |>
-  setnames(new = c("sex", "x","q_x", "y", "c"))
+  setnames(new = c("sex", "x","q_x", "year", "country"))
 
 
 
@@ -71,11 +71,11 @@ lt_male <- fread(file = temp)[, .(Location, Time, Sex, AgeGrpStart, qx)]
 # need to discuss how much data to store?
 # for now removing the age group from 100 onwards
 un_lt <- rbind(lt_male, lt_female)[
-  Location %in% utility_norms[, c] & Time >= 2015 & AgeGrpStart < 100
+  Location %in% utility_norms[, country] & Time >= 2015 & AgeGrpStart < 100
 ][
   , Sex := fifelse(Sex == "Male", "male", "female")
 ] |>
-  setnames(new = c("c", "y", "sex", "x", "q_x"))
+  setnames(new = c("country", "year", "sex", "x", "q_x"))
 
 
 
@@ -84,8 +84,8 @@ un_lt <- rbind(lt_male, lt_female)[
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 life_tables <- rbind(eng_lt, un_lt) |>
-  setcolorder(c("c", "y", "sex", "x", "q_x")) |>
-  setorder(c, y, x, sex)
+  setcolorder(c("country", "year", "sex", "x", "q_x")) |>
+  setorder(country, year, x, sex)
 
 
 
