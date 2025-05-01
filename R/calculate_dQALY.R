@@ -69,7 +69,7 @@
 #' calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019)
 #'
 #' #Calculate dQALY values using a variable discount rate
-#' declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03))
+#' declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03)
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = declining_r)
 #'
 #' #Calculate dQALY values for a datatable w model output
