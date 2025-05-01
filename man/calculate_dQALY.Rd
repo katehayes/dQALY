@@ -83,6 +83,7 @@ a column dQALY to existing datatable mod_output
 Calculating QALY loss on death
 }
 \examples{
+library(data.table)
 #Output a table of dQALY values for all ages/genders, minimally specifying year & country
 calculate_dQALY(country = "United Kingdom", year = 2019)
 
