@@ -150,14 +150,20 @@ utility_norms[, avg_util := as.numeric(avg_util)]
 norm_info <- unique(utility_norms[, .(country, id)])[
   , c("doi", "external_url"):=""
 ][
-  , c("eq5d_data", "value_set"):=""
+  , c("eq5d_data", "eq5d_data_year", "value_set", "value_set_year"):=""
 ][
-  , default:=.N, by=country
+  , score := fcase(grepl("tto", id), 3,
+                     grepl("_vas", id), 2,
+                     grepl("vih", id), 5,
+                     grepl("mvh", id), 5)
 ][
-  , default:= ifelse(default==1, T, F)
+  , score := ifelse(is.na(score), 1, score)
+][
+  , default := ifelse(score == max(score), T, F), by = country
 ]
 
-
+# should the value set link to/reference the eq5d package in some way?
+# check: mvh is probably the same set of norms as one of them in the janssen stuff
 
 
 

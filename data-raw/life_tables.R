@@ -1,4 +1,4 @@
-# usethis::use_data(life_tables, utility_norms, populations, internal = TRUE, overwrite = TRUE)
+# usethis::use_data(life_tables, utility_norms, norm_info, populations, internal = TRUE, overwrite = TRUE)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # English life tables from ONS

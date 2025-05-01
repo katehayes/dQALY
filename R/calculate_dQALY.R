@@ -45,8 +45,13 @@
 #' you can change that assumption & set your own value with avg_util_young (most likely other assumption would be
 #' setting avg_util_young to 1)
 #'
-#' @param age_groups
-#' @param sex_group
+#' @param age_groups Null (default) or a datatable with cols age_low and age_high
+#' (lower and upper bounds), allowing user to specify age groups for which we should produce grouped estimates
+#'
+#' @param sex_group Boolen
+#' Whether or not to group male & female estimates together
+#' (note: not sure about this argument name -'group by sex' means put into sex groups, not collapse across sex groups..)
+#'
 #' @param cohort Null (default) or a datatable with columns named sex, x, and count,
 #' allowing user to specify the distribution of a particular cohort by age and sex,
 #' so that they can calculate grouped estimates for this specific cohort
@@ -57,8 +62,11 @@
 #'
 # -------------------------------------------------------------------------
 #' @examples
-#' #Output a table of dQALY values for all ages/genders, minimally specifying year, country and norm
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019)
+#' #Output a table of dQALY values for all ages/genders, minimally specifying year & country
+#' calculate_dQALY(country = "United Kingdom", year = 2019)
+#'
+#' #Output a table of dQALY values for all ages/genders, specifying year, country and norm
+#' calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019)
 #'
 #' #Calculate dQALY values using a variable discount rate
 #' declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03))
@@ -92,9 +100,10 @@
 # -------------------------------------------------------------------------
 #' @export
 calculate_dQALY <- function(mod_output = NULL,
-                            country, year,
-                            # life_tables,
-                            norms,
+                            country = NULL,
+                            year = NULL,
+                            life_table = NULL,
+                            norms = NULL,
                             r = 0.035,
                             smr = 1, qcm = 1,
                             lt_extend = T,
@@ -106,68 +115,108 @@ calculate_dQALY <- function(mod_output = NULL,
 
   env <- environment()
 
+
+  # if user doesn't want to group output:
+  # user can either specify country, year, norms (or just country and year if we set default norms for each country) OR
+  # user can specify country, year, and provide own norms OR
+  # user can specify country, norms, and provide life tables OR
+  # (OR - if we set default utility norms for each country - user can provide own life table and specify country?)
+  # OR user can provide own life table and utility norms
+
+
+  # if user is providing own life table and utility norms but wants to group output:
+  # either they need to provide their own cohort
+  # OR they also need to specify country and year, in order to get the default population norm
+
+  # (probably wouldn't make a lot of sense methodologically to provide your own custom life tables
+  # and then use a default country-level population weighting to group)
+
+
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # 1. Getting the life_tables that will be used in the main dQALY calculation
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+  if(is.null(life_table)) {
+
+    # Filtering the package data to select the chosen country, year
+    # https://cran.r-project.org/web/packages/data.table/vignettes/datatable-programming.html
+    life_table <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
 
 
-  # Filtering the package data to select the chosen country, year
-  # https://cran.r-project.org/web/packages/data.table/vignettes/datatable-programming.html
-  lt <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    # Options for packaged lift tables # # # # # # # # # # # # # # # # # # # # # #
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+    # Life tables given by UN and ONS only go up to 99/100 - what if we want dQALY
+    # estimates for people older than that - we might want to extend life tables
+
+    # at the moment lt_extend controls whether we extend or not (default we do)
+    # and lt_increment controls how the extension is done - the default is that, for
+    # the selected life tables, the mean increase in mortality rate across the 10
+    # highest years for which mortality rates are given to us is calculated (for males and females)
+    # we then say that mortality rates from q(max x) onwards increases by this same amount each year
+    # (note: this is a deviation from the way Lucy & I originally were doing the extension,
+    # where, say for example the max age for which we have data is 100, then q(101) is set as 1/e(100)
+    # (life expectancy at age 100) and q(x) for x > 101 is then incremented
+    # - that's just one extra step, which I can include at the small?/large?? cost
+    # of storing an additional life expectancy column for each set of life tables (or just e(100) for m/f))
+    # (could add the ability to set the upper age limit - doesn't have to be 120)
+
+    # can come back here & clean up - or could also pull out into separate function
+    if (lt_extend == T) {
+
+      max_x <- max(life_table$x, na.rm = TRUE)
+
+      qmax_male <- unlist(life_table[x == max_x & sex == "male", .(q_x)])
+      qmax_female <- unlist(life_table[x == max_x & sex == "female", .(q_x)])
+
+      if (is.null(lt_increment)) {
+
+        incr_male <- unlist(life_table[x >= max_x-10 & sex == "male"][, .(diff_q = mean(q_x/shift(q_x, type = "lag"), na.rm = T))])
+        incr_female <- unlist(life_table[x >= max_x-10 & sex == "female"][, .(diff_q = mean(q_x/shift(q_x, type = "lag"), na.rm = T))])
+
+      } else {
+
+        incr_male <- lt_increment
+        incr_female <- lt_increment
+
+      }
+
+      life_table <- life_table |>
+        rbind(data.table(sex = c(rep("male", 120-max_x), rep("female", 120-max_x)),
+                         x = c((max_x+1):120, (max_x+1):120),
+                         q_x = NA)) |>
+        setorder(x, sex)
 
 
 
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # Life table options # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+      # q(x) is the probability of dying within the year at age x
+      # to increment the probability without it exceeding 1, we convert to the instantaneous death rate,
+      # apply the increment, then convert back to a probability
+      life_table[x > max_x & sex == "male", q_x := 1-exp(-(-log(1-qmax_male))*incr_male^(x-max_x))]
+      life_table[x > max_x & sex == "female", q_x := 1-exp(-(-log(1-qmax_female))*incr_female^(x-max_x))]
 
-  # Life tables given by UN and ONS only go up to 99/100 - what if we want dQALY
-  # estimates for people older than that - we might want to extend life tables
-
-  # at the moment lt_extend controls whether we extend or not (default we do)
-  # and lt_increment controls how the extension is done - the default is that, for
-  # the selected life tables, the mean increase in mortality rate across the 10
-  # highest years for which mortality rates are given to us is calculated (for males and females)
-  # we then say that mortality rates from q(max x) onwards increases by this same amount each year
-  # (note: this is a deviation from the way Lucy & I originally were doing the extension,
-  # where, say for example the max age for which we have data is 100, then q(101) is set as 1/e(100)
-  # (life expectancy at age 100) and q(x) for x > 101 is then incremented
-  # - that's just one extra step, which I can include at the small?/large?? cost
-  # of storing an additional life expectancy column for each set of life tables (or just e(100) for m/f))
-  # (could add the ability to set the upper age limit - doesn't have to be 120)
-
-  # can come back here & clean up - or could also pull out into separate function
-  if (lt_extend == T) {
-
-    max_x <- max(lt$x, na.rm = TRUE)
-
-    qmax_male <- unlist(lt[x == max_x & sex == "male", .(q_x)])
-    qmax_female <- unlist(lt[x == max_x & sex == "female", .(q_x)])
-
-    if (is.null(lt_increment)) {
-
-      incr_male <- unlist(lt[x >= max_x-10 & sex == "male"][, .(diff_q = mean(q_x/shift(q_x, type = "lag"), na.rm = T))])
-      incr_female <- unlist(lt[x >= max_x-10 & sex == "female"][, .(diff_q = mean(q_x/shift(q_x, type = "lag"), na.rm = T))])
-
-    } else {
-
-      incr_male <- lt_increment
-      incr_female <- lt_increment
 
     }
 
-    lt <- lt |>
-      rbind(data.table(sex = c(rep("male", 120-max_x), rep("female", 120-max_x)),
-                       x = c((max_x+1):120, (max_x+1):120),
-                       q_x = NA))
+  }
 
-    # q(x) is the probability of dying within the year at age x
-    # to increment the probability without it exceeding 1, we convert to the instantaneous death rate,
-    # apply the increment, then convert back to a probability
-    lt[x > max_x & sex == "male", q_x := 1-exp(-(-log(1-qmax_male))*incr_male^(x-max_x))]
-    lt[x > max_x & sex == "female", q_x := 1-exp(-(-log(1-qmax_female))*incr_female^(x-max_x))]
 
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # 2. Getting the utility norms that will be used in the main dQALY calculation
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+
+  if(is.null(norms)) {
+
+    utility_norms <- utility_norms[norm_info[, .(country, id, default)],
+                                   , on = .(country, id)]
+
+    utility_norms <- utility_norms[country == get("country", env) & default == T][, c("country", "id", "default"):=NULL]
+
+  } else {
+
+    utility_norms <- utility_norms[country == get("country", env) & id == norms][, c("country", "id"):=NULL]
 
   }
 
@@ -176,27 +225,8 @@ calculate_dQALY <- function(mod_output = NULL,
 
 
 
-
-
-
-
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # 2. Getting the utility norms that will be used in the main dQALY calculation
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-  # (should we set default norms for each country?)
-  # lt <- life_tables[country == "United Kingdom" & year == 2019][, c("country", "year"):=NULL]
-  # if(is.null(norms)) {
-  #
-  # }
-
-  utility_norms <- utility_norms[country == get("country", env) & id == norms][, c("country", "id"):=NULL]
-
-
-
-
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # Utility norm options # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # Options for packaged utility norms # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   if(!is.null(avg_util_young)) {
@@ -215,8 +245,8 @@ calculate_dQALY <- function(mod_output = NULL,
   # life tables might have different lengths (UN goes to 99, ONS to 100),
   # so taking lengths here, to be used in calculations below
   # assuming there is the same number of years of data for men & women
-  min_x <- min(lt$x, na.rm = TRUE)
-  max_x <- max(lt$x, na.rm = TRUE)
+  min_x <- min(life_table$x, na.rm = TRUE)
+  max_x <- max(life_table$x, na.rm = TRUE)
 
 
   # we have q(x) - probability of dying at age x
@@ -226,12 +256,12 @@ calculate_dQALY <- function(mod_output = NULL,
   # (here to probability of surviving ie 1-prob of dying)
   # then calculating L(x): years lived between ages x & x+1 for x>=1: (l(x) + l(x+1))/2
   # Note: This calculation assumes a uniform distribution of deaths during the year
-  lt[, l_x := cumprod(exp(-shift(-log(1-q_x), type = "lag", fill = 0)*smr)), by = .(sex)]
-  lt[, L_x := (l_x + shift(l_x, type = "lead", fill = 0))/2, , by = .(sex)]
+  life_table[, l_x := cumprod(exp(-shift(-log(1-q_x), type = "lag", fill = 0)*smr)), by = .(sex)]
+  life_table[, L_x := (l_x + shift(l_x, type = "lead", fill = 0))/2, , by = .(sex)]
 
   # assigning the appropriate population-level utility norm to corresponding age, sex
   # dropping l(x) bc we only need L(x) for the QALY calculation
-  dQALY_table <- utility_norms[lt,
+  dQALY_table <- utility_norms[life_table,
                          on = .(sex, age_low <= x, age_high >= x),
                          .(sex, x, L_x, avg_util)]
 
