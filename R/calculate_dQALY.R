@@ -206,7 +206,8 @@ calculate_dQALY <- function(mod_output = NULL,
   # 2. Getting the utility norms that will be used in the main dQALY calculation
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-
+  # if user doesn't a) supply their own utility norms or b) specify by name which ones they want to use by name
+  # then we can get info on which norm to use for that country as default, from package data norm_info
   if(is.null(norms)) {
 
     utility_norms <- utility_norms[norm_info[, .(country, id, default)],
