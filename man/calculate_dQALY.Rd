@@ -101,12 +101,12 @@ calculate_dQALY(mod_output = my_mod_out, country = "United Kingdom", norms = "mv
 
 #Calculate grouped dQALY values - using default country-level population weightings:
 #1) collapse sex
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = T)
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE)
 #2) age groups
 my_age_groups <- data.table(age_low = c(seq(0,90,5)), age_high = c(seq(4,89,5), 100))
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups)
 #3) collapse sex and group age
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = T)
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = TRUE)
 
 #Do any of these groupings with a user-supplied cohort
 my_cohort <- data.table(sex = c(rep("male", 5), rep("female", 8)),
@@ -114,9 +114,9 @@ my_cohort <- data.table(sex = c(rep("male", 5), rep("female", 8)),
                         count = c(1, 1, 2, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1))
 #note: any age and gender for which no count value is supplied is considered outside the cohort (count zero)
 #1) collapse sex
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = T, cohort = my_cohort)
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE, cohort = my_cohort)
 #2) age groups (note: of the age groups specified, only estimates for age groups that contain a member of the specified cohort are returned)
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, cohort = my_cohort)
 #3) collapse sex and group age
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = T, cohort = my_cohort)
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = TRUE, cohort = my_cohort)
 }
