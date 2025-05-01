@@ -20,7 +20,7 @@
 #'
 #' @param r Numeric
 #' between 0 and 1, discount rate
-#' OR - recently added - its possible to have a discount rate that varies over time
+#' OR - recently added this - its possible to have a discount rate that varies over time
 #' this requires supplying a value for r of the form data.table(r_break = numeric(), r_near = numeric(), r_far = numeric())
 #' where r_break is the number of years into the future that the discount rate changes,
 #' r_near is the discount rate in the near future/r_far is rate in far future
@@ -47,7 +47,9 @@
 #'
 #' @param age_groups
 #' @param sex_group
-#' @param cohort
+#' @param cohort Null (default) or a datatable with columns named sex, x, and count,
+#' allowing user to specify the distribution of a particular cohort by age and sex,
+#' so that they can calculate grouped estimates for this specific cohort
 #'
 # -------------------------------------------------------------------------
 #' @returns either a datatable w columns age, sex and dQALY estimates, or adds
@@ -65,15 +67,28 @@
 #' #Calculate dQALY values for a datatable w model output
 #' my_mod_out <- data.table(sex = c(rep("male",8), rep("female",8)),
 #'                  age = c(0, 18, 25, 35, 45, 55, 65, 75))
-#'
 #' calculate_dQALY(mod_output = my_mod_out, country = "United Kingdom", norms = "mvh", year = 2019)
 #'
-#' #Calculate grouped dQALY values - 1) collapse sex 2) age groups 3) collapse sex and group age
+#' #Calculate grouped dQALY values - using default country-level population weightings:
+#' #1) collapse sex
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = T)
+#' #2) age groups
 #' my_age_groups <- data.table(age_low = c(seq(0,90,5)), age_high = c(seq(4,89,5), 100))
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups)
+#' #3) collapse sex and group age
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = T)
 #'
+#' #Do any of these groupings with a user-supplied cohort
+#' my_cohort <- data.table(sex = c(rep("male", 5), rep("female", 8)),
+#'                         x = c(89:93, 89:92, 95:97, 100),
+#'                         count = c(1, 1, 2, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1))
+#' #note: any age and gender for which no count value is supplied is considered outside the cohort (count zero)
+#' #1) collapse sex
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = T, cohort = my_cohort)
+#' #2) age groups (note: of the age groups specified, only estimates for age groups that contain a member of the specified cohort are returned)
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, cohort = my_cohort)
+#' #3) collapse sex and group age
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = T, cohort = my_cohort)
 # -------------------------------------------------------------------------
 #' @export
 calculate_dQALY <- function(mod_output = NULL,
@@ -229,7 +244,7 @@ calculate_dQALY <- function(mod_output = NULL,
   # getting a discounted sum of life years lost from age x onwards via matrix multiplication
 
   # Added possibility of varying r over time in response to comments from health economists
-  # Should probably generalise so you can have any number of r's overtime (as opposed to just 2)
+  # Should probably generalise so you can have any number of r's over time (as opposed to just 2)
   if(length(r) == 1) {
 
     dQALY_table[, r_col := r, by = .(sex)]
@@ -248,7 +263,7 @@ calculate_dQALY <- function(mod_output = NULL,
   # dropping cols we don't need anymore
   dQALY_table[, c(paste("v", min_x:max_x, sep=""), "r_col", "L_x", "avg_util"):=NULL]
 
-
+  # note - fix ordering of output - by x and then sex
 
 
 
