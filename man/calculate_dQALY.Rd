@@ -31,6 +31,8 @@ value is name of a permissible country}
 \item{year}{Integer
 permissible year}
 
+\item{life_table}{}
+
 \item{norms}{string
 specify which set of qaly norms to use in the dQALY calculation
 

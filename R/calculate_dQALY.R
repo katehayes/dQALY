@@ -12,6 +12,8 @@
 #' @param year Integer
 #' permissible year
 #'
+#' @param life_table
+#'
 #' @param norms string
 #' specify which set of qaly norms to use in the dQALY calculation
 #'
