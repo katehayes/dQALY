@@ -6,30 +6,76 @@
 \usage{
 calculate_dQALY(
   mod_output = NULL,
-  country,
-  year,
-  norms,
+  country = NULL,
+  year = NULL,
+  life_table = NULL,
+  norms = NULL,
   r = 0.035,
   smr = 1,
-  qcm = 1
+  qcm = 1,
+  lt_extend = T,
+  lt_increment = NULL,
+  avg_util_young = NULL,
+  age_groups = NULL,
+  sex_group = F,
+  cohort = NULL
 )
 }
 \arguments{
-\item{mod_output}{A datatable(?) - default is NULL -}
+\item{mod_output}{A datatable(?)
+default is NULL - presently has to have columns sex and age}
 
-\item{country}{String, value is name of a permissible country}
+\item{country}{String
+value is name of a permissible country}
 
-\item{year}{Integer, permissible year}
+\item{year}{Integer
+permissible year}
 
-\item{norms}{String, permissible norm name}
+\item{life_table}{}
 
-\item{r}{Numeric, between 0 and 1, discount rate}
+\item{norms}{string
+specify which set of qaly norms to use in the dQALY calculation
 
-\item{smr}{Numeric, a 'mortality ratio' - default is 1 -
+Need to make sensible system for naming the norms we collect (eq5d package categorises
+value sets according to version, type, country, and then pubmed/doi/isbn reference)}
+
+\item{r}{Numeric
+between 0 and 1, discount rate
+OR - recently added this - its possible to have a discount rate that varies over time
+this requires supplying a value for r of the form data.table(r_break = numeric(), r_near = numeric(), r_far = numeric())
+where r_break is the number of years into the future that the discount rate changes,
+r_near is the discount rate in the near future/r_far is rate in far future}
+
+\item{smr}{Numeric
+a 'mortality ratio' - default is 1 -
 if less than 1 then population is less likely to die than average (and vice versa)}
 
-\item{qcm}{Numeric, adjusts morbidity/quality of life - default is 1 -
+\item{qcm}{Numeric
+adjusts morbidity/quality of life - default is 1 -
 if less than 1 then population has lower quality of life than average (and vice versa)}
+
+\item{lt_extend}{Boolean
+option to extend life tables past last year of data, default is T}
+
+\item{lt_increment}{Null or numeric - default NULL, if null then increment calculation
+done automatically - if not null, should be a number greater than 1 (e.g. 1.05 if you want
+mortality rates to get 5\% bigger each year after the last year for which data is avail)}
+
+\item{avg_util_young}{Null/numeric - default is that the youngest age group (for which no qaly norm
+data is available) is assumed to have the same avg util value as the youngest group for which we have data -
+you can change that assumption & set your own value with avg_util_young (most likely other assumption would be
+setting avg_util_young to 1)}
+
+\item{age_groups}{Null (default) or a datatable with cols age_low and age_high
+(lower and upper bounds), allowing user to specify age groups for which we should produce grouped estimates}
+
+\item{sex_group}{Boolen
+Whether or not to group male & female estimates together
+(note: not sure about this argument name -'group by sex' means put into sex groups, not collapse across sex groups..)}
+
+\item{cohort}{Null (default) or a datatable with columns named sex, x, and count,
+allowing user to specify the distribution of a particular cohort by age and sex,
+so that they can calculate grouped estimates for this specific cohort}
 }
 \value{
 either a datatable w columns age, sex and dQALY estimates, or adds
@@ -39,13 +85,40 @@ a column dQALY to existing datatable mod_output
 Calculating QALY loss on death
 }
 \examples{
-#Output a table of dQALY values for all ages/genders, minimally specifying year, country and norm
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019)
+library(data.table)
+#Output a table of dQALY values for all ages/genders, minimally specifying year & country
+calculate_dQALY(country = "United Kingdom", year = 2019)
+
+#Output a table of dQALY values for all ages/genders, specifying year, country and norm
+calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019)
+
+#Calculate dQALY values using a variable discount rate
+declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03)
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = declining_r)
 
 #Calculate dQALY values for a datatable w model output
-dt <- data.table(sex = c(rep("male",8), rep("female",8)),
+my_mod_out <- data.table(sex = c(rep("male",8), rep("female",8)),
                  age = c(0, 18, 25, 35, 45, 55, 65, 75))
+calculate_dQALY(mod_output = my_mod_out, country = "United Kingdom", norms = "mvh", year = 2019)
 
-calculate_dQALY(mod_output = dt, country = "United Kingdom", norms = "mvh", year = 2019)
+#Calculate grouped dQALY values - using default country-level population weightings:
+#1) collapse sex
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE)
+#2) age groups
+my_age_groups <- data.table(age_low = c(seq(0,90,5)), age_high = c(seq(4,89,5), 100))
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups)
+#3) collapse sex and group age
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = TRUE)
 
+#Do any of these groupings with a user-supplied cohort
+my_cohort <- data.table(sex = c(rep("male", 5), rep("female", 8)),
+                        x = c(89:93, 89:92, 95:97, 100),
+                        count = c(1, 1, 2, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1))
+#note: any age and gender for which no count value is supplied is considered outside the cohort (count zero)
+#1) collapse sex
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE, cohort = my_cohort)
+#2) age groups (note: of the age groups specified, only estimates for age groups that contain a member of the specified cohort are returned)
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, cohort = my_cohort)
+#3) collapse sex and group age
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = TRUE, cohort = my_cohort)
 }
