@@ -117,7 +117,7 @@
 #' #1) collapse sex
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE, cohort = my_cohort)
 #' #2) age groups (note: of the age groups specified, only estimates for age groups that contain a
-#' member of the specified cohort are returned)
+#' #member of the specified cohort are returned)
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, cohort = my_cohort)
 #' #3) collapse sex and group age
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups,
