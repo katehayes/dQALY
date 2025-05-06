@@ -12,11 +12,18 @@
 #' @param year Integer
 #' permissible year
 #'
-#' @param norms string
-#' specify which set of qaly norms to use in the dQALY calculation
+#' @param norms Null or string or data.table
+#' (is it ok to allow an argument to be flexible like this?)
+#' specify which set of utility norms to use in the dQALY calculation by name
+#' OR
+#' provide your own norms a datatable with columns age_low, age_high, sex = {"male", "female} and avg_util
+#' min(age_low) needs to be zero and max(age_high) needs to be (lets say) 100 for both sexes?
+#'
 #'
 #' Need to make sensible system for naming the norms we collect (eq5d package categorises
-#' value sets according to version, type, country, and then pubmed/doi/isbn reference)
+#' value sets according to version, type, country, and then pubmed/doi/isbn reference)?
+#' &collect that info in norm_info package data?
+#'
 #'
 #' @param r Numeric
 #' between 0 and 1, discount rate
@@ -65,8 +72,22 @@
 #' #Output a table of dQALY values for all ages/genders, minimally specifying year & country
 #' calculate_dQALY(country = "United Kingdom", year = 2019)
 #'
-#' #Output a table of dQALY values for all ages/genders, specifying year, country and norm
+#' #Output a table of dQALY values for all ages/genders, specifying year, country and norm by name
 #' calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019)
+#'
+#' #Output a table of dQALY values for all ages/genders, specifying year & country, with user-specified norms
+#' my_norms <- data.table(sex = c(rep("male", 3), rep("female", 3)),
+#'                        age_low = c(0, 20, 90),
+#'                        age_high = c(19, 89, 150),
+#'                        avg_util = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
+#' calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
+#'
+#' #Output a table of dQALY values for all ages/genders, with user-specified norms and life tables
+#' my_life_table <- data.table(sex = c(rep("male", 101), rep("female", 101)),
+#'                             x = c(0:100, 0:100),
+#'                             q_x = c(seq(0, 1, 0.01)))
+#'
+#' calculate_dQALY(life_table = my_life_table, norms = my_norms)
 #'
 #' #Calculate dQALY values using a variable discount rate
 #' declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03))
@@ -115,6 +136,10 @@ calculate_dQALY <- function(mod_output = NULL,
 
   env <- environment()
 
+  # options or settings or controls list give the parameters that are specific to the method
+  # write a wrapper for it that can have flags on and off, or infer something or something like that
+  # provide a function that does the calculation
+  # you give prod function
 
   # if user doesn't want to group output:
   # user can either specify country, year, norms (or just country and year if we set default norms for each country) OR
@@ -136,6 +161,7 @@ calculate_dQALY <- function(mod_output = NULL,
   # 1. Getting the life_tables that will be used in the main dQALY calculation
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+  # if the user hasn't supplied their own set of life tables
   if(is.null(life_table)) {
 
     # Filtering the package data to select the chosen country, year
@@ -196,8 +222,15 @@ calculate_dQALY <- function(mod_output = NULL,
       life_table[x > max_x & sex == "male", q_x := 1-exp(-(-log(1-qmax_male))*incr_male^(x-max_x))]
       life_table[x > max_x & sex == "female", q_x := 1-exp(-(-log(1-qmax_female))*incr_female^(x-max_x))]
 
-
     }
+
+  } else {
+
+    if((!is.null(age_groups) | sex_group == T) & is.null(cohort)) {
+      # not sure about this (error message too wordy anyway)
+      stop("When calculating QALY loss estimates for population groups: if you supplied your own life tables to the calculation, you must also supply your own population cohort (needed to derive group averages).")
+    }
+
 
   }
 
@@ -206,33 +239,43 @@ calculate_dQALY <- function(mod_output = NULL,
   # 2. Getting the utility norms that will be used in the main dQALY calculation
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-  # if user doesn't a) supply their own utility norms or b) specify by name which ones they want to use by name
-  # then we can get info on which norm to use for that country as default, from package data norm_info
-  if(is.null(norms)) {
 
-    utility_norms <- utility_norms[norm_info[, .(country, id, default)],
-                                   , on = .(country, id)]
+  if(length(norms) > 1) {
+    # if the user supplies their own norms
+    # Should there be a series of checks that the norms provided are sensible
+    # and a series of error messages?
 
-    utility_norms <- utility_norms[country == get("country", env) & default == T][, c("country", "id", "default"):=NULL]
+    utility_norms <- norms
 
   } else {
 
-    utility_norms <- utility_norms[country == get("country", env) & id == norms][, c("country", "id"):=NULL]
+    if(is.null(norms)) {
+      # if user doesn't either a) supply their own utility norms or b) specify by name which ones they want to use by name
+      # then we can get info on which norm to use for that country as default, from package data norm_info
+
+      utility_norms <- utility_norms[norm_info[, .(country, id, default)],
+                                     , on = .(country, id)]
+      utility_norms <- utility_norms[country == get("country", env) & default == T][, c("country", "id", "default"):=NULL]
+
+
+    } else {
+      # if the user specified norms using our norm ids
+
+      utility_norms <- utility_norms[country == get("country", env) & id == norms][, c("country", "id"):=NULL]
+
+    }
+
+
+    # Options for changing assumptions made when using packaged utility norms # # # # # # # # # # # # # # # # # #
+    if(!is.null(avg_util_young)) {
+      utility_norms[age_low == min(age_low), avg_util := avg_util_young]
+    }
+
 
   }
 
 
 
-
-
-
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # Options for packaged utility norms # # # # # # # # # # # # # # # # # # # # #
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-  if(!is.null(avg_util_young)) {
-    utility_norms[age_low == min(age_low), avg_util := avg_util_young]
-  }
 
 
 
