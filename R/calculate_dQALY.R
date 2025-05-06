@@ -12,12 +12,14 @@
 #' @param year Integer
 #' permissible year
 #'
-#' @param life_table
+#' @param life_table Null or data.table
+#' Allows users to supply their own life tables - has to have columns sex, x, q_x
+#'
 #' @param norms Null or string or data.table
 #' (is it ok to allow an argument to be flexible like this?)
 #' specify which set of utility norms to use in the dQALY calculation by name
 #' OR
-#' provide your own norms a datatable with columns age_low, age_high, sex = {"male", "female} and avg_util
+#' provide your own norms a datatable with columns age_low, age_high, sex = "male" or "female, and avg_util
 #' min(age_low) needs to be zero and max(age_high) needs to be (lets say) 100 for both sexes?
 #' Need to make sensible system for naming the norms we collect (eq5d package categorises
 #' value sets according to version, type, country, and then pubmed/doi/isbn reference)?
@@ -114,10 +116,12 @@
 #' #note: any age and gender for which no count value is supplied is considered outside the cohort (count zero)
 #' #1) collapse sex
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE, cohort = my_cohort)
-#' #2) age groups (note: of the age groups specified, only estimates for age groups that contain a member of the specified cohort are returned)
+#' #2) age groups (note: of the age groups specified, only estimates for age groups that contain a
+#' member of the specified cohort are returned)
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, cohort = my_cohort)
 #' #3) collapse sex and group age
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = TRUE, cohort = my_cohort)
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups,
+#' sex_group = TRUE, cohort = my_cohort)
 # -------------------------------------------------------------------------
 #' @export
 calculate_dQALY <- function(mod_output = NULL,

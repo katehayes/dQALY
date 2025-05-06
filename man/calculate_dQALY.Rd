@@ -31,13 +31,15 @@ value is name of a permissible country}
 \item{year}{Integer
 permissible year}
 
-\item{life_table}{}
-
-\item{norms}{string
-specify which set of qaly norms to use in the dQALY calculation
-
+\item{norms}{Null or string or data.table
+(is it ok to allow an argument to be flexible like this?)
+specify which set of utility norms to use in the dQALY calculation by name
+OR
+provide your own norms a datatable with columns age_low, age_high, sex = {"male", "female} and avg_util
+min(age_low) needs to be zero and max(age_high) needs to be (lets say) 100 for both sexes?
 Need to make sensible system for naming the norms we collect (eq5d package categorises
-value sets according to version, type, country, and then pubmed/doi/isbn reference)}
+value sets according to version, type, country, and then pubmed/doi/isbn reference)?
+&collect that info in norm_info package data?}
 
 \item{r}{Numeric
 between 0 and 1, discount rate
@@ -89,8 +91,22 @@ library(data.table)
 #Output a table of dQALY values for all ages/genders, minimally specifying year & country
 calculate_dQALY(country = "United Kingdom", year = 2019)
 
-#Output a table of dQALY values for all ages/genders, specifying year, country and norm
+#Output a table of dQALY values for all ages/genders, specifying year, country and norm by name
 calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019)
+
+#Output a table of dQALY values for all ages/genders, specifying year & country, with user-specified norms
+my_norms <- data.table(sex = c(rep("male", 3), rep("female", 3)),
+                       age_low = c(0, 20, 90),
+                       age_high = c(19, 89, 150),
+                       avg_util = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
+calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
+
+#Output a table of dQALY values for all ages/genders, with user-specified norms and life tables
+my_life_table <- data.table(sex = c(rep("male", 101), rep("female", 101)),
+                            x = c(0:100, 0:100),
+                            q_x = c(seq(0, 1, 0.01)))
+
+calculate_dQALY(life_table = my_life_table, norms = my_norms)
 
 #Calculate dQALY values using a variable discount rate
 declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03)
