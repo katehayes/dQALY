@@ -6,6 +6,8 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
+Our code was originally adapted from Nichola Naylor’s github repo.
+
 The goal of dQALY is to …
 
 ## Installation

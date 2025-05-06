@@ -14,3 +14,7 @@ Depends:
 LazyData: true
 Imports:
     data.table
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

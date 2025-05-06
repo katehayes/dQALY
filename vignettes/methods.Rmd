@@ -1,0 +1,42 @@
+---
+title: "Methods"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Methods}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+<!-- ```{r setup} -->
+<!-- library(dQALY) -->
+<!-- ``` -->
+
+We want to produce an estimate of $dQALY(x)$, the QALY loss associated with death at age $x$, for particular populations (usually country-level) and particular time periods (years). We follow a methodology set out by Andrew Briggs (cite). This method requires two kinds of input data. 
+
+The first kind is life table data. Life tables report $q(x)$, the probability of dying between ages $x$ and $x+1$, for $x = 0,1,..,x_{max}$, $x_{max}$ being the max age we are interested in/ have data for. With $q(x)$, we can calculate $l(x)$, the number surviving to age $x \ge 1$ for a reference population of 100,000,
+
+$$l(x) = 100,000\cdot\prod_{i=0}^{x}(1-q(i))$$
+
+and then $L(x)$, the number of years lived between ages $x$ and $x+1$, 
+
+$$L(x) = \frac{l(x) + l(x+1)}{2}$$
+
+$L(x)$ and $l(x)$ can be used to calculate $LE(x)$, life expectancy at age $x$, as follows:
+
+$$LE(x) = \frac{\sum_{i=x}^{x_{max}}L(i)}{l(x)}$$
+
+
+The second kind of data needed is information about the average quality of life at each age, which we can denote $Q(x)$. Life expectancy at age $x$ is the number of life years a person at age $x$ can expect to live over the remainder of their life - quality adjusted life expectancy, $QALE(x)$, is the number of quality adjusted life years or QALYs that a person at age $x$ can expect to experience. It's given by
+
+$$QALE(x) = \frac{\sum_{i=x}^{x_{max}}Q(i)\cdot  L(i)}{l(x)}$$
+
+When a person dies at age $x$ we don't say that the number of QALYs lost due to their death is exactly the same as the number of QALYs they were expected to experience over the remainder of their life - we apply a discount rate $r$ to the QALYs they would have accrued. This reflects the idea that to us in the present, the value of QALYs that would be experienced years into the future is less than the value of QALYs experienced today. The discount rate is usually set at 3.5%.
+
+$$dQALY(x) = \frac{\sum_{i=x}^{x_{max}}Q(i)\cdot  L(i)\cdot \frac{1}{(1+r)^{(i-x)}}}{l(x)}$$
