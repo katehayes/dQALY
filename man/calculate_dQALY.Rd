@@ -13,8 +13,7 @@ calculate_dQALY(
   r = 0.035,
   smr = 1,
   qcm = 1,
-  lt_extend = T,
-  lt_increment = NULL,
+  lt_extend = TRUE,
   avg_util_young = NULL,
   age_groups = NULL,
   sex_group = F,
@@ -59,12 +58,11 @@ if less than 1 then population is less likely to die than average (and vice vers
 adjusts morbidity/quality of life - default is 1 -
 if less than 1 then population has lower quality of life than average (and vice versa)}
 
-\item{lt_extend}{Boolean
-option to extend life tables past last year of data, default is T}
+\item{lt_extend}{Boolean or numeric
 
-\item{lt_increment}{Null or numeric - default NULL, if null then increment calculation
-done automatically - if not null, should be a number greater than 1 (e.g. 1.05 if you want
-mortality rates to get 5\% bigger each year after the last year for which data is avail)}
+Option to extend life tables past last year of data. If TRUE (default) then increment calculation
+done automatically. If numeric, should be a number greater than 1 (e.g. 1.05 if you want
+mortality rates to get 5\% bigger each year after the last year for which data is avail).}
 
 \item{avg_util_young}{Null/numeric - default is that the youngest age group (for which no qaly norm
 data is available) is assumed to have the same avg util value as the youngest group for which we have data -
@@ -137,7 +135,7 @@ my_cohort <- data.table(sex = c(rep("male", 5), rep("female", 8)),
 #1) collapse sex
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE, cohort = my_cohort)
 #2) age groups (note: of the age groups specified, only estimates for age groups that contain a
-member of the specified cohort are returned)
+#member of the specified cohort are returned)
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, cohort = my_cohort)
 #3) collapse sex and group age
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups,
