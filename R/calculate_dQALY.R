@@ -38,12 +38,11 @@
 #' adjusts morbidity/quality of life - default is 1 -
 #' if less than 1 then population has lower quality of life than average (and vice versa)
 #'
-#' @param lt_extend Boolean
-#' option to extend life tables past last year of data, default is T
+#' @param lt_extend Boolean or numeric
 #'
-#' @param lt_increment Null or numeric - default NULL, if null then increment calculation
-#' done automatically - if not null, should be a number greater than 1 (e.g. 1.05 if you want
-#' mortality rates to get 5% bigger each year after the last year for which data is avail)
+#' Option to extend life tables past last year of data. If TRUE (default) then increment calculation
+#' done automatically. If numeric, should be a number greater than 1 (e.g. 1.05 if you want
+#' mortality rates to get 5% bigger each year after the last year for which data is avail).
 #'
 #' @param avg_util_young Null/numeric - default is that the youngest age group (for which no qaly norm
 #' data is available) is assumed to have the same avg util value as the youngest group for which we have data -
@@ -121,8 +120,7 @@ calculate_dQALY <- function(country = NULL,
                             norms = NULL,
                             r = 0.035,
                             smr = 1, qcm = 1,
-                            lt_extend = T,
-                            lt_increment = NULL,
+                            lt_extend = TRUE,
                             avg_util_young = NULL,
                             age_groups = NULL,
                             sex_group = F,
@@ -162,7 +160,6 @@ calculate_dQALY <- function(country = NULL,
     # https://cran.r-project.org/web/packages/data.table/vignettes/datatable-programming.html
     life_table <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
 
-
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
     # Options for packaged lift tables # # # # # # # # # # # # # # # # # # # # # #
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -171,7 +168,7 @@ calculate_dQALY <- function(country = NULL,
     # estimates for people older than that - we might want to extend life tables
 
     # at the moment lt_extend controls whether we extend or not (default we do)
-    # and lt_increment controls how the extension is done - the default is that, for
+    # and also controls how the extension is done - the default is that, for
     # the selected life tables, the mean increase in mortality rate across the 10
     # highest years for which mortality rates are given to us is calculated (for males and females)
     # we then say that mortality rates from q(max x) onwards increases by this same amount each year
@@ -183,39 +180,27 @@ calculate_dQALY <- function(country = NULL,
     # (could add the ability to set the upper age limit - doesn't have to be 120)
 
     # can come back here & clean up - or could also pull out into separate function
-    if (lt_extend == T) {
 
-      max_x <- max(life_table$x, na.rm = TRUE)
+    if (length(lt_extend) != 1L || is.na(lt_extend) || (!(is.logical(lt_extend) || is.numeric(lt_extend)))) {
+      stop("`lt_extend must be a boolean value or a numeric scalar.")
+    }
 
-      qmax_male <- unlist(life_table[x == max_x & sex == "male", .(q_x)])
-      qmax_female <- unlist(life_table[x == max_x & sex == "female", .(q_x)])
-
-      if (is.null(lt_increment)) {
-
-        incr_male <- unlist(life_table[x >= max_x-10 & sex == "male"][, .(diff_q = mean(q_x/shift(q_x, type = "lag"), na.rm = T))])
-        incr_female <- unlist(life_table[x >= max_x-10 & sex == "female"][, .(diff_q = mean(q_x/shift(q_x, type = "lag"), na.rm = T))])
-
+    # now we know lt_extend is bool (TRUE/FALSE) or scalar numeric and we update as long as it is not FALSE
+    if (!isFALSE(lt_extend)) {
+      life_table[, xmax := max(x, na.rm = TRUE), by = "sex"]
+      if (is.numeric(lt_extend)) {
+        life_table[, increment := lt_extend]
       } else {
-
-        incr_male <- lt_increment
-        incr_female <- lt_increment
-
+        life_table[, increment := .SD[x >= xmax - 10, mean(q_x / shift(q_x, type = "lag"), na.rm = T)], by = "sex"]
       }
-
-      life_table <- life_table |>
-        rbind(data.table(sex = c(rep("male", 120-max_x), rep("female", 120-max_x)),
-                         x = c((max_x+1):120, (max_x+1):120),
-                         q_x = NA)) |>
-        setorder(x, sex)
-
-
-
+      life_table <- life_table[CJ(sex = c("male", "female"), x = 0:120), on = c("sex", "x")]
+      life_table[, c("xmax", "qmax", "increment") := lapply(list(xmax, q_x, increment), max, na.rm = TRUE), by = "sex"]
       # q(x) is the probability of dying within the year at age x
       # to increment the probability without it exceeding 1, we convert to the instantaneous death rate,
       # apply the increment, then convert back to a probability
-      life_table[x > max_x & sex == "male", q_x := 1-exp(-(-log(1-qmax_male))*incr_male^(x-max_x))]
-      life_table[x > max_x & sex == "female", q_x := 1-exp(-(-log(1-qmax_female))*incr_female^(x-max_x))]
-
+      life_table[x > xmax, q_x := 1 - exp(-(-log(1 - qmax)) * increment^(x - xmax))]
+      life_table[,c("xmax", "qmax", "increment") := NULL]
+      setorder(life_table, x, sex)
     }
 
   } else {
