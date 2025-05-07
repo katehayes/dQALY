@@ -325,11 +325,11 @@ calculate_dQALY <- function(mod_output = NULL,
   # Should probably generalise so you can have any number of r's over time (as opposed to just 2)
   if(length(r) == 1) {
 
-    dQALY_table[, r_col := r, by = .(sex)]
+    dQALY_table[, r_col := r]
 
   } else {
 
-    dQALY_table[, r_col := ifelse(x <= r$r_break, r$r_near, r$r_far), by = .(sex)]
+    dQALY_table[, r_col := ifelse(x <= r$r_break, r$r_near, r$r_far)]
 
   }
 
