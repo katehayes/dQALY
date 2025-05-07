@@ -3,9 +3,6 @@
 # -------------------------------------------------------------------------
 #'
 # -------------------------------------------------------------------------
-#' @param mod_output A datatable(?)
-#' default is NULL - presently has to have columns sex and age
-#'
 #' @param country String
 #' value is name of a permissible country
 #'
@@ -65,8 +62,7 @@
 #' so that they can calculate grouped estimates for this specific cohort
 #'
 # -------------------------------------------------------------------------
-#' @returns either a datatable w columns age, sex and dQALY estimates, or adds
-#' a column dQALY to existing datatable mod_output
+#' @returns a datatable w columns age, sex and dQALY estimates
 #'
 # -------------------------------------------------------------------------
 #' @examples
@@ -95,11 +91,6 @@
 #' declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03)
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = declining_r)
 #'
-#' #Calculate dQALY values for a datatable w model output
-#' my_mod_out <- data.table(sex = c(rep("male",8), rep("female",8)),
-#'                  age = c(0, 18, 25, 35, 45, 55, 65, 75))
-#' calculate_dQALY(mod_output = my_mod_out, country = "United Kingdom", norms = "mvh", year = 2019)
-#'
 #' #Calculate grouped dQALY values - using default country-level population weightings:
 #' #1) collapse sex
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE)
@@ -124,8 +115,7 @@
 #' sex_group = TRUE, cohort = my_cohort)
 # -------------------------------------------------------------------------
 #' @export
-calculate_dQALY <- function(mod_output = NULL,
-                            country = NULL,
+calculate_dQALY <- function(country = NULL,
                             year = NULL,
                             life_table = NULL,
                             norms = NULL,
@@ -349,25 +339,8 @@ calculate_dQALY <- function(mod_output = NULL,
   # 4. Organising output # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-  #if there is no grouping of dQALY values (values will be sex and year-of-age specific)
-  if(is.null(age_groups) & sex_group == F) {
-
-
-    # if a datatable (with columns representing sex and age at death) is given as an input to the function
-    # then attach a dQALY column
-    # make sex case insensitive, allow user to specify age and sex column name
-    # (should there be an option to have a column death = 0 or 1 indicating that
-    # only some of the people in the table have died)
-    # (allow grouped age too as long as they specify pop distribution? or accept
-    # country-level population data as default distribution?)
-    if (!is.null(mod_output)) {
-      dQALY_table <- dQALY_table[mod_output,
-                        on = .(sex, x = age)]
-    }
-
-
   # if dQALY values need to be calculated for a set of population groups
-  } else {
+  if(!is.null(age_groups) | sex_group == T) {
 
     # need a cohort to do the grouping
     # if the user doesn't supply a cohort with specific population distribution across age and sex

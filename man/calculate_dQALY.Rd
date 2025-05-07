@@ -5,7 +5,6 @@
 \title{Calculating QALY loss on death}
 \usage{
 calculate_dQALY(
-  mod_output = NULL,
   country = NULL,
   year = NULL,
   life_table = NULL,
@@ -22,9 +21,6 @@ calculate_dQALY(
 )
 }
 \arguments{
-\item{mod_output}{A datatable(?)
-default is NULL - presently has to have columns sex and age}
-
 \item{country}{String
 value is name of a permissible country}
 
@@ -83,8 +79,7 @@ allowing user to specify the distribution of a particular cohort by age and sex,
 so that they can calculate grouped estimates for this specific cohort}
 }
 \value{
-either a datatable w columns age, sex and dQALY estimates, or adds
-a column dQALY to existing datatable mod_output
+a datatable w columns age, sex and dQALY estimates
 }
 \description{
 Calculating QALY loss on death
@@ -114,11 +109,6 @@ calculate_dQALY(life_table = my_life_table, norms = my_norms)
 #Calculate dQALY values using a variable discount rate
 declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03)
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = declining_r)
-
-#Calculate dQALY values for a datatable w model output
-my_mod_out <- data.table(sex = c(rep("male",8), rep("female",8)),
-                 age = c(0, 18, 25, 35, 45, 55, 65, 75))
-calculate_dQALY(mod_output = my_mod_out, country = "United Kingdom", norms = "mvh", year = 2019)
 
 #Calculate grouped dQALY values - using default country-level population weightings:
 #1) collapse sex
