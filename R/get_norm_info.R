@@ -25,6 +25,6 @@ get_norm_info <- function(country = NULL, references = F) {
     norm_info <- norm_info[, c("norm_doi", "norm_url"):=NULL]
   }
 
- norm_info
+ norm_info[]
 
 }
