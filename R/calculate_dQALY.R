@@ -247,15 +247,16 @@ calculate_dQALY <- function(country = NULL,
       # if user doesn't either a) supply their own utility norms or b) specify by name which ones they want to use by name
       # then we can get info on which norm to use for that country as default, from package data norm_info
 
-      utility_norms <- utility_norms[norm_info[, .(country, id, default)],
-                                     , on = .(country, id)]
-      utility_norms <- utility_norms[country == get("country", env) & default == T][, c("country", "id", "default"):=NULL]
+      utility_norms <- utility_norms[norm_info[, .(norm_country, norm_id, default)],
+                                     , on = .(norm_country, norm_id)]
+      utility_norms <- utility_norms[norm_country == get("country", env) & default == T][, c("norm_country", "norm_id", "default"):=NULL]
 
 
     } else {
       # if the user specified norms using our norm ids
+      # write check for valid norm ids & error message referring user to norm info function
 
-      utility_norms <- utility_norms[country == get("country", env) & id == norms][, c("country", "id"):=NULL]
+      utility_norms <- utility_norms[norm_country == get("country", env) & norm_id == norms][, c("norm_country", "norm_id"):=NULL]
 
     }
 

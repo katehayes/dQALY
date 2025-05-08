@@ -1,0 +1,30 @@
+#' Get info on utility norms
+#'
+#' @param country string - name of a permissible country
+#' @param references boolean - set to T if you wish to return reference information (DOI, URL)
+#'
+#' @returns A data.table containing information about utility norms
+#'
+#' @examples
+#' get_norm_info()
+#' get_norm_info(country = "England")
+#' @export
+get_norm_info <- function(country = NULL, references = F) {
+
+  avail_countries <- unlist(unique(norm_info[, .(norm_country)]))
+
+  if(!is.null(country) & !(country %in% avail_countries)) {
+    stop(paste("Country not found. Countries for which utility norms are available currently include:", paste(avail_countries, collapse = ", ")))
+  }
+
+  if(!is.null(country)) {
+    norm_info <- norm_info[norm_country == country]
+  }
+
+  if(references == F) {
+    norm_info <- norm_info[, c("norm_doi", "norm_url"):=NULL]
+  }
+
+ norm_info
+
+}
