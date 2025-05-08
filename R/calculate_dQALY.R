@@ -376,7 +376,7 @@ calculate_dQALY <- function(country = NULL,
     # then add this information about what their desired age groups are into the dQALY table
     if(!is.null(age_groups)) {
 
-      age_expand <- do.call(rbind, Map(grouper, age_groups$age_low, age_groups$age_high))
+      age_expand <- age_groups[, .(age_group = paste(age_low, age_high, sep = "-"), x = c(age_low:age_high)), by = c("age_low", "age_high")]
 
       dQALY_table <- dQALY_table[age_expand,
                                  on = .(x),
@@ -437,10 +437,6 @@ calculate_QALE <- function(...) {
 # ------------------------------------------------------------------------- #
 # -------------------------------- INTERNALS ------------------------------ #
 # ------------------------------------------------------------------------- #
-
-
-grouper <- function(x, y) data.table(age_low = x, age_high = y, age_group = paste(x, y, sep = "-"), x = c(x:y))
-
 
 
 
