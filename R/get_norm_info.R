@@ -13,12 +13,12 @@ get_norm_info <- function(country = NULL, references = F) {
 
   avail_countries <- unlist(unique(norm_info[, .(norm_country)]))
 
-  if(!is.null(country) & !(country %in% avail_countries)) {
-    stop(paste("Country not found. Countries for which utility norms are available currently include:", paste(avail_countries, collapse = ", ")))
-  }
-
   if(!is.null(country)) {
-    norm_info <- norm_info[norm_country == country]
+    if(!(country %in% avail_countries)) {
+      stop(paste("Country not found. Countries for which utility norms are available currently include:", paste(avail_countries, collapse = ", ")))
+    } else {
+      norm_info <- norm_info[norm_country == country]
+    }
   }
 
   if(references == F) {
