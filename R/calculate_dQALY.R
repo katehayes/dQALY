@@ -126,12 +126,30 @@ calculate_dQALY <- function(country = NULL,
                             sex_group = F,
                             cohort = NULL) {
 
+
   env <- environment()
 
-  # options or settings or controls list give the parameters that are specific to the method
-  # write a wrapper for it that can have flags on and off, or infer something or something like that
-  # provide a function that does the calculation
-  # you give prod function
+  # if you specify a country you must specify a year
+  avail_countries <- unlist(norm_info[, .(norm_country)])
+
+  if (!is.null(country)) {
+    if(!(country %in% avail_countries)) {
+      stop("Value for `country` must be chosen from the list of available countries. Use get_norm_info() to see the list.
+         If you wish to calculate QALY loss estimates for a country that is not currently available, you can do so by
+         supplying appropriate life tables and utility norms to the function.")
+    }
+  }
+
+
+  if (!is.null(year)) {
+    avail_years <- unlist(life_tables[country == get("country", env), .(year)])
+    if (!(year %in% avail_years)) {
+      stop(paste("Currently, QALY loss estimates for ", country, " can only be calculated for the years ",
+                 min(avail_years), "-", max(avail_years), ". Please set `year` to a value within this period.", sep = ""))
+    }
+  }
+
+
 
   # if user doesn't want to group output:
   # user can either specify country, year, norms (or just country and year if we set default norms for each country) OR
@@ -161,7 +179,7 @@ calculate_dQALY <- function(country = NULL,
     life_table <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-    # Options for packaged lift tables # # # # # # # # # # # # # # # # # # # # # #
+    # Options for packaged life tables # # # # # # # # # # # # # # # # # # # # # #
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
     # Life tables given by UN and ONS only go up to 99/100 - what if we want dQALY
@@ -179,7 +197,6 @@ calculate_dQALY <- function(country = NULL,
     # of storing an additional life expectancy column for each set of life tables (or just e(100) for m/f))
     # (could add the ability to set the upper age limit - doesn't have to be 120)
 
-    # can come back here & clean up - or could also pull out into separate function
 
     if (length(lt_extend) != 1L || is.na(lt_extend) || (!(is.logical(lt_extend) || is.numeric(lt_extend)))) {
       stop("`lt_extend must be a boolean value or a numeric scalar.")
@@ -204,10 +221,11 @@ calculate_dQALY <- function(country = NULL,
     }
 
   } else {
+    # user has supplied their own life tables
 
     if((!is.null(age_groups) | sex_group == T) & is.null(cohort)) {
       # not sure about this (error message too wordy anyway)
-      stop("When calculating QALY loss estimates for population groups: if you supplied your own life tables to the calculation, you must also supply your own population cohort (needed to derive group averages).")
+      stop("In order to calculate QALY loss estimates for population groups: if you supplied your own life tables to the calculation, you must also supply your own population cohort (needed to derive group averages).")
     }
 
 
@@ -239,7 +257,11 @@ calculate_dQALY <- function(country = NULL,
 
     } else {
       # if the user specified norms using our norm ids
-      # write check for valid norm ids & error message referring user to norm info function
+      # check that the norm id they supplied is valid
+      # error message referring user to norm info function - could do with re-write
+      if(!(norms %in% unlist(norm_info[norm_country == country, .(norm_id)]))) {
+        stop("Invalid norm ID. Use function get_norm_info() to see the IDs for the norms available for your chosen country.")
+      }
 
       utility_norms <- utility_norms[norm_country == get("country", env) & norm_id == norms][, c("norm_country", "norm_id"):=NULL]
 
