@@ -7,7 +7,7 @@
 <!-- badges: end -->
 
 <span style="color:red"> ***This package is currently under active
-development and the code subject to change.*** </span>
+development and the code is subject to change.*** </span>
 
 Our package was originally adapted from the
 [COVID19_QALY_App](https://github.com/LSHTM-GHECO/COVID19_QALY_App)
@@ -30,27 +30,95 @@ You can install the development version of dQALY from
 pak::pak("katehayes/dQALY")
 ```
 
-## Calculating QALY loss due to death
-
 ``` r
 
 library(dQALY)
 
 calculate_dQALY(country = "England", year = 2019)
-#>         sex     x                  dQALY_x
-#>      <char> <int>                    <num>
-#>   1: female     0 23.606988471018301112281
-#>   2:   male     0 24.339255211920288957117
-#>   3: female     1 23.526103795398949358741
-#>   4:   male     1 24.243028622017533280086
-#>   5: female     2 23.444086228346407096979
-#>  ---                                      
-#> 238:   male   118  0.000000000000695544319
-#> 239: female   119  0.000000000001076572917
-#> 240:   male   119  0.000000000000050252792
-#> 241: female   120  0.000000000000061427977
-#> 242:   male   120  0.000000000000002649662
+#>         sex age_at_death                    dQALY
+#>      <char>        <int>                    <num>
+#>   1: female            0 23.606988471018301112281
+#>   2:   male            0 24.339255211920288957117
+#>   3: female            1 23.526103795398949358741
+#>   4:   male            1 24.243028622017533280086
+#>   5: female            2 23.444086228346407096979
+#>  ---                                             
+#> 238:   male          118  0.000000000000695544319
+#> 239: female          119  0.000000000001076572917
+#> 240:   male          119  0.000000000000050252792
+#> 241: female          120  0.000000000000061427977
+#> 242:   male          120  0.000000000000002649662
 ```
+
+## Discounting
+
+To get the net present value of the losses, we apply a discount rate.
+Our default discount rate is set at 3.5% as per the [NICE health
+technology evaluations
+manual](https://www.nice.org.uk/process/pmg36/chapter/economic-evaluation-2#discounting).
+However, the most appropriate discount rate to apply in a given
+evaluation/analysis is commonly subject to debate. [The Green
+Book](https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2020#a6-discounting),
+guidance on evaluation methods issued by the Treasury, discusses a
+number of discounting regimes and the reasons one might use them.
+
+Our package allows discount rates to be specified flexibly.
+
+``` r
+
+# Defining a number of different discount regimes
+# No discounting
+r_none <- 0 #equivalently, r_none <- function(x) 0
+
+# NICE reference case discount rate/ Green Book standard Social Time Preference Rate
+r_standard <- 0.035 #equivalently, r_standard <- function(x) 0.035
+# NICE alternative discount rate/Green Book recommended discount rate for health or life values
+r_health <- 0.015 #equivalently, r_health <- function(x) 0.015
+
+# Long term discounting
+# Green Book recommended declining long term discount rate for health or life values
+r_health_lt <- function(x) ifelse(x < 31, 0.015, ifelse(x > 75, 0.0107, 0.0129))
+# Green Book recommended rate reduced by excluding pure social time preference
+# (relevant if intervention may effect substantial/irreversible wealth transfers between generations)
+r_health_lt_reduced <- function(x) ifelse(x < 31, 0.01, ifelse(x > 75, 0.0071, 0.0086))
+
+
+
+# Plotting QALY loss due to death for England in 2019, 
+# as discount regimes vary
+
+library(ggplot2)
+
+ggplot(data = calculate_dQALY(country = "England", year = 2019, 
+                              sex_group = T), #equivalently, r = r_standard
+       aes(x = age_at_death, y = dQALY)) +
+  geom_line() +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+                                   sex_group = T,
+                                   r = r_health),
+            colour = "green") +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+                                   sex_group = T,
+                                   r = r_health_lt),
+            colour = "blue") +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+                                   sex_group = T,
+                                   r = r_health_lt_reduced),
+            colour = "purple") +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+                                   sex_group = T,
+                                   r = r_none),
+            colour = "red") +
+  scale_x_continuous(name = "Age at death",
+                     limits = c(0, 125),
+                     expand = c(0,0)) +
+  scale_y_continuous(name = "QALY loss",
+                     limits = c(0, 80),
+                     expand = c(0,0)) +
+  theme_classic()
+```
+
+<img src="man/figures/README-discounting-1.png" width="100%" />
 
 ## Utility norms
 
