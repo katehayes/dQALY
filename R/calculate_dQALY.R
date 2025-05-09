@@ -392,7 +392,7 @@ calculate_dQALY <- function(country = NULL,
 
   }
 
-  dQALY_table[]
+  print(dQALY_table, class = FALSE)
 
 }
 

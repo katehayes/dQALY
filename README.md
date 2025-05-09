@@ -30,7 +30,7 @@ You can install the development version of dQALY from
 pak::pak("katehayes/dQALY")
 ```
 
-## Utility Norms
+## Utility norms
 
 The available utility norms can be viewed using the ***get_norm_info***
 function. Results can be filtered by country, and returned with or
@@ -66,10 +66,28 @@ get_norm_info(country = "England", references = T)
 #> 2:   janssen_tto      England          EQ-5D-3L           2008
 #> 3:   janssen_vas      England          EQ-5D-3L           2008
 #> 4:           vih      England          EQ-5D-5L      2017/2018
-#>    value_set_country value_set_version value_set_type value_set_year default
-#>               <char>            <char>         <char>         <char>  <lgcl>
-#> 1:            Europe                              VAS                  FALSE
-#> 2:           England                              TTO                  FALSE
-#> 3:           England                              VAS                  FALSE
-#> 4:           England          EQ-5D-3L            TTO           1993    TRUE
+#>    value_set_country value_set_version value_set_type value_set_year
+#>               <char>            <char>         <char>         <char>
+#> 1:            Europe                              VAS               
+#> 2:           England                              TTO               
+#> 3:           England                              VAS               
+#> 4:           England          EQ-5D-3L            TTO           1993
+#>                       norm_doi
+#>                         <char>
+#> 1: 10.1007/978-94-007-7596-1_3
+#> 2: 10.1007/978-94-007-7596-1_3
+#> 3: 10.1007/978-94-007-7596-1_3
+#> 4:  10.1016/j.jval.2022.07.005
+#>                                                                       norm_url
+#>                                                                         <char>
+#> 1:                               https://www.ncbi.nlm.nih.gov/books/NBK500364/
+#> 2:                               https://www.ncbi.nlm.nih.gov/books/NBK500364/
+#> 3:                               https://www.ncbi.nlm.nih.gov/books/NBK500364/
+#> 4: https://www.valueinhealthjournal.com/article/S1098-3015(22)02101-5/fulltext
+#>    default
+#>     <lgcl>
+#> 1:   FALSE
+#> 2:   FALSE
+#> 3:   FALSE
+#> 4:    TRUE
 ```

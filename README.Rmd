@@ -32,7 +32,7 @@ You can install the development version of dQALY from [GitHub](https://github.co
 pak::pak("katehayes/dQALY")
 ```
 
-## Utility Norms
+## Utility norms
 
 The available utility norms can be viewed using the ***get_norm_info*** function. Results can be filtered by country, and returned with or without reference information.
 
