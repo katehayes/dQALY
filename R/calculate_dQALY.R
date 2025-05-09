@@ -396,9 +396,12 @@ calculate_dQALY <- function(country = NULL,
     }
 
     # calculate a weighted mean dQALY value for each population group
-    dQALY_table <- dQALY_table[, .(mean_dQALY = sum(dQALY_x*count)/sum(count)), by = cols]
+    dQALY_table <- dQALY_table[, .(dQALY_x = sum(dQALY_x*count)/sum(count)), by = cols]
 
   }
+
+  dQALY_table |>
+    setnames(old = c("sex", "x", "dQALY_x"), new = c("sex", "age_at_death", "dQALY"), skip_absent = TRUE)
 
   dQALY_table[]
 
