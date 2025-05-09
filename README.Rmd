@@ -39,7 +39,7 @@ The available utility norms can be viewed using the ***get_norm_info*** function
 ```{r get_norm_info}
 library(dQALY)
 
-# Return all utility norm sets for all countries (first 10 only)
+# Return all utility norm sets for all countries (10 rows only)
 print(get_norm_info(), class = FALSE, nrows = 10)
 
 # Return all English utility norm sets with reference information
