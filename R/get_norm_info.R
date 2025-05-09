@@ -11,20 +11,22 @@
 #' @export
 get_norm_info <- function(country = NULL, references = F) {
 
-  avail_countries <- unlist(unique(norm_info[, .(norm_country)]))
+  norm_copy <- copy(norm_info)
+
+  avail_countries <- unlist(unique(norm_copy[, .(norm_country)]))
 
   if(!is.null(country)) {
     if(!(country %in% avail_countries)) {
       stop(paste("Country not found. Countries for which utility norms are available currently include:", paste(avail_countries, collapse = ", ")))
     } else {
-      norm_info <- norm_info[norm_country == country]
+      norm_copy <- norm_copy[norm_country == country]
     }
   }
 
   if(references == F) {
-    norm_info <- norm_info[, c("norm_doi", "norm_url"):=NULL]
+    norm_copy[, c("norm_doi", "norm_url"):=NULL]
   }
 
- norm_info[]
+ norm_copy[]
 
 }

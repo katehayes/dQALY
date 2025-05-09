@@ -6,10 +6,17 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-\[!WARNING\]  
-This package is a work in progress.
+<span style="color:red"> ***This package is currently under active
+development and the code subject to change.*** </span>
 
-Our code was originally adapted from Nichola Naylor’s github repo.
+Our package was originally adapted from the
+[COVID19_QALY_App](https://github.com/LSHTM-GHECO/COVID19_QALY_App)
+built by Nichola Naylor at LSHTM. This app was itself adapted from an
+[Excel
+tool](https://avalonecon.com/estimating-qaly-losses-associated-with-deaths-in-hospital-covid-19/)
+built by Andrew Briggs to operationalise the methods he & others set out
+a [letter](https://onlinelibrary.wiley.com/doi/10.1002/hec.4208)
+published in the journal Health Economics in 2020.
 
 The goal of dQALY is to …
 
