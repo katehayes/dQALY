@@ -11,6 +11,8 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+
+options(scipen = 999)
 ```
 
 # dQALY
@@ -32,12 +34,24 @@ You can install the development version of dQALY from [GitHub](https://github.co
 pak::pak("katehayes/dQALY")
 ```
 
+## Calculating QALY loss due to death
+
+```{r example_calculation}
+
+library(dQALY)
+
+calculate_dQALY(country = "England", year = 2019)
+
+
+```
+
+
 ## Utility norms
 
 The available utility norms can be viewed using the ***get_norm_info*** function. Results can be filtered by country, and returned with or without reference information.
 
 ```{r get_norm_info}
-library(dQALY)
+
 
 # Return all utility norm sets for all countries (10 rows only)
 print(get_norm_info(), class = FALSE, nrows = 10)

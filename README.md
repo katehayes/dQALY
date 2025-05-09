@@ -30,6 +30,28 @@ You can install the development version of dQALY from
 pak::pak("katehayes/dQALY")
 ```
 
+## Calculating QALY loss due to death
+
+``` r
+
+library(dQALY)
+
+calculate_dQALY(country = "England", year = 2019)
+#>         sex     x                  dQALY_x
+#>      <char> <int>                    <num>
+#>   1: female     0 23.606988471018301112281
+#>   2:   male     0 24.339255211920288957117
+#>   3: female     1 23.526103795398949358741
+#>   4:   male     1 24.243028622017533280086
+#>   5: female     2 23.444086228346407096979
+#>  ---                                      
+#> 238:   male   118  0.000000000000695544319
+#> 239: female   119  0.000000000001076572917
+#> 240:   male   119  0.000000000000050252792
+#> 241: female   120  0.000000000000061427977
+#> 242:   male   120  0.000000000000002649662
+```
+
 ## Utility norms
 
 The available utility norms can be viewed using the ***get_norm_info***
@@ -37,7 +59,7 @@ function. Results can be filtered by country, and returned with or
 without reference information.
 
 ``` r
-library(dQALY)
+
 
 # Return all utility norm sets for all countries (10 rows only)
 print(get_norm_info(), class = FALSE, nrows = 10)

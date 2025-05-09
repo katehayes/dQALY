@@ -23,12 +23,12 @@
 #' &collect that info in norm_info package data?
 #'
 #'
-#' @param r Numeric
-#' between 0 and 1, discount rate
-#' OR - recently added this - its possible to have a discount rate that varies over time
-#' this requires supplying a value for r of the form data.table(r_break = numeric(), r_near = numeric(), r_far = numeric())
-#' where r_break is the number of years into the future that the discount rate changes,
-#' r_near is the discount rate in the near future/r_far is rate in far future
+#' @param r Numeric or function
+#' r is the discount rate
+#' r can either be a numeric scalar between 0 and 1 (default is 0.035)
+#' OR r can be a vectorised function
+#' the function takes as an argument the number of years into the future
+#' and returns value of the discount rate at that point
 #
 #' @param smr Numeric
 #' a 'mortality ratio' - default is 1 -
@@ -87,8 +87,8 @@
 #' calculate_dQALY(life_table = my_life_table, norms = my_norms)
 #'
 #' #Calculate dQALY values using a variable discount rate
-#' declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03)
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = declining_r)
+#' rfun = function(x) ifelse(x < 31, 0.015, ifelse(x > 75, 0.0107, 0.0129))
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = rfun)
 #'
 #' #Calculate grouped dQALY values - using default country-level population weightings:
 #' #1) collapse sex
@@ -321,17 +321,25 @@ calculate_dQALY <- function(country = NULL,
 
   # Added possibility of varying r over time in response to comments from health economists
   # Should probably generalise so you can have any number of r's over time (as opposed to just 2)
-  if(length(r) == 1) {
-
+  if (is.numeric(r) && length(r) == 1L && !is.na(r)) {
     dQALY_table[, r_col := r]
+  }
 
-  } else {
 
-    dQALY_table[, r_col := ifelse(x <= r$r_break, r$r_near, r$r_far)]
+  if (is.function(r)) {
+    args <- formals(r)
+    if (length(args) != 1L) {
+      stop("r can be a numeric scalar between 0 and 1 or a function that specifies how discounts rate change over time.
+           The function should take one argument (time point - number of years into the future) and return the desired discount rate at that time point.
+           The function you have supplied is not in an acceptable form.")
+    }
+
+    dQALY_table[, r_col := r(x)]
 
   }
 
-  dQALY_table[, r_col := ifelse(x == 0, 0, r_col), by = .(sex)]
+
+  dQALY_table[, r_col := ifelse(x == 0, 0, r_col)]
 
   dQALY_table[, (paste("v", min_x:max_x, sep="")) := shift(1/cumprod(1+r_col), n = x, type = "lag", fill = 0), by = .(sex)]
   dQALY_table[, dQALY_x := t(.SD) %*% (L_x*avg_util*qcm), .SDcols = patterns("^v"), by = .(sex)]

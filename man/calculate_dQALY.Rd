@@ -39,12 +39,12 @@ Need to make sensible system for naming the norms we collect (eq5d package categ
 value sets according to version, type, country, and then pubmed/doi/isbn reference)?
 &collect that info in norm_info package data?}
 
-\item{r}{Numeric
-between 0 and 1, discount rate
-OR - recently added this - its possible to have a discount rate that varies over time
-this requires supplying a value for r of the form data.table(r_break = numeric(), r_near = numeric(), r_far = numeric())
-where r_break is the number of years into the future that the discount rate changes,
-r_near is the discount rate in the near future/r_far is rate in far future}
+\item{r}{Numeric or function
+r is the discount rate
+r can either be a numeric scalar between 0 and 1 (default is 0.035)
+OR r can be a vectorised function
+the function takes as an argument the number of years into the future
+and returns value of the discount rate at that point}
 
 \item{smr}{Numeric
 a 'mortality ratio' - default is 1 -
@@ -105,8 +105,8 @@ my_life_table <- data.table(sex = c(rep("male", 101), rep("female", 101)),
 calculate_dQALY(life_table = my_life_table, norms = my_norms)
 
 #Calculate dQALY values using a variable discount rate
-declining_r = data.table(r_break = 30, r_near = 0.035, r_far = 0.03)
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = declining_r)
+rfun = function(x) ifelse(x < 31, 0.015, ifelse(x > 75, 0.0107, 0.0129))
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = rfun)
 
 #Calculate grouped dQALY values - using default country-level population weightings:
 #1) collapse sex
