@@ -65,13 +65,13 @@ download.file(url = "https://population.un.org/wpp/assets/Excel%20Files/1_Indica
 lt_male <- fread(file = temp)[, .(Location, Time, Sex, AgeGrpStart, qx)]
 
 
-# binding male/female tables together and only keeping the countries for which we have qaly norms
+# binding male/female tables together and only keeping the countries for which we have utility norms
 # note - need to have run the code in qaly_norms.R & made the table
 # only keeping years from 2015 for the moment
 # need to discuss how much data to store?
 # for now removing the age group from 100 onwards
 un_lt <- rbind(lt_male, lt_female)[
-  Location %in% utility_norms[, country] & Time >= 2015 & AgeGrpStart < 100
+  Location %in% utility_norms[, norm_country] & Time >= 2015 & AgeGrpStart < 100
 ][
   , Sex := fifelse(Sex == "Male", "male", "female")
 ] |>
