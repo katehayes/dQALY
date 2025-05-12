@@ -22,7 +22,6 @@
 #' value sets according to version, type, country, and then pubmed/doi/isbn reference)?
 #' &collect that info in norm_info package data?
 #'
-#'
 #' @param r Numeric or function
 #' r is the discount rate
 #' r can either be a numeric scalar between 0 and 1 (default is 0.035)
@@ -128,6 +127,20 @@ calculate_dQALY <- function(country = NULL,
 
 
   env <- environment()
+
+
+  # ------------------------------------------------------------------------- #
+  # ------------------------- Validity checks ------------------------------- #
+  # ------------------------------------------------------------------------- #
+
+
+  if(.is_valid_r(r) == F) {
+    stop("Parameter r must be a numeric scalar between 0 and 1 or a function that specifies how the discount rate changes over time.
+          See the README for examples of valid values for r.")
+    # The function should take one argument (time point - number of years into the future) and return the desired discount rate at that time point.
+  }
+
+
 
   # if you specify a country you must specify a year
   avail_countries <- unlist(norm_info[, .(norm_country)])
@@ -320,23 +333,11 @@ calculate_dQALY <- function(country = NULL,
   # making a matrix of zeros and powers of 1/(1+r)
   # getting a discounted sum of life years lost from age x onwards via matrix multiplication
 
-  # Added possibility of varying r over time in response to comments from health economists
-  # Should probably generalise so you can have any number of r's over time (as opposed to just 2)
-  if (is.numeric(r) && length(r) == 1L && !is.na(r)) {
-    dQALY_table[, r_col := r]
-  }
-
 
   if (is.function(r)) {
-    args <- formals(r)
-    if (length(args) != 1L) {
-      stop("r can be a numeric scalar between 0 and 1 or a function that specifies how discounts rate change over time.
-           The function should take one argument (time point - number of years into the future) and return the desired discount rate at that time point.
-           The function you have supplied is not in an acceptable form.")
-    }
-
     dQALY_table[, r_col := r(x)]
-
+  } else {
+    dQALY_table[, r_col := r]
   }
 
 
@@ -415,10 +416,39 @@ calculate_dQALY <- function(country = NULL,
 # -------------------------------- INTERNALS ------------------------------ #
 # ------------------------------------------------------------------------- #
 
-# extend <- function() {
-#
-# }
 
 grouper <- function(x, y) data.table(age_low = x, age_high = y, age_group = paste(x, y, sep = "-"), x = c(x:y))
 
 
+
+
+# should we also check in this function or in another that the values supplied
+# are appropriate (numeric scalar r should be between 0 and 1,
+# function r should output number between 0 and 1 for inputs 0-120)
+.is_valid_r <- function(r) {
+  if (is.numeric(r) && length(r) == 1L && !is.na(r)) {
+    if (r < 0 | r > 1) {
+      # error or warning? something like this?
+      warning("The value you have set for parameter r (the discount rate) is not between 0 and 1.
+               In practice, discount rates are rarely outside of this range.
+               Note that the QALY loss estimates you produce using this discount rate are likely innapropriate for use in most analyses.")
+    }
+    return(TRUE)
+  }
+
+  if (is.function(r)) {
+    args <- formals(r)
+    if (length(args) != 1L) {
+      return(FALSE)
+    }
+    if (any(sapply(c(0:120), r) < 0 | sapply(c(0:120), r) > 1)) {
+      warning("The function you have supplied for parameter r (which sets the discount rate) returns values that are not between 0 and 1.
+               In practice, discount rates are rarely outside of this range.
+               Note that the QALY loss estimates you produce using this discount rate are likely innapropriate for use in most analyses.")
+    }
+    return(TRUE)
+  }
+
+  FALSE
+
+}
