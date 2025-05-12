@@ -9,8 +9,16 @@
 <span style="color:red"> ***This package is currently under active
 development and the code is subject to change.*** </span>
 
+The quality-adjusted life year, or QALY, is a widely used outcome
+measure in the field of health economics. When evaluating the impact of
+a policy/programme/intervention, we often want to express the health
+impacts of preventing or failing to prevent a death in terms of the
+QALYs that would be gained or lost.
+
 The goal of the dQALY package is to provide an easy and flexible way of
 calculating the number of QALYs that are ‘lost’ when a person dies.
+<!-- These estimates can then be used to value the outputs of our models...Translate outputs of epidemiological/infectious disease models
+into health economic   -->
 
 This package has been built using code adapted from the
 [COVID19_QALY_App](https://github.com/LSHTM-GHECO/COVID19_QALY_App),
@@ -20,6 +28,8 @@ tool](https://avalonecon.com/estimating-qaly-losses-associated-with-deaths-in-ho
 built by Andrew Briggs to operationalise the methods he & others set out
 in a [letter](https://onlinelibrary.wiley.com/doi/10.1002/hec.4208)
 published in the journal Health Economics in 2020.
+
+<!-- Some of the setup borrowed from qalytools & eq5d packages -->
 
 ## Installation
 
@@ -302,3 +312,89 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
 ```
 
 <img src="man/figures/README-discounting-1.png" width="100%" />
+
+## Using the dQALY package to value outputs of an infectious disease model
+
+``` r
+
+
+# Setting my cohort - all hospital inpatients
+# Using data on Hospital Admitted Patient Care Activity, 2019-20
+# https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity/2019-20/summary-reports---apc---patient
+
+temp <- tempfile(fileext = ".xlsx")
+download.file(url = "https://digital.nhs.uk/binaries/content/documents/corporate-website/publication-system/statistical/hospital-admitted-patient-care-activity/2019-20/summary-reports---apc---patient/summary-reports---apc---patient/publicationsystem%3AbodySections%5B2%5D/publicationsystem%3AdataFile",
+              temp, mode = "wb")
+
+hospital_cohort <- as.data.table(readxl::read_xlsx(temp, sheet = 1)) |> 
+  setnames(new = c("x", "male", "female")) |> 
+  melt(measure.vars = c("male", "female"),
+       variable.name = "sex",
+       value.name = "count")
+
+hospital_cohort <- hospital_cohort[x != "Unknown"][
+  , age_low := as.numeric(substring(x, 1, 2))
+][
+  , age_high := age_low + 4
+][
+  , .(x = c(age_low:age_high), count = rep(count/5, 5)), by = c("age_low", "age_high", "sex")
+][
+  , c("age_low", "age_high"):=NULL
+]
+
+
+# Setting my age groups - want to group all ages together
+all_ages <- data.table(age_low = 0, age_high = 94)
+
+
+
+# Getting my QALY loss estimate
+calculate_dQALY(country = "England", year = "2020",
+                age_groups = all_ages,
+                sex_group = TRUE,
+                cohort = hospital_cohort)
+#>    age_at_death    dQALY
+#>          <char>    <num>
+#> 1:         0-94 11.81495
+
+
+
+# What if we were only modelling adult inpatients?
+adult_hospital_cohort <- hospital_cohort[x >= 18]
+
+calculate_dQALY(country = "England", year = "2020",
+                age_groups = all_ages,
+                sex_group = TRUE,
+                cohort = adult_hospital_cohort)
+#>    age_at_death   dQALY
+#>          <char>   <num>
+#> 1:         0-94 10.3737
+
+
+# Examining my estimates
+ggplot(data = calculate_dQALY(country = "England", year = 2019, 
+                              sex_group = T),
+       aes(x = age_at_death, y = dQALY)) +
+  geom_line(colour = "black") +
+  geom_hline(yintercept = calculate_dQALY(country = "England", year = "2020",
+                                          age_groups = all_ages,
+                                          sex_group = TRUE,
+                                          cohort = hospital_cohort)$dQALY, 
+            colour = "red",
+            linetype = "dashed") +
+  geom_hline(yintercept = calculate_dQALY(country = "England", year = "2020",
+                                          age_groups = all_ages,
+                                          sex_group = TRUE,
+                                          cohort = adult_hospital_cohort)$dQALY, 
+            colour = "blue",
+            linetype = "dashed") +
+  scale_x_continuous(name = "Age at death",
+                     limits = c(0, 125),
+                     expand = c(0,0)) +
+  scale_y_continuous(name = "QALY loss",
+                     limits = c(0, 30),
+                     expand = c(0,0)) +
+  theme_classic()
+```
+
+<img src="man/figures/README-worked_example-1.png" width="100%" />
