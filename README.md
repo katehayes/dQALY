@@ -17,8 +17,6 @@ QALYs that would be gained or lost.
 
 The goal of the dQALY package is to provide an easy and flexible way of
 calculating the number of QALYs that are ‘lost’ when a person dies.
-<!-- These estimates can then be used to value the outputs of our models...Translate outputs of epidemiological/infectious disease models
-into health economic   -->
 
 This package has been built using code adapted from the
 [COVID19_QALY_App](https://github.com/LSHTM-GHECO/COVID19_QALY_App),
@@ -28,7 +26,6 @@ tool](https://avalonecon.com/estimating-qaly-losses-associated-with-deaths-in-ho
 built by Andrew Briggs to operationalise the methods he & others set out
 in a [letter](https://onlinelibrary.wiley.com/doi/10.1002/hec.4208)
 published in the journal Health Economics in 2020.
-
 <!-- Some of the setup borrowed from qalytools & eq5d packages -->
 
 ## Installation
@@ -86,6 +83,7 @@ function. Results can be filtered by country, and returned with or
 without reference information.
 
 ``` r
+library(data.table)
 
 # Return all utility norm sets for all countries (10 rows only)
 print(get_norm_info(), class = FALSE, nrows = 10)
@@ -298,10 +296,13 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
                                    sex_group = T,
                                    r = r_health_lt_reduced),
             colour = "purple") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+  geom_line(data = calculate_dQALY(country = "England", year = 2019,
                                    sex_group = T,
                                    r = r_none),
             colour = "red") +
+  # geom_line(data = calculate_QALE(country = "England", year = 2019, 
+  #                                  sex_group = T),
+  #           colour = "red") +
   scale_x_continuous(name = "Age at death",
                      limits = c(0, 125),
                      expand = c(0,0)) +
@@ -313,7 +314,20 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
 
 <img src="man/figures/README-discounting-1.png" width="100%" />
 
-## Using the dQALY package to value outputs of an infectious disease model
+## Worked example: using the dQALY package to value outputs of an infectious disease model
+
+Imagine that we had built an infectious disease model, simulating CPE
+infections among hospital inpatients & the deaths resulting from those
+infections. Imagine that because of data availability, the model
+population does not have sex/age structure. We want to produce an
+estimate of the number of QALYs that would be lost on the death of an
+average hospital inpatient - this single value will be applied to all
+deaths.
+
+We’ll use this example to demonstrate why one might use several of the
+features of the `calculate_dQALY` function - specifically, the features
+that enable the estimation of QALY losses for user-supplied cohorts and
+groups.
 
 ``` r
 
@@ -347,9 +361,8 @@ hospital_cohort <- hospital_cohort[x != "Unknown"][
 all_ages <- data.table(age_low = 0, age_high = 94)
 
 
-
 # Getting my QALY loss estimate
-calculate_dQALY(country = "England", year = "2020",
+calculate_dQALY(country = "England", year = 2020,
                 age_groups = all_ages,
                 sex_group = TRUE,
                 cohort = hospital_cohort)
@@ -362,7 +375,7 @@ calculate_dQALY(country = "England", year = "2020",
 # What if we were only modelling adult inpatients?
 adult_hospital_cohort <- hospital_cohort[x >= 18]
 
-calculate_dQALY(country = "England", year = "2020",
+calculate_dQALY(country = "England", year = 2020,
                 age_groups = all_ages,
                 sex_group = TRUE,
                 cohort = adult_hospital_cohort)
@@ -371,22 +384,62 @@ calculate_dQALY(country = "England", year = "2020",
 #> 1:         0-94 10.3737
 
 
+
+# What if mortality rates were particularly high among newborns?
+adj_hospital_cohort <- copy(hospital_cohort)[x == 0, count := count*3]
+
+calculate_dQALY(country = "England", year = 2020,
+                age_groups = all_ages,
+                sex_group = TRUE,
+                cohort = adj_hospital_cohort)
+#>    age_at_death    dQALY
+#>          <char>    <num>
+#> 1:         0-94 12.14286
+
+
+# What if we wanted to account for the fact that mortality and morbidity among
+# hospital patients is higher than it is among the general population?
+calculate_dQALY(country = "England", year = 2020,
+                smr = 1.05, qcm = 0.95,
+                age_groups = all_ages,
+                sex_group = TRUE,
+                cohort = hospital_cohort)
+#>    age_at_death    dQALY
+#>          <char>    <num>
+#> 1:         0-94 11.11366
+# Note: if you had your own health utility data instead you could supply it to
+# the function
+
+
 # Examining my estimates
-ggplot(data = calculate_dQALY(country = "England", year = 2019, 
+ggplot(data = calculate_dQALY(country = "England", year = 2020, 
                               sex_group = T),
        aes(x = age_at_death, y = dQALY)) +
   geom_line(colour = "black") +
-  geom_hline(yintercept = calculate_dQALY(country = "England", year = "2020",
+  geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
                                           age_groups = all_ages,
                                           sex_group = TRUE,
                                           cohort = hospital_cohort)$dQALY, 
             colour = "red",
             linetype = "dashed") +
-  geom_hline(yintercept = calculate_dQALY(country = "England", year = "2020",
+  geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
                                           age_groups = all_ages,
                                           sex_group = TRUE,
                                           cohort = adult_hospital_cohort)$dQALY, 
             colour = "blue",
+            linetype = "dashed") +
+  geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
+                                          age_groups = all_ages,
+                                          sex_group = TRUE,
+                                          cohort = adj_hospital_cohort)$dQALY, 
+            colour = "green",
+            linetype = "dashed") +
+  geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
+                                          smr = 1.05, qcm = 0.95,
+                                          age_groups = all_ages,
+                                          sex_group = TRUE,
+                                          cohort = hospital_cohort)$dQALY, 
+            colour = "purple",
             linetype = "dashed") +
   scale_x_continuous(name = "Age at death",
                      limits = c(0, 125),
@@ -397,4 +450,4 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
   theme_classic()
 ```
 
-<img src="man/figures/README-worked_example-1.png" width="100%" />
+<img src="man/figures/README-worked_example_cohort-1.png" width="100%" />

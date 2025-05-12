@@ -188,7 +188,9 @@ janssen_eq5d_data_info <- extract_janssen_norms(url = "https://pmc.ncbi.nlm.nih.
 
 norm_info <- norm_info[janssen_eq5d_data_info, on = .(norm_country)][
   , eq5d_data_year := fcoalesce(i.eq5d_data_year, eq5d_data_year)
-][, i.eq5d_data_year := NULL]
+][, i.eq5d_data_year := NULL][
+  , eq5d_data_year := gsub("–", "-", eq5d_data_year)
+]
 
 
 # adding in other pieces on info
