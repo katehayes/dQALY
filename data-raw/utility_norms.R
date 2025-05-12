@@ -1,3 +1,6 @@
+# if utility norms were stored & supplied as functions
+# norm_fun = approxfun(x=c(0,30,60,121), y = c(1,0.9,0.87,0.8), method = "constant")
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Norms from the 1993 Measurement and Valuation of Health Study
 # https://www.york.ac.uk/che/pdf/DP172.pdf

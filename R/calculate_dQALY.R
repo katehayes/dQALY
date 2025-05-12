@@ -145,7 +145,8 @@ calculate_dQALY <- function(country = NULL,
     avail_years <- unlist(life_tables[country == get("country", env), .(year)])
     if (!(year %in% avail_years)) {
       stop(paste("Currently, QALY loss estimates for ", country, " can only be calculated for the years ",
-                 min(avail_years), "-", max(avail_years), ". Please set `year` to a value within this period.", sep = ""))
+                 min(avail_years), "-", max(avail_years), ".
+                 Please set `year` to a value within this period.", sep = ""))
     }
   }
 
@@ -401,7 +402,7 @@ calculate_dQALY <- function(country = NULL,
   }
 
   dQALY_table |>
-    setnames(old = c("sex", "x", "dQALY_x"), new = c("sex", "age_at_death", "dQALY"), skip_absent = TRUE)
+    setnames(old = c("sex", "x", "dQALY_x", "age_group"), new = c("sex", "age_at_death", "dQALY", "age_at_death"), skip_absent = TRUE)
 
   dQALY_table[]
 
