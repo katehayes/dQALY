@@ -129,9 +129,9 @@ calculate_dQALY <- function(country = NULL,
   env <- environment()
 
 
-  # ------------------------------------------------------------------------- #
-  # ------------------------- Validity checks ------------------------------- #
-  # ------------------------------------------------------------------------- #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # 1. Validity checks # # # # # # # # # # # # # # # # # # ## # # # # # # # # #
+  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
   if(.is_valid_r(r) == F) {
@@ -182,7 +182,7 @@ calculate_dQALY <- function(country = NULL,
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # 1. Getting the life_tables that will be used in the main dQALY calculation
+  # 2. Getting the life_tables that will be used in the main dQALY calculation
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   # if the user hasn't supplied their own set of life tables
@@ -247,7 +247,7 @@ calculate_dQALY <- function(country = NULL,
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # 2. Getting the utility norms that will be used in the main dQALY calculation
+  # 3. Getting the utility norms that will be used in the main dQALY calculation
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
@@ -298,7 +298,7 @@ calculate_dQALY <- function(country = NULL,
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # 3. Calculating dQALY # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # 4. Calculating dQALY # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
@@ -354,7 +354,7 @@ calculate_dQALY <- function(country = NULL,
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # 4. Organising output # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+  # 5. Organising output # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   # if dQALY values need to be calculated for a set of population groups
@@ -408,6 +408,28 @@ calculate_dQALY <- function(country = NULL,
   dQALY_table[]
 
 }
+
+
+
+# -------------------------------------------------------------------------
+#' Calculate quality-adjusted life expectancy
+# -------------------------------------------------------------------------
+#' @description
+#' Calculates quality-adjusted life expectancy for a given country and year
+# -------------------------------------------------------------------------
+#' @param ...
+# -------------------------------------------------------------------------
+#' @returns
+#'
+# -------------------------------------------------------------------------
+#' @examples
+# -------------------------------------------------------------------------
+#' @export
+calculate_QALE <- function(...) {
+  calculate_dQALY(..., r = 0)
+}
+
+
 
 
 
