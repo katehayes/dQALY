@@ -34,7 +34,7 @@ This package has been built using code adapted from the [COVID19_QALY_App](https
 
 You can install the development version of dQALY from [GitHub](https://github.com/) with:
 
-```{r, message=FALSE}
+```{r, eval=FALSE}
 # install.packages("pak")
 pak::pak("katehayes/dQALY")
 ```
