@@ -234,7 +234,9 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
 
 
 ```
+
 ## Note on methods
+QALY loss without discounting is equivalent to QALE. 
 
 
 ```{r equivalencies}
