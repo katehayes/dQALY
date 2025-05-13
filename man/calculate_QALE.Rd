@@ -7,5 +7,5 @@
 calculate_QALE(...)
 }
 \description{
-Calculate quality-adjusted life expectancy
+Calculates quality-adjusted life expectancy for a given country and year
 }

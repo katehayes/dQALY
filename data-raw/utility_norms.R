@@ -29,13 +29,12 @@ download.file(url = "https://raw.githubusercontent.com/bitowaqr/shortfall/main/s
 
 vih_primary <- as.data.table(utils::read.csv(temp))
 
-
 vih_primary[, age_low := as.numeric(substring(age5_str, 1, 2))]
 vih_primary[, age_high := as.numeric(substring(age5_str, 4, 5))]
 vih_primary[age_low == max(age_low), age_high := 200]
 vih_primary[, avg_util := sub(" .*", "", m_ci)]
 vih_primary[, c("age5_str", "m_ci", "n"):=NULL]
-vih_primary[, norm_id := "vih"]
+vih_primary[, norm_id := "vih_primary"]
 vih_primary[, norm_country := "England"]
 
 yg <- vih_primary[age_low == min(age_low)]
@@ -45,6 +44,26 @@ yg[, age_low := 0]
 vih_primary <- rbind(vih_primary, yg)
 
 
+
+temp <- tempfile()
+download.file(url = "https://raw.githubusercontent.com/bitowaqr/shortfall/main/src%20manuscript/output/hrqol_cw_ci_df.csv", temp)
+
+vih_secondary <- as.data.table(utils::read.csv(temp))
+
+
+vih_secondary[, age_low := as.numeric(substring(age5_str, 1, 2))]
+vih_secondary[, age_high := as.numeric(substring(age5_str, 4, 5))]
+vih_secondary[age_low == max(age_low), age_high := 200]
+vih_secondary[, avg_util := sub(" .*", "", m_ci)]
+vih_secondary[, c("age5_str", "m_ci", "n"):=NULL]
+vih_secondary[, norm_id := "vih_secondary"]
+vih_secondary[, norm_country := "England"]
+
+yg <- vih_secondary[age_low == min(age_low)]
+yg[, age_high := age_low - 1]
+yg[, age_low := 0]
+
+vih_secondary <- rbind(vih_secondary, yg)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -135,7 +154,7 @@ janssen <- extract_janssen_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK50
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-utility_norms <- rbind(mvh, vih_primary, janssen) |>
+utility_norms <- rbind(mvh, vih_primary, vih_secondary, janssen) |>
   setcolorder(c("norm_country", "norm_id", "age_low", "age_high", "sex", "avg_util")) |>
   setorder(norm_country, norm_id, age_low, sex)
 
@@ -163,7 +182,7 @@ norm_info[
 ][
   , score := fcase(grepl("tto", norm_id), 3,
                      grepl("_vas", norm_id), 2,
-                     grepl("vih", norm_id), 5,
+                     grepl("vih_primary", norm_id), 5,
                      grepl("mvh", norm_id), 5)
 ][
   , score := ifelse(is.na(score), 1, score)
@@ -211,8 +230,9 @@ norm_info[norm_id == "mvh", value_set_type := "TTO"][
 ]
 
 
-norm_info[norm_id == "vih", ':='(eq5d_data_version = "EQ-5D-5L", eq5d_data_year = "2017/2018",
-                              value_set_version = "EQ-5D-3L", value_set_type = "TTO", value_set_year = 1993)]
+norm_info[grepl("vih", norm_id), ':='(eq5d_data_version = "EQ-5D-5L", eq5d_data_year = "2017/2018",
+                              value_set_version = "EQ-5D-3L", value_set_year = 1993)]
+norm_info[grepl("vih", norm_id), value_set_type := ifelse(norm_id == "vih_primary", "DSU", "CW")]
 
 
 norm_info[grepl("janssen", norm_id), norm_doi := "10.1007/978-94-007-7596-1_3"][
@@ -224,6 +244,8 @@ norm_info[grepl("janssen", norm_id), norm_doi := "10.1007/978-94-007-7596-1_3"][
 ][
   grepl("mvh", norm_id), norm_url := "https://www.york.ac.uk/che/pdf/DP172.pdf"
 ]
+
+norm_info[, value_set_version := "EQ-5D-3L"]
 
 
 
@@ -237,3 +259,69 @@ norm_info[grepl("janssen", norm_id), norm_doi := "10.1007/978-94-007-7596-1_3"][
 # Come back & read properly & integrate info if relevant
 # https://link.springer.com/article/10.1007/s10198-021-01326-9
 # https://pophealthmetrics.biomedcentral.com/articles/10.1186/1478-7954-9-17
+
+# Romania(!)
+# https://researchonline.lshtm.ac.uk/id/eprint/4672783/1/Olariu-etal-2023-Population-norms-for-the-EQ-5D-3L-and%20EQ-5D-5L-in-Romania.pdf
+
+# GB LA level
+# https://bmjopen.bmj.com/content/14/3/e076704
+
+# Iran
+# https://pophealthmetrics.biomedcentral.com/articles/10.1186/s12963-025-00366-0
+# Goudarzi R, Sari AA, Zeraati H, Rashidian A, Mohammad K, Amini S. Valuation of quality weights for EuroQol 5-dimensional health states with the time trade-off method in the capital of Iran. Value Health Reg Issues. 2019;18:170–5.
+# https://pubmed.ncbi.nlm.nih.gov/38450671/
+# https://hqlo.biomedcentral.com/articles/10.1186/s12955-020-01365-5
+
+# Australia
+# https://pubmed.ncbi.nlm.nih.gov/38085452/
+# https://pure.york.ac.uk/portal/en/publications/australian-health-related-quality-of-life-population-norms-derive
+# South australia
+# https://hqlo.biomedcentral.com/articles/10.1186/s12955-016-0537-0
+
+# Norway
+# https://www.scup.com/doi/full/10.18261/tfo.10.2.6
+# https://eprints.whiterose.ac.uk/id/eprint/198905/1/s12889_023_15663_2.pdf
+
+# Singapore
+# https://annals.edu.sg/health-related-quality-of-life-in-singapore-population-norms-for-the-eq-5d-5l-and-eortc-qlq-c30/
+
+# Sri Lanka
+# https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0108434
+# https://eprints.qut.edu.au/200583/
+
+# India
+# https://jogh.org/2023/jogh-13-04018
+
+# Peru & argentina
+# file:///C:/Users/kate.hayes2/Downloads/Thesis-final-Alba-Dominguez-Galvan.pdf
+
+# Russia (moscow)
+# https://d-nb.info/1224529464/34
+
+# Poland
+# https://www.archivesofmedicalscience.com/pdf-53544-57925?filename=57925.pdf
+
+# Belgium
+# https://archpublichealth.biomedcentral.com/articles/10.1186/s13690-022-01011-0
+
+
+# Dutch females specifically?
+# https://link.springer.com/article/10.1007/s11136-022-03271-3
+
+# Range of different diseases
+# https://www.frontiersin.org/journals/public-health/articles/10.3389/fpubh.2021.675523/full
+
+# MI survivors in Portugal
+# https://revportcardiol.org/en-quality-life-in-adults-living-articulo-S2174204920302919
+
+# People with multiple sclerosis in USA
+# https://jpro.springeropen.com/articles/10.1186/s41687-022-00415-4
+
+# Malaysia - also, different patient groups (hypertension)
+# https://scialert.net/fulltext/?doi=jms.2011.84.89
+
+# North East England, adults with type 2 diabetes
+# https://www.ncbi.nlm.nih.gov/books/NBK592229/
+
+# Diabetes
+# https://www.frontiersin.org/journals/public-health/articles/10.3389/fpubh.2021.675523/full
