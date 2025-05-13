@@ -1,7 +1,7 @@
 ---
 output: github_document
 ---
-
+<!-- devtools::build_readme() -->
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
@@ -76,7 +76,7 @@ library(data.table)
 print(get_norm_info(), class = FALSE, nrows = 10)
 
 # Return all English utility norm sets with reference information
-print(get_norm_info(country = "England", references = T), class = FALSE)
+# print(get_norm_info(country = "England", references = T), class = FALSE)
 
 ```
 
@@ -236,7 +236,7 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
 ```
 
 ## Note on methods
-QALY loss without discounting is equivalent to QALE. 
+QALY loss at age x without discounting is equivalent to QALE at age x. QALY loss at age x without discounting or adjusting by health-related quality of life is life expectancy at age x.
 
 
 ```{r equivalencies}

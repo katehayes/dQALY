@@ -1,4 +1,5 @@
 
+<!-- devtools::build_readme() -->
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # dQALY
@@ -95,23 +96,23 @@ print(get_norm_info(), class = FALSE, nrows = 10)
 #>  4: janssen_euvas                  Belgium          EQ-5D-3L      2001-2003
 #>  5:   janssen_vas                  Belgium          EQ-5D-3L      2001-2003
 #> ---                                                                        
-#> 39:   janssen_tto           United Kingdom          EQ-5D-3L           1993
-#> 40:   janssen_vas           United Kingdom          EQ-5D-3L           1993
-#> 41:           mvh           United Kingdom          EQ-5D-3L           1993
-#> 42: janssen_euvas United States of America          EQ-5D-3L      2000-2002
-#> 43:   janssen_tto United States of America          EQ-5D-3L      2000-2002
+#> 40:   janssen_tto           United Kingdom          EQ-5D-3L           1993
+#> 41:   janssen_vas           United Kingdom          EQ-5D-3L           1993
+#> 42:           mvh           United Kingdom          EQ-5D-3L           1993
+#> 43: janssen_euvas United States of America          EQ-5D-3L      2000-2002
+#> 44:   janssen_tto United States of America          EQ-5D-3L      2000-2002
 #>            value_set_country value_set_version value_set_type value_set_year
-#>  1:                   Europe                              VAS               
-#>  2:                Argentina                              TTO               
-#>  3:                Argentina                              VAS               
-#>  4:                   Europe                              VAS               
-#>  5:                  Belgium                              VAS               
+#>  1:                   Europe          EQ-5D-3L            VAS               
+#>  2:                Argentina          EQ-5D-3L            TTO               
+#>  3:                Argentina          EQ-5D-3L            VAS               
+#>  4:                   Europe          EQ-5D-3L            VAS               
+#>  5:                  Belgium          EQ-5D-3L            VAS               
 #> ---                                                                         
-#> 39:           United Kingdom                              TTO               
-#> 40:           United Kingdom                              VAS               
-#> 41:           United Kingdom          EQ-5D-3L            TTO           1993
-#> 42:                   Europe                              VAS               
-#> 43: United States of America                              TTO               
+#> 40:           United Kingdom          EQ-5D-3L            TTO               
+#> 41:           United Kingdom          EQ-5D-3L            VAS               
+#> 42:           United Kingdom          EQ-5D-3L            TTO           1993
+#> 43:                   Europe          EQ-5D-3L            VAS               
+#> 44: United States of America          EQ-5D-3L            TTO               
 #>     default
 #>  1:   FALSE
 #>  2:    TRUE
@@ -119,39 +120,14 @@ print(get_norm_info(), class = FALSE, nrows = 10)
 #>  4:   FALSE
 #>  5:    TRUE
 #> ---        
-#> 39:   FALSE
 #> 40:   FALSE
-#> 41:    TRUE
-#> 42:   FALSE
-#> 43:    TRUE
+#> 41:   FALSE
+#> 42:    TRUE
+#> 43:   FALSE
+#> 44:    TRUE
 
 # Return all English utility norm sets with reference information
-print(get_norm_info(country = "England", references = T), class = FALSE)
-#>          norm_id norm_country eq5d_data_version eq5d_data_year
-#> 1: janssen_euvas      England          EQ-5D-3L           2008
-#> 2:   janssen_tto      England          EQ-5D-3L           2008
-#> 3:   janssen_vas      England          EQ-5D-3L           2008
-#> 4:           vih      England          EQ-5D-5L      2017/2018
-#>    value_set_country value_set_version value_set_type value_set_year
-#> 1:            Europe                              VAS               
-#> 2:           England                              TTO               
-#> 3:           England                              VAS               
-#> 4:           England          EQ-5D-3L            TTO           1993
-#>                       norm_doi
-#> 1: 10.1007/978-94-007-7596-1_3
-#> 2: 10.1007/978-94-007-7596-1_3
-#> 3: 10.1007/978-94-007-7596-1_3
-#> 4:  10.1016/j.jval.2022.07.005
-#>                                                                       norm_url
-#> 1:                               https://www.ncbi.nlm.nih.gov/books/NBK500364/
-#> 2:                               https://www.ncbi.nlm.nih.gov/books/NBK500364/
-#> 3:                               https://www.ncbi.nlm.nih.gov/books/NBK500364/
-#> 4: https://www.valueinhealthjournal.com/article/S1098-3015(22)02101-5/fulltext
-#>    default
-#> 1:   FALSE
-#> 2:   FALSE
-#> 3:   FALSE
-#> 4:    TRUE
+# print(get_norm_info(country = "England", references = T), class = FALSE)
 ```
 
 For some countries, there is more than one set of utility norms stored
@@ -329,7 +305,9 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
 
 ## Note on methods
 
-QALY loss without discounting is equivalent to QALE.
+QALY loss at age x without discounting is equivalent to QALE at age x.
+QALY loss at age x without discounting or adjusting by health-related
+quality of life is life expectancy at age x.
 
 ``` r
 
