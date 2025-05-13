@@ -460,8 +460,8 @@ calculate_dQALY(country = "England", year = 2020,
 #>    age_at_death    dQALY
 #>          <char>    <num>
 #> 1:         0-94 11.11366
-# Note: if you had your own health utility data instead you could supply it to
-# the function
+# Note: if you had your own life expectancy or health utility data for a hospital population
+# you could supply it directly to the function
 
 
 # Examining my estimates

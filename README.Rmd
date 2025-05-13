@@ -34,7 +34,7 @@ This package has been built using code adapted from the [COVID19_QALY_App](https
 
 You can install the development version of dQALY from [GitHub](https://github.com/) with:
 
-```{r, message=FALSE}
+```{r, eval=FALSE}
 # install.packages("pak")
 pak::pak("katehayes/dQALY")
 ```
@@ -347,8 +347,8 @@ calculate_dQALY(country = "England", year = 2020,
                 age_groups = all_ages,
                 sex_group = TRUE,
                 cohort = hospital_cohort)
-# Note: if you had your own health utility data instead you could supply it to
-# the function
+# Note: if you had your own life expectancy or health utility data for a hospital population
+# you could supply it directly to the function
 
 
 # Examining my estimates
