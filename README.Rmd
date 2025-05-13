@@ -76,7 +76,7 @@ library(data.table)
 print(get_norm_info(), class = FALSE, nrows = 10)
 
 # Return all English utility norm sets with reference information
-# print(get_norm_info(country = "England", references = T), class = FALSE)
+print(get_norm_info(country = "England", references = T), class = FALSE)
 
 ```
 
@@ -154,31 +154,22 @@ my_norms <- data.table(sex = c(rep("male", 3),
                        avg_util = c(1, 0.85, 0.67,
                                     0.99, 0.4, 0.2))
 
-# if we set the health utility score for all ages equal to 1
-# then we'll be calculating life years as opposed to QALYs lost
-no_quality_adjustment <- data.table(sex = c("male", "female"),
-                                    age_low = 0,
-                                    age_high = 150,
-                                    avg_util = 1)
 
-
-ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              sex_group = T),
-       aes(x = age_at_death, y = dQALY)) +
-  geom_line(colour = "black") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   sex_group = T,
-                                   norms = no_quality_adjustment),
-            colour = "red") +
-  scale_x_continuous(name = "Age at death",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "QALY loss",
-                     limits = c(0, 30),
-                     expand = c(0,0)) +
-  theme_classic()
-
-
+# ggplot(data = calculate_dQALY(country = "England", year = 2019, 
+#                               sex_group = T),
+#        aes(x = age_at_death, y = dQALY)) +
+#   geom_line(colour = "black") +
+#   geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+#                                    sex_group = T,
+#                                    norms = my_norms),
+#             colour = "red") +
+#   scale_x_continuous(name = "Age at death",
+#                      limits = c(0, 125),
+#                      expand = c(0,0)) +
+#   scale_y_continuous(name = "QALY loss",
+#                      limits = c(0, 30),
+#                      expand = c(0,0)) +
+#   theme_classic()
 
 
 ```
@@ -233,9 +224,6 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
                                    sex_group = T,
                                    r = r_none),
             colour = "red") +
-  # geom_line(data = calculate_QALE(country = "England", year = 2019, 
-  #                                  sex_group = T),
-  #           colour = "red") +
   scale_x_continuous(name = "Age at death",
                      limits = c(0, 125),
                      expand = c(0,0)) +
@@ -244,6 +232,46 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
                      expand = c(0,0)) +
   theme_classic()
 
+
+```
+## Note on methods
+
+
+```{r equivalencies}
+
+# if we set the discount rate equal to zero, we'll be returning estimates of quality adjusted life expectancy
+no_discounting <- 0
+
+# if we ALSO set the health utility score for all ages equal to 1, we'll be returning life expectancy data
+no_quality_adjustment <- data.table(sex = c("male", "female"),
+                                    age_low = 0,
+                                    age_high = 150,
+                                    avg_util = 1)
+
+
+ggplot(data = calculate_dQALY(country = "England", year = 2019, 
+                              sex_group = T), #default norms, default r
+       aes(x = age_at_death, y = dQALY)) +
+  geom_line() +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019,
+                                   sex_group = T,
+                                   r = no_discounting),
+            colour = "blue") +
+  # geom_line(data = calculate_QALE(country = "England", year = 2019,
+  #                                   sex_group = T),
+  #            colour = "green") +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+                                   sex_group = T,
+                                   r = no_discounting,
+                                   norms = no_quality_adjustment),
+            colour = "red") +
+  scale_x_continuous(name = "Age at death",
+                     limits = c(0, 125),
+                     expand = c(0,0)) +
+  scale_y_continuous(name = "QALY loss",
+                     limits = c(0, 90),
+                     expand = c(0,0)) +
+  theme_classic()
 
 ```
 
@@ -362,7 +390,6 @@ ggplot(data = calculate_dQALY(country = "England", year = 2020,
   theme_classic()
 
 ```
-
 
 
 

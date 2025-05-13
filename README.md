@@ -92,14 +92,14 @@ print(get_norm_info(), class = FALSE, nrows = 10)
 #>  1: janssen_euvas                Argentina          EQ-5D-3L           2005
 #>  2:   janssen_tto                Argentina          EQ-5D-3L           2005
 #>  3:   janssen_vas                Argentina          EQ-5D-3L           2005
-#>  4: janssen_euvas                  Belgium          EQ-5D-3L      2001–2003
-#>  5:   janssen_vas                  Belgium          EQ-5D-3L      2001–2003
+#>  4: janssen_euvas                  Belgium          EQ-5D-3L      2001-2003
+#>  5:   janssen_vas                  Belgium          EQ-5D-3L      2001-2003
 #> ---                                                                        
 #> 39:   janssen_tto           United Kingdom          EQ-5D-3L           1993
 #> 40:   janssen_vas           United Kingdom          EQ-5D-3L           1993
 #> 41:           mvh           United Kingdom          EQ-5D-3L           1993
-#> 42: janssen_euvas United States of America          EQ-5D-3L      2000–2002
-#> 43:   janssen_tto United States of America          EQ-5D-3L      2000–2002
+#> 42: janssen_euvas United States of America          EQ-5D-3L      2000-2002
+#> 43:   janssen_tto United States of America          EQ-5D-3L      2000-2002
 #>            value_set_country value_set_version value_set_type value_set_year
 #>  1:                   Europe                              VAS               
 #>  2:                Argentina                              TTO               
@@ -126,7 +126,32 @@ print(get_norm_info(), class = FALSE, nrows = 10)
 #> 43:    TRUE
 
 # Return all English utility norm sets with reference information
-# print(get_norm_info(country = "England", references = T), class = FALSE)
+print(get_norm_info(country = "England", references = T), class = FALSE)
+#>          norm_id norm_country eq5d_data_version eq5d_data_year
+#> 1: janssen_euvas      England          EQ-5D-3L           2008
+#> 2:   janssen_tto      England          EQ-5D-3L           2008
+#> 3:   janssen_vas      England          EQ-5D-3L           2008
+#> 4:           vih      England          EQ-5D-5L      2017/2018
+#>    value_set_country value_set_version value_set_type value_set_year
+#> 1:            Europe                              VAS               
+#> 2:           England                              TTO               
+#> 3:           England                              VAS               
+#> 4:           England          EQ-5D-3L            TTO           1993
+#>                       norm_doi
+#> 1: 10.1007/978-94-007-7596-1_3
+#> 2: 10.1007/978-94-007-7596-1_3
+#> 3: 10.1007/978-94-007-7596-1_3
+#> 4:  10.1016/j.jval.2022.07.005
+#>                                                                       norm_url
+#> 1:                               https://www.ncbi.nlm.nih.gov/books/NBK500364/
+#> 2:                               https://www.ncbi.nlm.nih.gov/books/NBK500364/
+#> 3:                               https://www.ncbi.nlm.nih.gov/books/NBK500364/
+#> 4: https://www.valueinhealthjournal.com/article/S1098-3015(22)02101-5/fulltext
+#>    default
+#> 1:   FALSE
+#> 2:   FALSE
+#> 3:   FALSE
+#> 4:    TRUE
 ```
 
 For some countries, there is more than one set of utility norms stored
@@ -214,32 +239,23 @@ my_norms <- data.table(sex = c(rep("male", 3),
                        avg_util = c(1, 0.85, 0.67,
                                     0.99, 0.4, 0.2))
 
-# if we set the health utility score for all ages equal to 1
-# then we'll be calculating life years as opposed to QALYs lost
-no_quality_adjustment <- data.table(sex = c("male", "female"),
-                                    age_low = 0,
-                                    age_high = 150,
-                                    avg_util = 1)
 
-
-ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              sex_group = T),
-       aes(x = age_at_death, y = dQALY)) +
-  geom_line(colour = "black") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   sex_group = T,
-                                   norms = no_quality_adjustment),
-            colour = "red") +
-  scale_x_continuous(name = "Age at death",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "QALY loss",
-                     limits = c(0, 30),
-                     expand = c(0,0)) +
-  theme_classic()
+# ggplot(data = calculate_dQALY(country = "England", year = 2019, 
+#                               sex_group = T),
+#        aes(x = age_at_death, y = dQALY)) +
+#   geom_line(colour = "black") +
+#   geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+#                                    sex_group = T,
+#                                    norms = my_norms),
+#             colour = "red") +
+#   scale_x_continuous(name = "Age at death",
+#                      limits = c(0, 125),
+#                      expand = c(0,0)) +
+#   scale_y_continuous(name = "QALY loss",
+#                      limits = c(0, 30),
+#                      expand = c(0,0)) +
+#   theme_classic()
 ```
-
-<img src="man/figures/README-custom_norms-1.png" width="100%" />
 
 ## Discounting
 
@@ -300,9 +316,6 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
                                    sex_group = T,
                                    r = r_none),
             colour = "red") +
-  # geom_line(data = calculate_QALE(country = "England", year = 2019, 
-  #                                  sex_group = T),
-  #           colour = "red") +
   scale_x_continuous(name = "Age at death",
                      limits = c(0, 125),
                      expand = c(0,0)) +
@@ -312,7 +325,47 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
   theme_classic()
 ```
 
-<img src="man/figures/README-discounting-1.png" width="100%" />
+<img src="man/figures/README-discounting-1.png" width="100%" /> \## Note
+on methods
+
+``` r
+
+# if we set the discount rate equal to zero, we'll be returning estimates of quality adjusted life expectancy
+no_discounting <- 0
+
+# if we ALSO set the health utility score for all ages equal to 1, we'll be returning life expectancy data
+no_quality_adjustment <- data.table(sex = c("male", "female"),
+                                    age_low = 0,
+                                    age_high = 150,
+                                    avg_util = 1)
+
+
+ggplot(data = calculate_dQALY(country = "England", year = 2019, 
+                              sex_group = T), #default norms, default r
+       aes(x = age_at_death, y = dQALY)) +
+  geom_line() +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019,
+                                   sex_group = T,
+                                   r = no_discounting),
+            colour = "blue") +
+  # geom_line(data = calculate_QALE(country = "England", year = 2019,
+  #                                   sex_group = T),
+  #            colour = "green") +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+                                   sex_group = T,
+                                   r = no_discounting,
+                                   norms = no_quality_adjustment),
+            colour = "red") +
+  scale_x_continuous(name = "Age at death",
+                     limits = c(0, 125),
+                     expand = c(0,0)) +
+  scale_y_continuous(name = "QALY loss",
+                     limits = c(0, 90),
+                     expand = c(0,0)) +
+  theme_classic()
+```
+
+<img src="man/figures/README-equivalencies-1.png" width="100%" />
 
 ## Worked example: using the dQALY package to value outputs of an infectious disease model
 
