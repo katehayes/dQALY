@@ -143,7 +143,7 @@ calculate_dQALY <- function(country = NULL,
 
 
   # if you specify a country you must specify a year
-  avail_countries <- unlist(norm_info[, .(norm_country)])
+  avail_countries <- norm_info$norm_country
 
   if (!is.null(country)) {
     if(!(country %in% avail_countries)) {
@@ -155,7 +155,7 @@ calculate_dQALY <- function(country = NULL,
 
 
   if (!is.null(year)) {
-    avail_years <- unlist(life_tables[country == get("country", env), .(year)])
+    avail_years <- life_tables[country == get("country", env), year]
     if (!(year %in% avail_years)) {
       stop(paste("Currently, QALY loss estimates for ", country, " can only be calculated for the years ",
                  min(avail_years), "-", max(avail_years), ".
@@ -273,7 +273,7 @@ calculate_dQALY <- function(country = NULL,
       # if the user specified norms using our norm ids
       # check that the norm id they supplied is valid
       # error message referring user to norm info function - could do with re-write
-      if(!(norms %in% unlist(norm_info[norm_country == country, .(norm_id)]))) {
+      if(!(norms %in% norm_info[norm_country == country, norm_id])) {
         stop("Invalid norm ID. Use function get_norm_info() to see the IDs for the norms available for your chosen country.")
       }
 

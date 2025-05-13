@@ -13,7 +13,7 @@ get_norm_info <- function(country = NULL, references = F) {
 
   norm_copy <- copy(norm_info)
 
-  avail_countries <- unlist(unique(norm_copy[, .(norm_country)]))
+  avail_countries <- unique(norm_copy$norm_country)
 
   if(!is.null(country)) {
     if(!(country %in% avail_countries)) {
