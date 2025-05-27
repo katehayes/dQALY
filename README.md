@@ -46,6 +46,17 @@ norms themselves are constructed from health state data & value sets.
 
 ## Population-average health related quality of life scores (utility norms)
 
+Some discussion of utility norms can be found on the [EuroQol
+website](https://euroqol.org/information-and-support/resources/population-norms/):
+
+> Population reference data, sometimes called population norm data or
+> simply population norms, provide baseline or reference scores for a
+> specific country or international region, based on representative
+> samples. EQ-5D population norms can be used to to benchmark the
+> outcomes of specific individuals or groups (e.g. patients) against the
+> health of the general population, which also helps to identity the
+> burden of the disease of patients or patient groups.
+
 For most countries, there is more than one set of utility norms stored
 in the package data. For every country, we have chosen a set of default
 norms - these are the norms that will be used when the `calculate_dQALY`

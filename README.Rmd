@@ -45,6 +45,10 @@ Add overview of methods. Using life tables & utility norms. Utility norms themse
 
 ## Population-average health related quality of life scores (utility norms)
 
+Some discussion of utility norms can be found on the [EuroQol website](https://euroqol.org/information-and-support/resources/population-norms/):
+
+> Population reference data, sometimes called population norm data or simply population norms, provide baseline or reference scores for a specific country or international region, based on representative samples. EQ-5D population norms can be used to to benchmark the outcomes of specific individuals or groups (e.g. patients) against the health of the general population, which also helps to identity the burden of the disease of patients or patient groups.
+
 For most countries, there is more than one set of utility norms stored in the package data. For every country, we have chosen a set of default norms - these are the norms that will be used when the `calculate_dQALY` function is called without specifying a value for the `norms` argument. Alternatively, the user can specify what set of package norms they would like to use by passing its ID to `norms`. Its also possible to supply custom norms.
 
 The list of available utility norms and their IDs can be viewed using the `get_norm_info` function. This function also returns information we have documented about how each set of utility norms - specifically, about the EQ-5D data and value sets from which the norms are estimated. We have tried to adopt the same terminology/categorisation scheme used by the eq5d package to document information about value sets. 

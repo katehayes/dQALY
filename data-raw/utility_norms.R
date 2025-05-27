@@ -184,6 +184,34 @@ rom_3L[, sex := ifelse(sex == "Men", "male", "female")]
 rom_3L[, norm_id := "rom_3L"]
 rom_3L[, norm_country := "Romania"]
 
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# LA-level utility norms
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# should I change norm_country to norm_location?
+
+temp <- tempfile()
+download.file(url = "https://osf.io/download/cx2w8/", temp)
+
+la_code2name <- as.data.table(utils::read.csv(temp))[, .(norm_country = geography_name, geography_code)] |>
+  unique()
+
+
+temp <- tempfile()
+download.file(url = "https://osf.io/download/mc2sk/", temp)
+
+la_utils <- as.data.table(utils::read.csv(temp))[, .(sex = sex_name, geography_code = la_code,
+                                                     age_name, avg_util = eq5d_util_lf_6v_wt)]
+
+la_utils <- la_code2name[la_utils,
+                         on = .(geography_code),
+                         .(norm_country, sex, age_name, avg_util)][
+                           , sex := ifelse(sex == "Female", "female", "male")
+                         ]
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Long term conditions in UK
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

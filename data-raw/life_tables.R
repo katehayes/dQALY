@@ -78,6 +78,21 @@ un_lt <- rbind(lt_male, lt_female)[
   setnames(new = c("country", "year", "sex", "x", "q_x"))
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# LA-level life tables
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+temp <- tempfile()
+download.file(url = "https://osf.io/download/cx2w8/", temp)
+
+la_lts <- as.data.table(utils::read.csv(temp))[, .(country = geography_name, year, sex = sex_name,
+                                                   x = age_code, q_x = qx)][
+                                                     , sex := ifelse(sex == "Female", "female", "male")
+                                                   ]
+
+
+
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Collecting together
