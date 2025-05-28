@@ -168,6 +168,13 @@ rom_5L[, sex := ifelse(sex == "Men", "male", "female")]
 rom_5L[, norm_id := "rom_5L"]
 rom_5L[, norm_country := "Romania"]
 
+yg <- rom_5L[age_low == min(age_low)]
+yg[, age_high := age_low - 1]
+yg[, age_low := 0]
+
+rom_5L <- rbind(yg, rom_5L)
+
+
 rom_3L <- rom_norms[Indicator == "Mean (SE)", c(1,7,8)] |>
   setnames(new = rom_norms[1, c(1,7,8)] |>
              unlist()) |>
@@ -184,6 +191,11 @@ rom_3L[, sex := ifelse(sex == "Men", "male", "female")]
 rom_3L[, norm_id := "rom_3L"]
 rom_3L[, norm_country := "Romania"]
 
+yg <- rom_3L[age_low == min(age_low)]
+yg[, age_high := age_low - 1]
+yg[, age_low := 0]
+
+rom_3L <- rbind(yg, rom_3L)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

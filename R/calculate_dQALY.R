@@ -125,7 +125,6 @@ calculate_dQALY <- function(country = NULL,
                             sex_group = F,
                             cohort = NULL) {
 
-
   env <- environment()
 
 
