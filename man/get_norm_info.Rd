@@ -12,7 +12,7 @@ get_norm_info(country = NULL, references = F)
 \item{references}{boolean - set to T if you wish to return reference information (DOI, URL)}
 }
 \value{
-A data.table containing information about utility norms
+A dataframe containing information about utility norms
 }
 \description{
 Get info on utility norms

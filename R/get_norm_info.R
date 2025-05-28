@@ -3,7 +3,7 @@
 #' @param country string - name of a permissible country
 #' @param references boolean - set to T if you wish to return reference information (DOI, URL)
 #'
-#' @returns A data.table containing information about utility norms
+#' @returns A dataframe containing information about utility norms
 #'
 #' @examples
 #' get_norm_info()

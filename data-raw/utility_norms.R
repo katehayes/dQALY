@@ -148,6 +148,15 @@ janssen <- extract_janssen_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK50
 # Romania
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# Romania
+# https://hqlo.biomedcentral.com/articles/10.1186/s12955-023-02144-8
+# Olariu E, Mohammed W, Oluboyede Y, Caplescu R, Niculescu-Aron IG,
+# Paveliu MS, Vale L. EQ-5D-5L: a value set for Romania. Eur J Health Econ.
+# 2023;24:399–412.
+# Paveliu MS, Olariu E, Caplescu R, Oluboyede Y, Niculescu-Aron IG, Ernu S,
+# Vale L. Estimating an EQ-5D-3L Value Set for Romania Using Time TradeOf. Int J Environ Res Public Health. 2021;18(14):7415.
+
+
 rom_norms <- extract_janssen_norms(url = "https://hqlo.biomedcentral.com/articles/10.1186/s12955-023-02144-8/tables/2",
                                    element = ".c-article-table-container")
 
@@ -396,13 +405,6 @@ norm_info[grepl("rom", norm_id), eq5d_data_version := ifelse(norm_id == "rom_3L"
 # Euroqol repository
 # https://euroqol.org/information-and-support/resources/population-norms/
 
-# Romania(!)
-# https://hqlo.biomedcentral.com/articles/10.1186/s12955-023-02144-8
-# Olariu E, Mohammed W, Oluboyede Y, Caplescu R, Niculescu-Aron IG,
-# Paveliu MS, Vale L. EQ-5D-5L: a value set for Romania. Eur J Health Econ.
-# 2023;24:399–412.
-# Paveliu MS, Olariu E, Caplescu R, Oluboyede Y, Niculescu-Aron IG, Ernu S,
-# Vale L. Estimating an EQ-5D-3L Value Set for Romania Using Time TradeOf. Int J Environ Res Public Health. 2021;18(14):7415.
 
 # GB LA level
 # https://bmjopen.bmj.com/content/14/3/e076704
