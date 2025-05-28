@@ -27,6 +27,8 @@ get_norm_info <- function(country = NULL, references = F) {
     norm_copy[, c("norm_doi", "norm_url"):=NULL]
   }
 
-  norm_copy[]
+  setDF(norm_copy)
+
+  norm_copy
 
 }

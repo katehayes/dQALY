@@ -405,7 +405,9 @@ calculate_dQALY <- function(country = NULL,
   dQALY_table |>
     setnames(old = c("sex", "x", "dQALY_x", "age_group"), new = c("sex", "age_at_death", "dQALY", "age_at_death"), skip_absent = TRUE)
 
-  dQALY_table[]
+  setDF(dQALY_table)
+
+  dQALY_table
 
 }
 
