@@ -209,7 +209,21 @@ la_utils <- la_code2name[la_utils,
                          on = .(geography_code),
                          .(norm_country, sex, age_name, avg_util)][
                            , sex := ifelse(sex == "Female", "female", "male")
+                         ][
+                           , age_low := as.numeric(substring(age_name, 1, 2))
+                         ][
+                           is.na(age_low), age_low := 0
+                         ][
+                           , age_high := as.numeric(substring(age_name, 4, 5))
+                         ][
+                           age_low == 0, age_high := 20
+                         ][
+                           age_low == 80, age_high := 200
+                         ][
+                           , age_name := NULL
                          ]
+
+
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
