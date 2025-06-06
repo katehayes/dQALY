@@ -246,7 +246,7 @@ calculate_dQALY <- function(country = NULL,
       stop("In order to calculate QALY loss estimates for population groups: if you supplied your own life tables to the calculation, you must also supply your own population cohort (needed to derive group averages).")
     }
 
-    setDT(life_table)
+    life_table <- as.data.table(life_table)
 
 
   }
@@ -261,8 +261,7 @@ calculate_dQALY <- function(country = NULL,
     # if the user supplies their own norms
     # Should there be a series of checks that the norms provided are sensible
     # and a series of error messages?
-    setDT(norms)
-    utility_norms <- norms
+    utility_norms <- as.data.table(norms)
 
   } else {
 
@@ -372,7 +371,7 @@ calculate_dQALY <- function(country = NULL,
     if(is.null(cohort)) {
       cohort <- populations[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
     } else {
-      setDT(cohort)
+      cohort <- as.data.table(cohort)
     }
 
 
@@ -384,7 +383,7 @@ calculate_dQALY <- function(country = NULL,
     # then add this information about what their desired age groups are into the dQALY table
     if(!is.null(age_groups)) {
 
-      setDT(age_groups)
+      age_groups <- as.data.table(age_groups)
 
       age_expand <- do.call(rbind, Map(grouper, age_groups$age_low, age_groups$age_high))
 
