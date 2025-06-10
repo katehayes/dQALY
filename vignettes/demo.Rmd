@@ -1,8 +1,8 @@
 ---
-title: "demo"
+title: "Demo"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{demo}
+  %\VignetteIndexEntry{Demo}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{ggplot2}
@@ -33,14 +33,14 @@ calculate_dQALY(country = "United Kingdom", year = 2015)
 
 # You can also output mean dQALY values for population groups:
 # Outputting one average value for both sexes together
-# calculate_dQALY(country = "United Kingdom", year = 2015, sex_group = T)
+# calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T)
 
 # Outputting average values for a set of age groups you specify
 # my_age_groups <- data.table(age_low = 90, age_high = 100)
-# calculate_dQALY(country = "United Kingdom", year = 2015, age_groups = my_age_groups)
+# calculate_dQALY(country = "United Kingdom", year = 2015, collapse_age = my_age_groups)
 
 # Outputting average values for both sexes and for the specified age groups
-# calculate_dQALY(country = "United Kingdom", year = 2015, sex_group = T, age_groups = my_age_groups)
+# calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, collapse_age = my_age_groups)
 
 ```
 
@@ -70,17 +70,17 @@ library(ggplot2)
 # Calculating dQALY for four different countries using the country-specific 
 # default utility norms set by the package
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              sex_group = T),
+                              collapse_sex = T),
        aes(x = age_at_death, y = dQALY)) +
   geom_line(colour = "red") +
   geom_line(data = calculate_dQALY(country = "Argentina", year = 2019, 
-                                   sex_group = T),
+                                   collapse_sex = T),
             colour = "green") +
   geom_line(data = calculate_dQALY(country = "France", year = 2019, 
-                                   sex_group = T),
+                                   collapse_sex = T),
             colour = "blue") +
   geom_line(data = calculate_dQALY(country = "Hungary", year = 2019, 
-                                   sex_group = T),
+                                   collapse_sex = T),
             colour = "purple") +
   scale_x_continuous(name = "Age at death",
                      limits = c(0, 125),
@@ -95,20 +95,20 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
 # note that the ID used needs to be valid. e.g.:
 # calculate_dQALY(country = "England", year = 2019, norms = "invalid") won't work
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              sex_group = T,
+                              collapse_sex = T,
                               norms = "janssen_euvas"),
        aes(x = age_at_death, y = dQALY)) +
   geom_line(colour = "red") +
   geom_line(data = calculate_dQALY(country = "Argentina", year = 2019, 
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    norms = "janssen_euvas"),
             colour = "green") +
   geom_line(data = calculate_dQALY(country = "France", year = 2019, 
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    norms = "janssen_euvas"),
             colour = "blue") +
   geom_line(data = calculate_dQALY(country = "Hungary", year = 2019, 
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    #in hungary's case, EUVAS norms
                                    #are already the default
                                    norms = "janssen_euvas"),
@@ -138,11 +138,11 @@ my_norms <- data.table(sex = c(rep("male", 3),
 
 
 ggplot(data = calculate_dQALY(country = "England", year = 2019,
-                              sex_group = T),
+                              collapse_sex = T),
        aes(x = age_at_death, y = dQALY)) +
   geom_line(colour = "black") +
   geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    norms = my_norms),
             colour = "red") +
   scale_x_continuous(name = "Age at death",
@@ -157,9 +157,7 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
 ```
 
 ## Discounting
-To get the net present value of the losses, we apply a discount rate. In our package, the default discount rate is set at 3.5% as per the [NICE health technology evaluations manual](https://www.nice.org.uk/process/pmg36/chapter/economic-evaluation-2#discounting). However, the most appropriate discount rate to apply in a given evaluation/analysis is commonly subject to debate. [The Green Book](https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2020#a6-discounting), guidance on evaluation methods issued by the Treasury, discusses a number of discounting regimes and the reasons one might use them. 
 
-Our package allows discount rates to be specified flexibly.
 
 ```{r discounting}
 
@@ -185,23 +183,23 @@ r_health_lt_reduced <- function(x) ifelse(x < 31, 0.01, ifelse(x > 75, 0.0071, 0
 # as discount regimes vary
 
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              sex_group = T), #equivalently, r = r_standard
+                              collapse_sex = T), #equivalently, r = r_standard
        aes(x = age_at_death, y = dQALY)) +
   geom_line(colour = "black") +
   geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    r = r_health),
             colour = "green") +
   geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    r = r_health_lt),
             colour = "blue") +
   geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    r = r_health_lt_reduced),
             colour = "purple") +
   geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    r = r_none),
             colour = "red") +
   scale_x_continuous(name = "Age at death",
@@ -232,18 +230,18 @@ no_quality_adjustment <- data.table(sex = c("male", "female"),
 
 
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              sex_group = T), #default norms, default r
+                              collapse_sex = T), #default norms, default r
        aes(x = age_at_death, y = dQALY)) +
   geom_line() +
   geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    r = no_discounting),
             colour = "blue") +
   # geom_line(data = calculate_QALE(country = "England", year = 2019,
-  #                                   sex_group = T),
+  #                                   collapse_sex = T),
   #            colour = "green") +
   geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   sex_group = T,
+                                   collapse_sex = T,
                                    r = no_discounting,
                                    norms = no_quality_adjustment),
             colour = "red") +
@@ -297,8 +295,8 @@ We'll use this example to demonstrate why one might use several of the features 
 # 
 # # Getting my QALY loss estimate
 # calculate_dQALY(country = "England", year = 2020,
-#                 age_groups = all_ages,
-#                 sex_group = TRUE,
+#                 collapse_age = all_ages,
+#                 collapse_sex = TRUE,
 #                 cohort = hospital_cohort)
 # 
 # 
@@ -307,8 +305,8 @@ We'll use this example to demonstrate why one might use several of the features 
 # adult_hospital_cohort <- hospital_cohort[x >= 18]
 # 
 # calculate_dQALY(country = "England", year = 2020,
-#                 age_groups = all_ages,
-#                 sex_group = TRUE,
+#                 collapse_age = all_ages,
+#                 collapse_sex = TRUE,
 #                 cohort = adult_hospital_cohort)
 # 
 # 
@@ -317,8 +315,8 @@ We'll use this example to demonstrate why one might use several of the features 
 # adj_hospital_cohort <- copy(hospital_cohort)[x == 0, count := count*3]
 # 
 # calculate_dQALY(country = "England", year = 2020,
-#                 age_groups = all_ages,
-#                 sex_group = TRUE,
+#                 collapse_age = all_ages,
+#                 collapse_sex = TRUE,
 #                 cohort = adj_hospital_cohort)
 # 
 # 
@@ -326,8 +324,8 @@ We'll use this example to demonstrate why one might use several of the features 
 # # hospital patients is higher than it is among the general population?
 # calculate_dQALY(country = "England", year = 2020,
 #                 smr = 1.05, qcm = 0.95,
-#                 age_groups = all_ages,
-#                 sex_group = TRUE,
+#                 collapse_age = all_ages,
+#                 collapse_sex = TRUE,
 #                 cohort = hospital_cohort)
 # # Note: if you had your own life expectancy or health utility data for a hospital population
 # # you could supply it directly to the function
@@ -335,31 +333,31 @@ We'll use this example to demonstrate why one might use several of the features 
 # 
 # # Examining my estimates
 # ggplot(data = calculate_dQALY(country = "England", year = 2020, 
-#                               sex_group = T),
+#                               collapse_sex = T),
 #        aes(x = age_at_death, y = dQALY)) +
 #   geom_line(colour = "black") +
 #   geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
-#                                           age_groups = all_ages,
-#                                           sex_group = TRUE,
+#                                           collapse_age = all_ages,
+#                                           collapse_sex = TRUE,
 #                                           cohort = hospital_cohort)$dQALY, 
 #             colour = "red",
 #             linetype = "dashed") +
 #   geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
-#                                           age_groups = all_ages,
-#                                           sex_group = TRUE,
+#                                           collapse_age = all_ages,
+#                                           collapse_sex = TRUE,
 #                                           cohort = adult_hospital_cohort)$dQALY, 
 #             colour = "blue",
 #             linetype = "dashed") +
 #   geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
-#                                           age_groups = all_ages,
-#                                           sex_group = TRUE,
+#                                           collapse_age = all_ages,
+#                                           collapse_sex = TRUE,
 #                                           cohort = adj_hospital_cohort)$dQALY, 
 #             colour = "green",
 #             linetype = "dashed") +
 #   geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
 #                                           smr = 1.05, qcm = 0.95,
-#                                           age_groups = all_ages,
-#                                           sex_group = TRUE,
+#                                           collapse_age = all_ages,
+#                                           collapse_sex = TRUE,
 #                                           cohort = hospital_cohort)$dQALY, 
 #             colour = "purple",
 #             linetype = "dashed") +
