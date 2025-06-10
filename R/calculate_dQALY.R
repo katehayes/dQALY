@@ -394,10 +394,9 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
     if(length(collapse_age) == 2L) {
 
       age_groups <- as.data.table(collapse_age)
+      age_groups <- age_groups[, .(age_group = paste(age_low, age_high, sep = "-"), x = c(age_low:age_high)), by = c("age_low", "age_high")]
 
-      age_expand <- do.call(rbind, Map(grouper, collapse_age$age_low, collapse_age$age_high))
-
-      dQALY_table <- dQALY_table[age_expand,
+      dQALY_table <- dQALY_table[age_groups,
                                  on = .(x),
                                  nomatch = NULL]
 
@@ -463,10 +462,6 @@ calculate_QALE <- function(...) {
 # ------------------------------------------------------------------------- #
 # -------------------------------- INTERNALS ------------------------------ #
 # ------------------------------------------------------------------------- #
-
-
-grouper <- function(x, y) data.table(age_low = x, age_high = y, age_group = paste(x, y, sep = "-"), x = c(x:y))
-
 
 
 
