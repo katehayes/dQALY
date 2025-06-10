@@ -134,5 +134,5 @@ calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
                 age_groups = my_age_groups, cohort = my_cohort)
 #3) collapse sex and group age
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups,
-sex_group = TRUE, cohort = my_cohort)
+                sex_group = TRUE, cohort = my_cohort)
 }
