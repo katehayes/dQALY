@@ -1,6 +1,3 @@
-# if utility norms were stored & supplied as functions
-# norm_fun = approxfun(x=c(0,30,60,121), y = c(1,0.9,0.87,0.8), method = "constant")
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Norms from the 1993 Measurement and Valuation of Health Study
 # https://www.york.ac.uk/che/pdf/DP172.pdf
@@ -147,14 +144,138 @@ janssen <- extract_janssen_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK50
           transform_janssen_norms(norm_name = "janssen_euvas"))
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Romania
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+# Romania
+# https://hqlo.biomedcentral.com/articles/10.1186/s12955-023-02144-8
+# Olariu E, Mohammed W, Oluboyede Y, Caplescu R, Niculescu-Aron IG,
+# Paveliu MS, Vale L. EQ-5D-5L: a value set for Romania. Eur J Health Econ.
+# 2023;24:399–412.
+# Paveliu MS, Olariu E, Caplescu R, Oluboyede Y, Niculescu-Aron IG, Ernu S,
+# Vale L. Estimating an EQ-5D-3L Value Set for Romania Using Time TradeOf. Int J Environ Res Public Health. 2021;18(14):7415.
+
+
+rom_norms <- extract_janssen_norms(url = "https://hqlo.biomedcentral.com/articles/10.1186/s12955-023-02144-8/tables/2",
+                                   element = ".c-article-table-container")
+
+
+rom_5L <- rom_norms[Indicator == "Mean (SE)", c(1,4,5)] |>
+  setnames(new = rom_norms[1, c(1,4,5)] |>
+           unlist()) |>
+  setnames(old = "Age group", new = "age_low") |>
+  melt(measure.vars = c("Men", "Women"),
+       variable.name = "sex",
+       value.name = "avg_util")
+
+rom_5L[, age_high := as.numeric(substring(age_low, 4, 5))]
+rom_5L[, age_low := as.numeric(substring(age_low, 1, 2))]
+rom_5L[age_low == max(age_low), age_high := 200]
+rom_5L[, avg_util := as.numeric(substring(avg_util, 1, 5))]
+rom_5L[, sex := ifelse(sex == "Men", "male", "female")]
+rom_5L[, norm_id := "rom_5L"]
+rom_5L[, norm_country := "Romania"]
+
+yg <- rom_5L[age_low == min(age_low)]
+yg[, age_high := age_low - 1]
+yg[, age_low := 0]
+
+rom_5L <- rbind(yg, rom_5L)
+
+
+rom_3L <- rom_norms[Indicator == "Mean (SE)", c(1,7,8)] |>
+  setnames(new = rom_norms[1, c(1,7,8)] |>
+             unlist()) |>
+  setnames(old = "Age group", new = "age_low") |>
+  melt(measure.vars = c("Men", "Women"),
+       variable.name = "sex",
+       value.name = "avg_util")
+
+rom_3L[, age_high := as.numeric(substring(age_low, 4, 5))]
+rom_3L[, age_low := as.numeric(substring(age_low, 1, 2))]
+rom_3L[age_low == max(age_low), age_high := 200]
+rom_3L[, avg_util := as.numeric(substring(avg_util, 1, 5))]
+rom_3L[, sex := ifelse(sex == "Men", "male", "female")]
+rom_3L[, norm_id := "rom_3L"]
+rom_3L[, norm_country := "Romania"]
+
+yg <- rom_3L[age_low == min(age_low)]
+yg[, age_high := age_low - 1]
+yg[, age_low := 0]
+
+rom_3L <- rbind(yg, rom_3L)
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# LA-level utility norms
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# should I change norm_country to norm_location?
+
+temp <- tempfile()
+download.file(url = "https://osf.io/download/cx2w8/", temp)
+
+la_code2name <- as.data.table(utils::read.csv(temp))[, .(norm_country = geography_name, geography_code)] |>
+  unique()
+
+
+temp <- tempfile()
+download.file(url = "https://osf.io/download/mc2sk/", temp)
+
+la_utils <- as.data.table(utils::read.csv(temp))[, .(sex = sex_name, geography_code = la_code,
+                                                     age_name, avg_util = eq5d_util_lf_6v_wt)]
+
+la_utils <- la_code2name[la_utils,
+                         on = .(geography_code),
+                         .(norm_country, sex, age_name, avg_util)][
+                           , sex := ifelse(sex == "Female", "female", "male")
+                         ][
+                           , age_low := as.numeric(substring(age_name, 1, 2))
+                         ][
+                           is.na(age_low), age_low := 0
+                         ][
+                           , age_high := as.numeric(substring(age_name, 4, 5))
+                         ][
+                           age_low == 0, age_high := 20
+                         ][
+                           age_low == 80, age_high := 200
+                         ][
+                           , age_name := NULL
+                         ]
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Long term conditions in UK
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# NOTE FOR LATER
+# if we only have values for older age groups for specific population groups like disease groups,
+# we could just output dQALY measures for those years on?
+
+# ltc_norms <- extract_janssen_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK592229/table/table18/?report=objectonly")
+#
+# names <- ltc_norms[1, ] |>
+#   unlist()
+#
+# setnames(ltc_norms, new = names)
+#
+# ltc_norms <- ltc_norms[4, -c(1,3,5,7,9:11)] |>
+#   melt(measure.vars = patterns("years"),
+#        variable.name = "age_low",
+#        value.name = "avg_util")
+#
+# ltc_norms[, avg_util := as.numeric(substring(avg_util, 1, 5))]
+# ltc_norms[, age_high := as.numeric(substring(age_low, 4, 5))]
+# ltc_norms[, age_low := as.numeric(substring(age_low, 1, 2))]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # collecting into one table
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-utility_norms <- rbind(mvh, vih_primary, vih_secondary, janssen) |>
+utility_norms <- rbind(mvh, vih_primary, vih_secondary, janssen, rom_3L, rom_5L) |>
   setcolorder(c("norm_country", "norm_id", "age_low", "age_high", "sex", "avg_util")) |>
   setorder(norm_country, norm_id, age_low, sex)
 
@@ -165,25 +286,28 @@ utility_norms[, avg_util := as.numeric(avg_util)]
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# info about the utility norms?
+# info about the utility norms
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 # making a data.table that stores information about the package utility norms
 # and will also be used to select a default utility norm to be used in the dQALY calculation
 # should the user not specify the norm they'd like to use by name or supply their own
 # Note to self: at some point write test checking that there is only one default for every country
+# should we add value_set_doi/url in addition to having norm_doi/url
+# look at the workflow eq5d package has in place for updating valuesets. the save-data script? relevant?
 
 norm_info <- unique(utility_norms[, .(norm_id, norm_country)])
 
 norm_info[
-  , c("eq5d_data_version", "eq5d_data_year", "value_set_country", "value_set_version", "value_set_type", "value_set_year"):=""
+  , c("eq5d_data_version", "value_set_country", "value_set_version", "value_set_type", "value_set_year"):=""
 ][
   , c("norm_doi", "norm_url"):=""
 ][
   , score := fcase(grepl("tto", norm_id), 3,
                      grepl("_vas", norm_id), 2,
                      grepl("vih_primary", norm_id), 5,
-                     grepl("mvh", norm_id), 5)
+                     grepl("mvh", norm_id), 5,
+                     grepl("3L", norm_id), 5)
 ][
   , score := ifelse(is.na(score), 1, score)
 ][
@@ -195,6 +319,7 @@ norm_info[
 
 # Get some info about the EQ5D data that were used to calculate population-level
 # utility norms from the article https://pmc.ncbi.nlm.nih.gov/articles/PMC6438939/
+# here i'm throwing away info about sample size etc. but I could start collecting this
 janssen_eq5d_data_info <- extract_janssen_norms(url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC6438939/table/Tab1/",
                                                 element = ".content")[, .(Country, `Data collection`)][
                                                   # changing country names so they line up with UN life tables
@@ -205,11 +330,14 @@ janssen_eq5d_data_info <- extract_janssen_norms(url = "https://pmc.ncbi.nlm.nih.
   setnames(new = c("norm_country", "eq5d_data_year"))
 
 
-norm_info <- norm_info[janssen_eq5d_data_info, on = .(norm_country)][
-  , eq5d_data_year := fcoalesce(i.eq5d_data_year, eq5d_data_year)
-][, i.eq5d_data_year := NULL][
+
+norm_info <- janssen_eq5d_data_info[norm_info, on = .(norm_country)][
   , eq5d_data_year := gsub("–", "-", eq5d_data_year)
+][
+  !(grepl("janssen", norm_id)), eq5d_data_year := NA
 ]
+
+
 
 
 # adding in other pieces on info
@@ -230,7 +358,7 @@ norm_info[norm_id == "mvh", value_set_type := "TTO"][
 ]
 
 
-norm_info[grepl("vih", norm_id), ':='(eq5d_data_version = "EQ-5D-5L", eq5d_data_year = "2017/2018",
+norm_info[grepl("vih", norm_id), ':='(eq5d_data_version = "EQ-5D-5L", eq5d_data_year = "2017-2018",
                               value_set_version = "EQ-5D-3L", value_set_year = 1993)]
 norm_info[grepl("vih", norm_id), value_set_type := ifelse(norm_id == "vih_primary", "DSU", "CW")]
 
@@ -248,11 +376,24 @@ norm_info[grepl("janssen", norm_id), norm_doi := "10.1007/978-94-007-7596-1_3"][
 norm_info[, value_set_version := "EQ-5D-3L"]
 
 
+norm_info[grepl("rom", norm_id), ':='(norm_doi = "10.1186/s12955-023-02144-8",
+                                      norm_url = "https://hqlo.biomedcentral.com/articles/10.1186/s12955-023-02144-8",
+                                      eq5d_data_year = "2018-2019",
+                                      value_set_year = "2018-2019")]
+norm_info[grepl("rom", norm_id), value_set_version := ifelse(norm_id == "rom_3L", "EQ-5D-3L", "EQ-5D-5L")]
+norm_info[grepl("rom", norm_id), value_set_type := ifelse(norm_id == "rom_3L", "cTTO", "VT")]
+norm_info[grepl("rom", norm_id), eq5d_data_version := ifelse(norm_id == "rom_3L", "EQ-5D-3L", "EQ-5D-5L")]
 
 
+# Looking at the way eq5d package categorises value sets
+# Version   Type  Country
+# EQ-5D-5L	VT	  Peru_cTTO
+# EQ-5D-5L	VT	  Peru_DCE
+# in eq5d package, type isn't exactly equivalent to valuation method
 
 
 # should the value set link to/reference the eq5d package in some way?
+# ie the eq5d function call that brings up that value set?
 # check: mvh is probably the same set of norms as one of them in the janssen stuff
 
 
@@ -260,8 +401,10 @@ norm_info[, value_set_version := "EQ-5D-3L"]
 # https://link.springer.com/article/10.1007/s10198-021-01326-9
 # https://pophealthmetrics.biomedcentral.com/articles/10.1186/1478-7954-9-17
 
-# Romania(!)
-# https://researchonline.lshtm.ac.uk/id/eprint/4672783/1/Olariu-etal-2023-Population-norms-for-the-EQ-5D-3L-and%20EQ-5D-5L-in-Romania.pdf
+
+# Euroqol repository
+# https://euroqol.org/information-and-support/resources/population-norms/
+
 
 # GB LA level
 # https://bmjopen.bmj.com/content/14/3/e076704
@@ -323,5 +466,4 @@ norm_info[, value_set_version := "EQ-5D-3L"]
 # North East England, adults with type 2 diabetes
 # https://www.ncbi.nlm.nih.gov/books/NBK592229/
 
-# Diabetes
-# https://www.frontiersin.org/journals/public-health/articles/10.3389/fpubh.2021.675523/full
+

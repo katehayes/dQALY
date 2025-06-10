@@ -2,5 +2,11 @@
 
 export(calculate_QALE)
 export(calculate_dQALY)
+export(default_norms)
 export(get_norm_info)
+export(r_default)
+export(r_health)
+export(r_lt_health)
+export(r_lt_health_reduced)
+export(r_none)
 import(data.table)

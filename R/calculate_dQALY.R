@@ -9,14 +9,14 @@
 #' @param year Integer
 #' permissible year
 #'
-#' @param life_table Null or data.table
+#' @param life_table Null or data.frame (or tibble or data.table)
 #' Allows users to supply their own life tables - has to have columns sex, x, q_x
 #'
-#' @param norms Null or string or data.table
+#' @param norms Null or string or data.frame (or tibble or data.table)
 #' (is it ok to allow an argument to be flexible like this?)
 #' specify which set of utility norms to use in the dQALY calculation by name
 #' OR
-#' provide your own norms a datatable with columns age_low, age_high, sex = "male" or "female, and avg_util
+#' provide your own norms a dataframe (or tibble or data.table) with columns age_low, age_high, sex = "male" or "female, and avg_util
 #' min(age_low) needs to be zero and max(age_high) needs to be (lets say) 100 for both sexes?
 #' Need to make sensible system for naming the norms we collect (eq5d package categorises
 #' value sets according to version, type, country, and then pubmed/doi/isbn reference)?
@@ -48,38 +48,39 @@
 #' you can change that assumption & set your own value with avg_util_young (most likely other assumption would be
 #' setting avg_util_young to 1)
 #'
-#' @param age_groups Null (default) or a datatable with cols age_low and age_high
+#' @param collapse_age Boolean (default FALSE) or a dataframe (or tibble or data.table) with cols age_low and age_high
 #' (lower and upper bounds), allowing user to specify age groups for which we should produce grouped estimates
+#' collapse age is default false, if true then all ages collapsed together,
+#' OR the user can pass in age groups and that indicates that they want age collapsed into the supplied groups
 #'
-#' @param sex_group Boolen
+#' @param collapse_sex Boolean, default FALSE
 #' Whether or not to group male & female estimates together
-#' (note: not sure about this argument name -'group by sex' means put into sex groups, not collapse across sex groups..)
 #'
-#' @param cohort Null (default) or a datatable with columns named sex, x, and count,
+#' @param cohort Null (default) or a dataframe (or tibble or data.table) with columns named sex, x, and count,
 #' allowing user to specify the distribution of a particular cohort by age and sex,
 #' so that they can calculate grouped estimates for this specific cohort
 #'
 # -------------------------------------------------------------------------
-#' @returns a datatable w columns age, sex and dQALY estimates
+#' @returns a dataframe w columns age, sex and dQALY estimates
 #'
 # -------------------------------------------------------------------------
 #' @examples
-#' library(data.table)
 #' #Output a table of dQALY values for all ages/genders, minimally specifying year & country
 #' calculate_dQALY(country = "United Kingdom", year = 2019)
 #'
 #' #Output a table of dQALY values for all ages/genders, specifying year, country and norm by name
 #' calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019)
 #'
-#' #Output a table of dQALY values for all ages/genders, specifying year & country, with user-specified norms
-#' my_norms <- data.table(sex = c(rep("male", 3), rep("female", 3)),
+#' #Output a table of dQALY values for all ages/genders, specifying year & country,
+#' #with user-specified norms
+#' my_norms <- data.frame(sex = c(rep("male", 3), rep("female", 3)),
 #'                        age_low = c(0, 20, 90),
 #'                        age_high = c(19, 89, 150),
 #'                        avg_util = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
 #' calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
 #'
 #' #Output a table of dQALY values for all ages/genders, with user-specified norms and life tables
-#' my_life_table <- data.table(sex = c(rep("male", 101), rep("female", 101)),
+#' my_life_table <- data.frame(sex = c(rep("male", 101), rep("female", 101)),
 #'                             x = c(0:100, 0:100),
 #'                             q_x = c(seq(0, 1, 0.01)))
 #'
@@ -91,40 +92,50 @@
 #'
 #' #Calculate grouped dQALY values - using default country-level population weightings:
 #' #1) collapse sex
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE)
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#'                 collapse_sex = TRUE)
 #' #2) age groups
-#' my_age_groups <- data.table(age_low = c(seq(0,90,5)), age_high = c(seq(4,89,5), 100))
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups)
+#' my_age_groups <- data.frame(age_low = c(seq(0,90,5)), age_high = c(seq(4,89,5), 100))
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups)
 #' #3) collapse sex and group age
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, sex_group = TRUE)
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#'                 collapse_age = my_age_groups, collapse_sex = TRUE)
 #'
 #' #Do any of these groupings with a user-supplied cohort
-#' my_cohort <- data.table(sex = c(rep("male", 5), rep("female", 8)),
+#' my_cohort <- data.frame(sex = c(rep("male", 5), rep("female", 8)),
 #'                         x = c(89:93, 89:92, 95:97, 100),
 #'                         count = c(1, 1, 2, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1))
-#' #note: any age and gender for which no count value is supplied is considered outside the cohort (count zero)
+#' #note: any age and gender for which no count value is supplied is considered
+#' #outside the cohort (count zero)
 #' #1) collapse sex
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, sex_group = TRUE, cohort = my_cohort)
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#'                 collapse_sex = TRUE, cohort = my_cohort)
 #' #2) age groups (note: of the age groups specified, only estimates for age groups that contain a
 #' #member of the specified cohort are returned)
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups, cohort = my_cohort)
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#'                 collapse_age = my_age_groups, cohort = my_cohort)
 #' #3) collapse sex and group age
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups,
-#' sex_group = TRUE, cohort = my_cohort)
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups,
+#'                 collapse_sex = TRUE, cohort = my_cohort)
 # -------------------------------------------------------------------------
 #' @export
-calculate_dQALY <- function(country = NULL,
+calculate_dQALY <- function(# we had discussed removing the default NULL from country & year parameters
+                            # but I've remembered that actually it is possible to run the function without
+                            # specifying values for country or year - in the case where the user
+                            # is not relying on package data at all, is instead supplying all their own
+                            # data (life tables, utility norms, cohort if grouping)
+                            country = NULL,
                             year = NULL,
+                            # put three dots? https://adv-r.hadley.nz/functions.html#fun-dot-dot-dot
                             life_table = NULL,
                             norms = NULL,
                             r = 0.035,
                             smr = 1, qcm = 1,
-                            lt_extend = TRUE,
-                            avg_util_young = NULL,
-                            age_groups = NULL,
-                            sex_group = F,
+                            lt_extend = TRUE, #needs new name
+                            avg_util_young = NULL, #needs new name
+                            collapse_age = FALSE,
+                            collapse_sex = FALSE,
                             cohort = NULL) {
-
 
   env <- environment()
 
@@ -237,10 +248,13 @@ calculate_dQALY <- function(country = NULL,
   } else {
     # user has supplied their own life tables
 
-    if((!is.null(age_groups) | sex_group == T) & is.null(cohort)) {
+    # should probably revisit the way these checks are formulated
+    if((length(collapse_age) == 2L | any(collapse_age == TRUE)) | collapse_sex == TRUE) {
       # not sure about this (error message too wordy anyway)
       stop("In order to calculate QALY loss estimates for population groups: if you supplied your own life tables to the calculation, you must also supply your own population cohort (needed to derive group averages).")
     }
+
+    life_table <- as.data.table(life_table)
 
 
   }
@@ -255,14 +269,14 @@ calculate_dQALY <- function(country = NULL,
     # if the user supplies their own norms
     # Should there be a series of checks that the norms provided are sensible
     # and a series of error messages?
-
-    utility_norms <- norms
+    utility_norms <- as.data.table(norms)
 
   } else {
 
     if(is.null(norms)) {
       # if user doesn't either a) supply their own utility norms or b) specify by name which ones they want to use by name
       # then we can get info on which norm to use for that country as default, from package data norm_info
+
 
       utility_norms <- utility_norms[norm_info[, .(norm_country, norm_id, default)],
                                      , on = .(norm_country, norm_id)]
@@ -358,13 +372,15 @@ calculate_dQALY <- function(country = NULL,
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   # if dQALY values need to be calculated for a set of population groups
-  if(!is.null(age_groups) | sex_group == T) {
+  if((length(collapse_age) == 2L | any(collapse_age == TRUE)) | collapse_sex == TRUE) {
 
     # need a cohort to do the grouping
     # if the user doesn't supply a cohort with specific population distribution across age and sex
     # then use the population distribution of whatever country has been selected (this is the default)
     if(is.null(cohort)) {
       cohort <- populations[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
+    } else {
+      cohort <- as.data.table(cohort)
     }
 
 
@@ -372,40 +388,49 @@ calculate_dQALY <- function(country = NULL,
                                on = .(sex, x)]
 
 
-    # if the user wants to group by age - and has indicated this by supplying a set of age groups
+    # if the user wants to collapse into AGE GROUPS (not just collapse age entirely) - and has indicated this by
+    # supplying a set of age groups to the collapse_age argument
     # then add this information about what their desired age groups are into the dQALY table
-    if(!is.null(age_groups)) {
+    if(length(collapse_age) == 2L) {
 
-      age_expand <- age_groups[, .(age_group = paste(age_low, age_high, sep = "-"), x = c(age_low:age_high)), by = c("age_low", "age_high")]
+      age_groups <- as.data.table(collapse_age)
+      age_groups <- age_groups[, .(age_group = paste(age_low, age_high, sep = "-"), x = c(age_low:age_high)), by = c("age_low", "age_high")]
 
-      dQALY_table <- dQALY_table[age_expand,
+      dQALY_table <- dQALY_table[age_groups,
                                  on = .(x),
                                  nomatch = NULL]
 
     }
 
 
-    # assign a value to cols based on whether the user wants to collapse by age group, sex, or both
-    # note: at present if the user wants to collapse age completely then they need to specify an age group like (0-120)
-    cols <- c("x")
-
-    if(!is.null(age_groups)) {
+    # assign a value to cols (vector of column names) based on whether the user wants to collapse by age group, sex, or both
+    # note: previously, if the user wanted to collapse age completely then they needed to specify an age group like (0-120)
+    # now if they want to do this they set collapse_age = TRUE & do not supply any custom age groups
+    if(length(collapse_age) == 2L) {
       cols <- c("age_group")
+    } else if(collapse_age == TRUE) {
+      cols <- character()
+    } else if(collapse_age == FALSE) {
+      cols <- c("x")
     }
 
-    if(sex_group == F){
+    if(collapse_sex == F){
       cols <- c(cols, "sex")
     }
 
-    # calculate a weighted mean dQALY value for each population group
+    # calculate a weighted mean dQALY value for each population group, using vector of column name cols
     dQALY_table <- dQALY_table[, .(dQALY_x = sum(dQALY_x*count)/sum(count)), by = cols]
 
   }
 
+
+  # some final organisation of output - changing column names, turning data.table into data.frame
   dQALY_table |>
     setnames(old = c("sex", "x", "dQALY_x", "age_group"), new = c("sex", "age_at_death", "dQALY", "age_at_death"), skip_absent = TRUE)
 
-  dQALY_table[]
+  setDF(dQALY_table)
+
+  dQALY_table
 
 }
 
@@ -470,3 +495,36 @@ calculate_QALE <- function(...) {
   FALSE
 
 }
+
+
+#
+# .are_valid_norms <- function(norms) {
+#   if (is.character(norms) && length(norms) == 1L && !is.na(norms)) {
+#     norm_copy <- copy(norm_info)
+#     avail_ids <- unique(norm_copy$norm_id)
+#     if (!norms %in% avail_ids) {
+#       stop("Invalid norm ID. Use function get_norm_info() to see the IDs for available norms.")
+#     }
+#     return(TRUE)
+#   }
+#
+#
+#   norm_copy <- copy(norm_info)
+#   avail_countries <- unique(norm_copy$norm_country)
+#   avail_ids <- unique(norm_copy$norm_id)
+#
+#   if (is.function(norms)) {
+#     args <- formals(norms)
+#     if (length(args) != 1L) {
+#       return(FALSE)
+#     }
+#     if (any(!(sapply(avail_countries, norms) %in% avail_ids))) { #NO non non no
+#       warning("")
+#     }
+#     return(TRUE)
+#   }
+#
+#   FALSE
+#
+# }
+
