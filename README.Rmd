@@ -4,6 +4,7 @@ output: github_document
 <!-- devtools::build_readme() -->
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -27,8 +28,10 @@ When evaluating the impact of a policy/programme/intervention, we often want to 
 
 The goal of the dQALY package is to provide an easy and flexible way of calculating the number of QALYs that are 'lost' when a person dies. 
 
-This package has been built using code adapted from the [COVID19_QALY_App](https://github.com/LSHTM-GHECO/COVID19_QALY_App), written by Nichola Naylor at LSHTM. The app was itself adapted from an [Excel tool](https://avalonecon.com/estimating-qaly-losses-associated-with-deaths-in-hospital-covid-19/) built by Andrew Briggs to operationalise the methods he & others set out in a [letter](https://onlinelibrary.wiley.com/doi/10.1002/hec.4208) published in the journal Health Economics in 2020.
+This package has been built using code adapted from the [COVID19_QALY_App](https://github.com/LSHTM-GHECO/COVID19_QALY_App), written by Nichola Naylor at LSHTM. The [COVID19_QALY_App](https://github.com/LSHTM-GHECO/COVID19_QALY_App) was itself adapted from an [Excel tool](https://avalonecon.com/estimating-qaly-losses-associated-with-deaths-in-hospital-covid-19/) built by Andrew Briggs to operationalise the methods for calculating QALY loss due to death that he & others set out in a [letter](https://onlinelibrary.wiley.com/doi/10.1002/hec.4208) published in the journal Health Economics in 2020.
 <!-- Some of the setup borrowed from qalytools & eq5d packages -->
+
+
 
 ## Installation
 
@@ -63,6 +66,56 @@ To get the net present value of the losses, we apply a discount rate. In our pac
 Our package allows discount rates to be specified flexibly.
 
 
+
+
+<table>
+    <thead>
+        <tr>
+            <th>Command</th>
+            <th>Explanation</th>
+            <th>Years 0 – 30</th>
+            <th>Years 31 – 75</th>
+            <th>Years 76 – 125</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>r_none()</td>
+            <td>No discounting</td>
+            <td>0%</td>
+            <td>0%</td>
+            <td>0%</td>
+        </tr>
+        <tr>
+            <td>r_default()</td>
+            <td>NICE reference case discount rate/ Green Book standard Social Time Preference Rate</td>
+            <td>3.5%</td>
+            <td>3.5%</td>
+            <td>3.5%</td>
+        </tr>
+        <tr>
+            <td>r_health()</td>
+            <td>NICE alternative discount rate/Green Book recommended discount rate for health or life values</td>
+            <td>1.5%</td>
+            <td>1.5%</td>
+            <td>1.5%</td>
+        </tr>
+        <tr>
+            <td>r_lt_health()</td>
+            <td>Green Book recommended declining long term discount rate for health or life values</td>
+            <td>1.5%</td>
+            <td>1.29%</td>
+            <td>1.07%</td>
+        </tr>
+        <tr>
+            <td>r_lt_health_reduced()</td>
+            <td>Green Book recommended rate reduced by excluding pure social time preference (relevant if intervention may effect substantial/irreversible wealth transfers between generations)</td>
+            <td>1%</td>
+            <td>0.86%</td>
+            <td>0.71%</td>
+        </tr>
+    </tbody>
+</table>
 
 
 

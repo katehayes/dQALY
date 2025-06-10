@@ -1,11 +1,12 @@
 Package: dQALY
-Title: What the Package Does (One Line, Title Case)
+Title: Calculates QALY Loss Due to Death
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+    c(person("Kate", "Hayes", email = "kate.hayes2@ukhsa.gov.uk", role = c("aut", "cre")),
+      person("Tim", "Taylor", role = "aut"),
+      person("Lucy", "Miller", role = "aut"))
 Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2

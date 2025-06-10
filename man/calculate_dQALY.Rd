@@ -14,8 +14,8 @@ calculate_dQALY(
   qcm = 1,
   lt_extend = TRUE,
   avg_util_young = NULL,
-  age_groups = NULL,
-  sex_group = F,
+  collapse_age = FALSE,
+  collapse_sex = FALSE,
   cohort = NULL
 )
 }
@@ -65,12 +65,13 @@ data is available) is assumed to have the same avg util value as the youngest gr
 you can change that assumption & set your own value with avg_util_young (most likely other assumption would be
 setting avg_util_young to 1)}
 
-\item{age_groups}{Null (default) or a dataframe (or tibble or data.table) with cols age_low and age_high
-(lower and upper bounds), allowing user to specify age groups for which we should produce grouped estimates}
+\item{collapse_age}{Boolean (default FALSE) or a dataframe (or tibble or data.table) with cols age_low and age_high
+(lower and upper bounds), allowing user to specify age groups for which we should produce grouped estimates
+collapse age is default false, if true then all ages collapsed together,
+OR the user can pass in age groups and that indicates that they want age collapsed into the supplied groups}
 
-\item{sex_group}{Boolen
-Whether or not to group male & female estimates together
-(note: not sure about this argument name -'group by sex' means put into sex groups, not collapse across sex groups..)}
+\item{collapse_sex}{Boolean, default FALSE
+Whether or not to group male & female estimates together}
 
 \item{cohort}{Null (default) or a dataframe (or tibble or data.table) with columns named sex, x, and count,
 allowing user to specify the distribution of a particular cohort by age and sex,
@@ -111,13 +112,13 @@ calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = rfun
 #Calculate grouped dQALY values - using default country-level population weightings:
 #1) collapse sex
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
-                sex_group = TRUE)
+                collapse_sex = TRUE)
 #2) age groups
 my_age_groups <- data.frame(age_low = c(seq(0,90,5)), age_high = c(seq(4,89,5), 100))
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups)
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups)
 #3) collapse sex and group age
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
-                age_groups = my_age_groups, sex_group = TRUE)
+                collapse_age = my_age_groups, collapse_sex = TRUE)
 
 #Do any of these groupings with a user-supplied cohort
 my_cohort <- data.frame(sex = c(rep("male", 5), rep("female", 8)),
@@ -127,12 +128,12 @@ my_cohort <- data.frame(sex = c(rep("male", 5), rep("female", 8)),
 #outside the cohort (count zero)
 #1) collapse sex
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
-                sex_group = TRUE, cohort = my_cohort)
+                collapse_sex = TRUE, cohort = my_cohort)
 #2) age groups (note: of the age groups specified, only estimates for age groups that contain a
 #member of the specified cohort are returned)
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
-                age_groups = my_age_groups, cohort = my_cohort)
+                collapse_age = my_age_groups, cohort = my_cohort)
 #3) collapse sex and group age
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, age_groups = my_age_groups,
-                sex_group = TRUE, cohort = my_cohort)
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups,
+                collapse_sex = TRUE, cohort = my_cohort)
 }
