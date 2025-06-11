@@ -147,7 +147,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 
   # Haven't figured this out yet - but want (if possible) to pass the environment env into this validity check function
   # if(.is_valid_arg_combination() == FALSE) {
-  #   stop()
+  #
   # }
 
 
@@ -492,7 +492,7 @@ calculate_QALE <- function(...) {
 
 
 
-.is_valid_arg_combination <- function() {
+.is_valid_arg_combination <- function(env = rlang::caller_env()) {
 
   # check for appropriate combination of parameters:
   # User can interact with function in a number of ways
@@ -501,22 +501,18 @@ calculate_QALE <- function(...) {
   # 3. use mix of package & own data
   # As a result there are a few different sets of possible combinations of values for arguments
 
-  # (note: making a series of separate if statements rather than if else's,
-  # just for my own ease of understanding, but could change this?)
 
   # 1. in the case when the user is relying on package life tables
-  if(.is_user_supplied(life_table) == FALSE) {
+  if(.is_user_supplied(env$life_table) == FALSE) {
 
     # The user must specify a country and a year
-    if(is.null(country) == TRUE | is.null(year) == TRUE) {
+    if(is.null(env$country) | is.null(env$year)) {
       warning("Please specify values for both of the arguments 'country' and 'year'.")
       return(FALSE)
     }
 
-  }
-
   # 2. in the case when the user is supplying their own life tables
-  if(.is_user_supplied(life_table) == TRUE) {
+  } else if(.is_user_supplied(env$life_table) == TRUE) {
 
     # RULE: if the user would like to group output, they need to supply their own cohort too
     # (this could change if it isn't sensible - my the logic for this choice is that it doesn't
@@ -524,8 +520,8 @@ calculate_QALE <- function(...) {
     # and then use a default country-level population weighting to group, since saying that survival is
     # significantly different from the country-level average in the cohort you're trying to study is
     # equivalent to saying that the cohort structure is significantly different)
-    if(.will_group(collapse_age, collapse_sex) == TRUE) {
-      if(is.null(cohort)) {
+    if(.will_group(env$collapse_age, env$collapse_sex) == TRUE) {
+      if(is.null(env$cohort)) {
         warning("If you are supplying your own custom life tables to the function, and you would
                 like to group the function output, then you must also supply your own custom cohort
                 to the function.")
@@ -533,43 +529,41 @@ calculate_QALE <- function(...) {
       }
     }
 
-  }
 
+    # 2.1 in the case when the user is supplying their own life tables but NOT supplying their own utility norms (ie using package utility norms)
+    if(.is_user_supplied(norms) == FALSE) {
 
-
-  # 2.1 in the case when the user is supplying their own life tables but NOT supplying their own utility norms (ie using package utility norms)
-  if(.is_user_supplied(life_table) == TRUE & .is_user_supplied(norms) == FALSE) {
-
-    # the user doesn't have to specify YEAR but must still specify COUNTRY
-    if(is.null(country) == TRUE) {
-      # Very much need to return to re-write warning
-      # This check/this error message might change subject to whether we allow users to select a norm from ANY country
-      # using norm_ids (would have to revise norm_ids so they are all unique - not just as they are presently which is
-      # unique within countries)
-      # (note to self - another option - probably more complicated?, would be to have a function that allows users to
-      # return instances of the actual norm data the package stores, and then they could use this data as input to the
-      # calculation, and we'd treat it as a user-supplied custom set of norms??)
-      warning("No custom utility norms have been supplied to the function.
+      # the user doesn't have to specify YEAR but must still specify COUNTRY
+      if(is.null(env$country)) {
+        # Very much need to return to re-write warning
+        # This check/this error message might change subject to whether we allow users to select a norm from ANY country
+        # using norm_ids (would have to revise norm_ids so they are all unique - not just as they are presently which is
+        # unique within countries)
+        # (note to self - another option - probably more complicated?, would be to have a function that allows users to
+        # return instances of the actual norm data the package stores, and then they could use this data as input to the
+        # calculation, and we'd treat it as a user-supplied custom set of norms??)
+        warning("No custom utility norms have been supplied to the function.
               That means an appropriate set of utility norms stored in package data must be selected for use in the calculation.
               Please indicate which country you intend to produce estimates for, by specifying a value for the argument 'country',
               so that the function can make an appropriate selection.")
-      # PERHAPS ADD: "or evaluate the appropriateness of your selection."
-      return(FALSE)
-    }
-  }
+        # PERHAPS ADD: "or evaluate the appropriateness of your selection."
+        return(FALSE)
+      }
 
+      # 2.2 in the case when the user is supplying their own life tables and utility norms
+    } else if(.is_user_supplied(env$norms) == TRUE) {
 
-  # 2.2 in the case when the user is supplying their own life tables and utility norms
-  if(.is_user_supplied(norms) == TRUE & .is_user_supplied(life_table) == TRUE) {
-
-    # if the user also supplied country and year, don't stop the function but
-    # do let them know that the values they chose are irrelevant/are not being used to produce estimates
-    if(!is.null(country) | !is.null(year)) {
-      warning("If you are supplying your own custom life tables AND custom utility norms to the function,
+      # if the user also supplied country and year, don't stop the function but
+      # do let them know that the values they chose are irrelevant/are not being used to produce estimates
+      if(!is.null(env$country) | !is.null(env$year)) {
+        warning("If you are supplying your own custom life tables AND custom utility norms to the function,
               then you do not have to supply a value for arguments 'country' and 'year, and any values you
               do supply for these arguments are ignored - i.e. they do not get used by the function at any
               point in the calculation of its outputs. ")
+        return(TRUE)
+      }
     }
+
   }
 
 }
