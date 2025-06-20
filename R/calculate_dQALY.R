@@ -145,14 +145,45 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-  # Haven't figured this out yet - but want (if possible) to pass the environment env into this validity check function
+  # checking whether the user has given the right combination of arguments
   if(.is_valid_arg_combination(env = env) == FALSE) {
     stop()
   }
 
 
+
+  # doing all the validity checks for all the list-like objects that can be user supplied
+  if(.is_user_supplied(life_table)) {
+    if(.is_valid_custom_lt(life_table) == FALSE) {
+      stop("User-supplied life tables have failed validity checks.")
+    }
+  }
+
+  if(.is_user_supplied(norms)) {
+    if(.are_valid_custom_norms(norms) == FALSE) {
+      stop("User-supplied utility norms have failed validity checks.")
+    }
+  }
+
+  if(.is_user_supplied(cohort)) {
+    if(.is_valid_custom_cohort(cohort) == FALSE) {
+      stop("User-supplied cohort has failed validity checks.")
+    }
+  }
+
+  if(.is_user_supplied(collapse_age)) {
+    if(.are_valid_custom_age_groups(collapse_age) == FALSE) {
+      stop("User-supplied age groups for grouping output, supplied in argument 'collapse_age', have failed validity checks.")
+    }
+  }
+
+
+
+
+
   if(.is_valid_r(r) == FALSE) {
-    stop("Parameter r must be a numeric scalar between 0 and 1 or a function that specifies how the discount rate changes over time.
+    stop("Parameter r must be a numeric scalar between 0 and 1 or a function that
+          specifies how the discount rate changes over time.
           See the README for examples of valid values for r.")
     # The function should take one argument (time point - number of years into the future) and return the desired discount rate at that time point.
   }
@@ -506,8 +537,8 @@ calculate_QALE <- function(...) {
   if(.is_user_supplied(env$life_table) == FALSE) {
 
     # The user must specify a country and a year
-    if(is.null(env$country) || is.null(env$year)) {
-      warning("Please specify values for both of the arguments 'country' and 'year'.")
+    if(is.null(env$country) | is.null(env$year)) {
+      warning("Since you are not providing your own life tables, please specify values for both of the arguments 'country' and 'year'.")
       return(FALSE)
     }
 
@@ -678,8 +709,8 @@ calculate_QALE <- function(...) {
     return(FALSE)
 
     # given there is the right number, check that the columns have the right names
-  } else if(any(!colnames(cohort) %in% c("x", "sex", "cohort"))) {
-    warning("User-supplied life tables are not in correct form.
+  } else if(any(!colnames(cohort) %in% c("x", "sex", "count"))) {
+    warning("User-supplied cohort is not in correct form.
              Columns must have names 'x', 'sex', 'count'.")
     return(FALSE)
 
