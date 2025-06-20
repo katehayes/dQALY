@@ -137,8 +137,8 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
                             collapse_sex = FALSE,
                             cohort = NULL) {
 
-  env <- environment()
 
+  env <- environment()
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # 1. Validity checks # # # # # # # # # # # # # # # # # # ## # # # # # # # # #
@@ -146,9 +146,9 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 
 
   # Haven't figured this out yet - but want (if possible) to pass the environment env into this validity check function
-  # if(.is_valid_arg_combination() == FALSE) {
-  #
-  # }
+  if(.is_valid_arg_combination(env = env) == FALSE) {
+    stop()
+  }
 
 
   if(.is_valid_r(r) == FALSE) {
@@ -492,8 +492,8 @@ calculate_QALE <- function(...) {
 
 
 
-.is_valid_arg_combination <- function(env = rlang::caller_env()) {
-
+.is_valid_arg_combination <- function(env) {
+  # browser()
   # check for appropriate combination of parameters:
   # User can interact with function in a number of ways
   # 1. rely entirely on package data
@@ -506,7 +506,7 @@ calculate_QALE <- function(...) {
   if(.is_user_supplied(env$life_table) == FALSE) {
 
     # The user must specify a country and a year
-    if(is.null(env$country) | is.null(env$year)) {
+    if(is.null(env$country) || is.null(env$year)) {
       warning("Please specify values for both of the arguments 'country' and 'year'.")
       return(FALSE)
     }
@@ -531,7 +531,7 @@ calculate_QALE <- function(...) {
 
 
     # 2.1 in the case when the user is supplying their own life tables but NOT supplying their own utility norms (ie using package utility norms)
-    if(.is_user_supplied(norms) == FALSE) {
+    if(.is_user_supplied(env$norms) == FALSE) {
 
       # the user doesn't have to specify YEAR but must still specify COUNTRY
       if(is.null(env$country)) {
@@ -566,25 +566,32 @@ calculate_QALE <- function(...) {
 
   }
 
+  return(TRUE)
+
 }
 
-
+# .is_valid_arg_combination(my_env)
 
 .is_user_supplied <- function(argument) {
-  if(length(argument) > 1L) {
-    TRUE
+  if(is.null(argument)) {
+    return(FALSE)
+  } else if(length(argument) > 1L) {
+    return(TRUE)
   } else {
-    FALSE
+    return(FALSE)
   }
 }
 
+# .is_user_supplied(my_env$life_table)
+
+
 .will_group <- function(collapse_age, collapse_sex) {
   if(length(collapse_age) > 1L) {
-    TRUE
+    return(TRUE)
   } else if(collapse_age == TRUE | collapse_sex == TRUE) {
-    TRUE
+    return(TRUE)
   } else {
-    FALSE
+    return(FALSE)
   }
 }
 
