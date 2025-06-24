@@ -24,7 +24,7 @@ library(dQALY)
 ```{r first_example}
 
 # you have to minimally specify country and year
-calculate_dQALY(country = "United Kingdom", year = 2015)
+# calculate_dQALY(country = "United Kingdom", year = 2015)
 
 # Note: If country or year you choose aren't available, it will tell you
 # calculate_dQALY(country = "Scotland", year = 2015)
