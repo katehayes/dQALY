@@ -103,6 +103,8 @@ un_pop[, count := as.numeric(count)*1000]
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 populations <- rbind(ons_pop[year >= 2015], un_pop[x != "100+"])[
+  , x := as.character(x)
+][
   , x := as.numeric(x)
 ] |>
   setcolorder(c("country", "year", "sex", "x", "count")) |>
