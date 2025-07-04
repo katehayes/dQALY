@@ -22,72 +22,150 @@ calculate_dQALY(
 \arguments{
 \item{country}{\verb{[string]}
 
-value is name of a permissible country}
+The name of a country (for which data is available & stored in the package).
+
+Case-sensitive - please use function get_norm_info() to see the list of permissible country names.
+
+Defaults to \code{NULL} - if \code{NULL} then the user must supply own life tables and utility norms.}
 
 \item{year}{\verb{[integer]}
 
-permissible year}
+A year (for which data is available & stored in the package).
 
-\item{life_table}{Null or data.frame (or tibble or data.table)
-Allows users to supply their own life tables - has to have columns sex, x, q_x}
+Defaults to \code{NULL} - if \code{NULL} then the user must supply own life tables.}
+
+\item{life_table}{\verb{[data frame]} or \verb{[tibble]} or \verb{[data table]}
+
+Allows users to supply their own life tables to the function, instead of using packaged life tables.
+
+Must have columns named 'sex', 'x' (age), and 'q_x' (mortality rate).
+
+Defaults to \code{NULL}.}
 
 \item{norms}{Null or string or data.frame (or tibble or data.table)
-(is it ok to allow an argument to be flexible like this?)
-specify which set of utility norms to use in the dQALY calculation by name
-OR
-provide your own norms a dataframe (or tibble or data.table) with columns lower, upper, sex = "male" or "female, and avg_util
-min(lower) needs to be zero and max(upper) needs to be (lets say) 100 for both sexes?
-Need to make sensible system for naming the norms we collect (eq5d package categorises
-value sets according to version, type, country, and then pubmed/doi/isbn reference)?
-&collect that info in norm_info package data?}
+MAKING CHANGES HERE - WILL WRITE}
 
-\item{r}{Numeric or function
-r is the discount rate
-r can either be a numeric scalar between 0 and 1 (default is 0.035)
-OR r can be a vectorised function
-the function takes as an argument the number of years into the future
-and returns value of the discount rate at that point}
+\item{r}{\verb{[numeric]} or \verb{[function]}
+
+Represents the discount rate that will be used in the calculation.
+
+Defaults to 0.035 - the NICE reference case discount rate of 3.5\%
+
+If \code{r} is numeric, it must be a numeric scalar between 0 and 1.
+
+Alternatively, to allow the user to specify a discount rate that varies
+across time, \code{r} can be a vectorised function.
+
+The function must take as an argument an integer greater than 0 - for example
+'x' - and return and return the desired discount rate 'x' years into the future.}
 
 \item{smr}{\verb{[numeric]}
 
-Represents a standardised mortality ratio
+A standardised mortality ratio.
 
-if less than 1 then population is less likely to die than average (and vice versa)
+Allows the user to make crude adjustments to packaged life table data,
+which represent average life expectancy at country level.
 
-Defaults to 1}
+\code{smr} defaults to 1.
+
+If it is greater than/ less than 1 - for example 1.05/0.95 -
+the calculation will estimate QALY loss due to death for a population assumed
+to have a mortality rate 5\% greater/lower than average mortality rate in the
+selected country.}
 
 \item{qcm}{\verb{[numeric]}
-adjusts morbidity/quality of life - default is 1 -
-if less than 1 then population has lower quality of life than average (and vice versa)}
 
-\item{lt_extend}{Boolean or numeric
+Allows the user to make crude adjustments to the packaged utility data,
+which represent average health-related quality of life at country level.
 
-Option to extend life tables past last year of data. If TRUE (default) then increment calculation
-done automatically. If numeric, should be a number greater than 1 (e.g. 1.05 if you want
-mortality rates to get 5\% bigger each year after the last year for which data is avail).}
+\code{qcm} defaults to 1.
 
-\item{avg_util_young}{Null/numeric - default is that the youngest age group (for which no qaly norm
-data is available) is assumed to have the same avg util value as the youngest group for which we have data -
-you can change that assumption & set your own value with avg_util_young (most likely other assumption would be
-setting avg_util_young to 1)}
+If it is greater than/ less than 1 - for example 1.05/0.95 -
+the calculation will estimate QALY loss due to death for a population assumed
+experience health-related quality of life 5\% greater/lower than the average
+health related quality of life in the selected country.}
 
-\item{collapse_age}{Boolean (default FALSE) or a dataframe (or tibble or data.table) with cols lower and upper
-(lower and upper bounds), allowing user to specify age groups for which we should produce grouped estimates
-collapse age is default false, if true then all ages collapsed together,
-OR the user can pass in age groups and that indicates that they want age collapsed into the supplied groups}
+\item{lt_extend}{\verb{[boolean]} or \verb{[numeric]}
 
-\item{collapse_sex}{\verb{[numeric]}
+Allows users to control whether/ the way in which assumptions are made about
+mortality rates among people older than 99, for whom data is not available.
 
-default FALSE
+If \code{FALSE}, no assumption is made, and the function assumes no people live
+beyond 99.
 
-Whether or not to group male & female estimates together}
+If \code{TRUE} (default), the function assumes that people can live up to 120
+and calculates a mortality rate for the older ages by assuming that
+mortality rates increase year on year by a constant increment - which is
+set equal to the average rate of increase over the last 10 years for which
+data is available.
 
-\item{cohort}{Null (default) or a dataframe (or tibble or data.table) with columns named sex, x, and count,
-allowing user to specify the distribution of a particular cohort by age and sex,
-so that they can calculate grouped estimates for this specific cohort}
+Alternatively, the user can specify their own increment, instead of allowing
+the function to calculate an increment automatically based on existing data.
+This is done by passing \code{lt_extend} a numeric value greater than 1 - for
+example, letting \code{lt_extend} to 1.05 means the function assumes mortality rates
+will increase by 5\% year on year after the last year for which data is available.}
+
+\item{avg_util_young}{\verb{[numeric]}
+
+Allows users to control the way in which assumptions are made about the average
+health-related quality of life of those under 18, for whom data is not typically
+available.
+
+Defaults to \code{NULL}. In this case the youngest age group is assumed to have
+the same average utility score as that of the next youngest group.
+
+Alternatively, the user can make their own assumption about the utility score
+given to the youngest group, by passing \code{avg_util_young} a numeric value
+between 0 and 1, where 1 would be equivalent to assuming the youngest age
+group is in perfect health.}
+
+\item{collapse_age}{\verb{[boolean]} or \verb{[data frame]} or \verb{[tibble]} or \verb{[data table]}
+
+Allows users to control how function outputs are grouped by age.
+
+If \code{FALSE} (default), the function outputs an estimate of QALY loss due to
+death for every year of age.
+
+Alternatively, if the user passes a data frame, tibble or data table that
+describe a set of age groups to \code{collapse_age}, the function will return the
+average QALY loss due to death for those age groups. The data frame, tibble,
+or data table must have two columns named 'lower' and 'upper', indicating the
+lower and upper bounds of the desired age groups. See the examples for more
+details.
+
+If \code{collapse_age} is set to \code{TRUE}, the function outputs a single average
+estimate of QALY loss due to death, aggregated across all ages - this is
+equivalent to supplying a single age group that encompasses all ages.}
+
+\item{collapse_sex}{\verb{[boolean]}
+
+Allows users to control whether or not the function outputs sex-specific
+estimates.
+
+If \code{FALSE} (default), outputted estimates are sex-specific. If \code{collapse_sex}
+is set to \code{TRUE}, then the function outputs estimates aggregated across sex.}
+
+\item{cohort}{\verb{[data frame]} or \verb{[tibble]} or \verb{[data table]}
+
+If the user chooses to have the function output grouped estimates,
+then the function needs to assume a distribution for the population in order
+to calculate weighted averages.
+
+If \code{cohort} is \code{NULL} (default), then (if the user has specified a value for
+\code{country} and \code{year} in order to use packaged life tables) the calculation
+will use packaged population data, selecting the appropriate country and year.
+
+Alternatively, the user can specify a population distribution across age and
+sex to be used in the grouping by passing a  data frame, tibble or data table
+to \code{cohort}, with columns 'sex', 'x' (age), and 'count'. Note that if the
+user supplied custom life tables to the function, they will be required to
+supply a custom cohort too.}
 }
 \value{
-a dataframe w columns age, sex and dQALY estimates
+A data frame. The data frame will have column \code{dQALY}, containing estimates
+of QALY loss due to death. Additionally, depending on how the user chooses
+to group function outputs, the data frame will have additional columns
+\code{sex} and \code{age_at_death}.
 }
 \description{
 Calculating QALY loss on death
