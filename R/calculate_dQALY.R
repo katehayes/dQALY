@@ -3,10 +3,12 @@
 # -------------------------------------------------------------------------
 #'
 # -------------------------------------------------------------------------
-#' @param country String
+#' @param country `[string]`
+#'
 #' value is name of a permissible country
 #'
-#' @param year Integer
+#' @param year `[integer]`
+#'
 #' permissible year
 #'
 #' @param life_table Null or data.frame (or tibble or data.table)
@@ -16,8 +18,8 @@
 #' (is it ok to allow an argument to be flexible like this?)
 #' specify which set of utility norms to use in the dQALY calculation by name
 #' OR
-#' provide your own norms a dataframe (or tibble or data.table) with columns age_low, age_high, sex = "male" or "female, and avg_util
-#' min(age_low) needs to be zero and max(age_high) needs to be (lets say) 100 for both sexes?
+#' provide your own norms a dataframe (or tibble or data.table) with columns lower, upper, sex = "male" or "female, and avg_util
+#' min(lower) needs to be zero and max(upper) needs to be (lets say) 100 for both sexes?
 #' Need to make sensible system for naming the norms we collect (eq5d package categorises
 #' value sets according to version, type, country, and then pubmed/doi/isbn reference)?
 #' &collect that info in norm_info package data?
@@ -29,11 +31,15 @@
 #' the function takes as an argument the number of years into the future
 #' and returns value of the discount rate at that point
 #
-#' @param smr Numeric
-#' a 'mortality ratio' - default is 1 -
+#' @param smr `[numeric]`
+#'
+#' Represents a standardised mortality ratio
+#'
 #' if less than 1 then population is less likely to die than average (and vice versa)
 #'
-#' @param qcm Numeric
+#' Defaults to 1
+#'
+#' @param qcm `[numeric]`
 #' adjusts morbidity/quality of life - default is 1 -
 #' if less than 1 then population has lower quality of life than average (and vice versa)
 #'
@@ -48,12 +54,15 @@
 #' you can change that assumption & set your own value with avg_util_young (most likely other assumption would be
 #' setting avg_util_young to 1)
 #'
-#' @param collapse_age Boolean (default FALSE) or a dataframe (or tibble or data.table) with cols age_low and age_high
+#' @param collapse_age Boolean (default FALSE) or a dataframe (or tibble or data.table) with cols lower and upper
 #' (lower and upper bounds), allowing user to specify age groups for which we should produce grouped estimates
 #' collapse age is default false, if true then all ages collapsed together,
 #' OR the user can pass in age groups and that indicates that they want age collapsed into the supplied groups
 #'
-#' @param collapse_sex Boolean, default FALSE
+#' @param collapse_sex `[numeric]`
+#'
+#' default FALSE
+#'
 #' Whether or not to group male & female estimates together
 #'
 #' @param cohort Null (default) or a dataframe (or tibble or data.table) with columns named sex, x, and count,
@@ -74,8 +83,8 @@
 #' #Output a table of dQALY values for all ages/genders, specifying year & country,
 #' #with user-specified norms
 #' my_norms <- data.frame(sex = c(rep("male", 3), rep("female", 3)),
-#'                        age_low = c(0, 20, 90),
-#'                        age_high = c(19, 89, 150),
+#'                        lower = c(0, 20, 90),
+#'                        upper = c(19, 89, 150),
 #'                        avg_util = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
 #' calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
 #'
@@ -95,7 +104,7 @@
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
 #'                 collapse_sex = TRUE)
 #' #2) age groups
-#' my_age_groups <- data.frame(age_low = c(seq(0,90,5)), age_high = c(seq(4,89,5), 100))
+#' my_age_groups <- data.frame(lower = c(seq(0,90,5)), upper = c(seq(4,89,5), 100))
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups)
 #' #3) collapse sex and group age
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
@@ -124,7 +133,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
                             # specifying values for country or year - in the case where the user
                             # is not relying on package data at all, is instead supplying all their own
                             # data (life tables, utility norms, cohort if grouping)
-                            country = NULL,
+                            country = NULL, #population
                             year = NULL,
                             # put three dots? https://adv-r.hadley.nz/functions.html#fun-dot-dot-dot
                             life_table = NULL,
@@ -135,7 +144,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
                             avg_util_young = NULL, #needs new name
                             collapse_age = FALSE,
                             collapse_sex = FALSE,
-                            cohort = NULL) {
+                            cohort = NULL) { #population_weight
 
 
   env <- environment()
@@ -355,7 +364,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # # # 2.2 changing assumption re youngest group in utility norms # # # # # # #
 
   if(!is.null(avg_util_young)) {
-    utility_norms[age_low == min(age_low), avg_util := avg_util_young]
+    utility_norms[lower == min(lower), avg_util := avg_util_young]
   }
 
 
@@ -386,7 +395,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # assigning the appropriate population-level utility norm to corresponding age, sex
   # dropping l(x) bc we only need L(x) for the QALY calculation
   dQALY_table <- utility_norms[life_table,
-                         on = .(sex, age_low <= x, age_high >= x),
+                         on = .(sex, lower <= x, upper >= x),
                          .(sex, x, L_x, avg_util)]
 
 
@@ -434,8 +443,8 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
     # the dQALY table
     if(length(collapse_age) > 1L) {
 
-      age_groups <- age_groups[, .(age_group = paste(age_low, age_high, sep = "-"),
-                                   x = c(age_low:age_high)), by = c("age_low", "age_high")]
+      age_groups <- age_groups[, .(age_group = paste(lower, upper, sep = "-"),
+                                   x = c(lower:upper)), by = c("lower", "upper")]
 
       dQALY_table <- dQALY_table[age_groups,
                                  on = .(x),
@@ -715,29 +724,29 @@ calculate_QALE <- function(...) {
   # check if there is the right number of columns
   if(length(norms) != 4L) {
     warning("User-supplied utility norms are not in correct form.
-             Utility norms need to be list-like object with four columns, with names 'age_low', 'age_high', 'sex', 'avg_util'.")
+             Utility norms need to be list-like object with four columns, with names 'lower', 'upper', 'sex', 'avg_util'.")
     return(FALSE)
 
     # given there is the right number, check that the columns have the right names
-  } else if(any(!colnames(norms) %in% c("age_low", "age_high", "sex", "avg_util"))) {
+  } else if(any(!colnames(norms) %in% c("lower", "upper", "sex", "avg_util"))) {
     warning("User-supplied life tables are not in correct form.
-             Columns must have names age_low', 'age_high', 'sex', 'avg_util'.")
+             Columns must have names lower', 'upper', 'sex', 'avg_util'.")
     return(FALSE)
 
     # given they have the right names, check that the cols have the right type of values
   } else if(.is_valid_sex_col(norms$sex) == FALSE) {
     return(FALSE)
-  } else if(.is_valid_age_low_col(norms$age_low) == FALSE) {
+  } else if(.is_valid_lower_col(norms$lower) == FALSE) {
     return(FALSE)
-  } else if(.is_valid_age_high_col(norms$age_high) == FALSE) {
+  } else if(.is_valid_upper_col(norms$upper) == FALSE) {
     return(FALSE)
   } else if(.is_valid_avg_util_col(norms$avg_util) == FALSE) {
     return(FALSE)
 
     # given the cols have appropriate values individually, check that they relate appropriately to each other
-  } else if(sum(norms$age_low > norms$age_high) > 0) {
-    warning("For user-supplied utility norm, the Value in column 'age_low' must always
-            be lower than or equal to the corresponding value in column 'age_high'.")
+  } else if(sum(norms$lower > norms$upper) > 0) {
+    warning("For user-supplied utility norm, the Value in column 'lower' must always
+            be lower than or equal to the corresponding value in column 'upper'.")
     return(FALSE)
   } else {
 
@@ -810,25 +819,25 @@ calculate_QALE <- function(...) {
   # check if there is the right number of columns
   if(length(age_groups) != 2L) {
     warning("User-supplied age_groups are not in correct form.
-             Age groups need to be list-like object with two columns, with names 'age_low', 'age_high'.")
+             Age groups need to be list-like object with two columns, with names 'lower', 'upper'.")
     return(FALSE)
 
     # given there is the right number, check that the columns have the right names
-  } else if(any(!colnames(age_groups) %in% c("age_low", "age_high"))) {
+  } else if(any(!colnames(age_groups) %in% c("lower", "upper"))) {
     warning("User-supplied age groups are not in correct form.
-             Columns must have names 'age_low', 'age_high'.")
+             Columns must have names 'lower', 'upper'.")
     return(FALSE)
 
     # given they have the right names, check that the cols have the right type of values
-  } else if(.is_valid_age_group_col(age_groups$age_low) == FALSE) {
+  } else if(.is_valid_age_group_col(age_groups$lower) == FALSE) {
     return(FALSE)
-  } else if(.is_valid_age_group_col(age_groups$age_high) == FALSE) {
+  } else if(.is_valid_age_group_col(age_groups$upper) == FALSE) {
     return(FALSE)
 
   # given the cols have appropriate values individually, check that they relate appropriately to each other
-  } else if(sum(age_groups$age_low > age_groups$age_high) > 0) {
-    warning("For user-supplied age groups, the Value in column 'age_low' must always
-            be lower than or equal to the corresponding value in column 'age_high'.")
+  } else if(sum(age_groups$lower > age_groups$upper) > 0) {
+    warning("For user-supplied age groups, the Value in column 'lower' must always
+            be lower than or equal to the corresponding value in column 'upper'.")
     return(FALSE)
   } else {
     # all checks are satisfied
@@ -923,16 +932,16 @@ calculate_QALE <- function(...) {
   }
 }
 
-.is_valid_age_low_col <- function(age_low_col) {
+.is_valid_lower_col <- function(lower_col) {
   # 1. needs to be all natural numbers
   # 2. needs to start at 0
-  if(any(!is.numeric(age_low_col))) {
-    stop("'age_low' column must contain only positive integers.")
+  if(any(!is.numeric(lower_col))) {
+    stop("'lower' column must contain only positive integers.")
     return(FALSE)
-  } else if(any(age_low_col < 0) | any(age_low_col %% 1 != 0)) {
-    warning("'age_low' column must contain only positive integers.")
+  } else if(any(lower_col < 0) | any(lower_col %% 1 != 0)) {
+    warning("'lower' column must contain only positive integers.")
     return(FALSE)
-  } else if(min(age_low_col) != 0) {
+  } else if(min(lower_col) != 0) {
     # 99 is placeholder - need to figure out overall approach for dealing with low & high ages throughout package
     warning("User-supplied utility norms must include values for age groups spanning from age 0 until at least 99 inclusive.")
     return(FALSE)
@@ -943,16 +952,16 @@ calculate_QALE <- function(...) {
 }
 
 
-.is_valid_age_high_col <- function(age_high_col) {
+.is_valid_upper_col <- function(upper_col) {
   # 1. needs to be all natural numbers
   # 2. needs to end at min 99 (placeholder)
-  if(any(!is.numeric(age_high_col))) {
-    stop("'age_high' column must contain only positive integers.")
+  if(any(!is.numeric(upper_col))) {
+    stop("'upper' column must contain only positive integers.")
     return(FALSE)
-  } else if(any(age_high_col < 0) | any(age_high_col %% 1 != 0)) {
-    warning("'age_high' column must contain only positive integers.")
+  } else if(any(upper_col < 0) | any(upper_col %% 1 != 0)) {
+    warning("'upper' column must contain only positive integers.")
     return(FALSE)
-  } else if(max(age_high_col) < 99) {
+  } else if(max(upper_col) < 99) {
     # 99 is placeholder - need to figure out overall approach for dealing with low & high ages throughout package
     warning("User-supplied utility norms must include values for age groups spanning from age 0 until at least 99 inclusive.")
     return(FALSE)
@@ -965,10 +974,10 @@ calculate_QALE <- function(...) {
 .is_valid_age_group_col <- function(age_group_col) {
   # 1. needs to be all natural numbers
   if(any(!is.numeric(age_group_col))) {
-    stop("In user-supplied age groups, 'age_low' and 'age_high' columns must contain only positive integers.")
+    stop("In user-supplied age groups, 'lower' and 'upper' columns must contain only positive integers.")
     return(FALSE)
   } else if(any(age_group_col < 0) | any(age_group_col %% 1 != 0)) {
-    warning("In user-supplied age groups, 'age_low' and 'age_high' columns must contain only positive integers.")
+    warning("In user-supplied age groups, 'lower' and 'upper' columns must contain only positive integers.")
     return(FALSE)
   } else {
     TRUE

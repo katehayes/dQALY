@@ -4,8 +4,8 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 mvh <- data.table(sex = c(rep("male", 8), rep("female", 8)),
-                  age_low = c(0, 18, 25, 35, 45, 55, 65, 75),
-                  age_high = c(17, 24, 34, 44, 54, 64, 74, 200),
+                  lower = c(0, 18, 25, 35, 45, 55, 65, 75),
+                  upper = c(17, 24, 34, 44, 54, 64, 74, 200),
                   avg_util = c(# male
                         c(0.94, 0.94, 0.93, 0.91, 0.84, 0.78, 0.78, 0.75),
                         # female
@@ -26,17 +26,17 @@ download.file(url = "https://raw.githubusercontent.com/bitowaqr/shortfall/main/s
 
 vih_primary <- as.data.table(utils::read.csv(temp))
 
-vih_primary[, age_low := as.numeric(substring(age5_str, 1, 2))]
-vih_primary[, age_high := as.numeric(substring(age5_str, 4, 5))]
-vih_primary[age_low == max(age_low), age_high := 200]
+vih_primary[, lower := as.numeric(substring(age5_str, 1, 2))]
+vih_primary[, upper := as.numeric(substring(age5_str, 4, 5))]
+vih_primary[lower == max(lower), upper := 200]
 vih_primary[, avg_util := sub(" .*", "", m_ci)]
 vih_primary[, c("age5_str", "m_ci", "n"):=NULL]
 vih_primary[, norm_id := "vih_primary"]
 vih_primary[, norm_country := "England"]
 
-yg <- vih_primary[age_low == min(age_low)]
-yg[, age_high := age_low - 1]
-yg[, age_low := 0]
+yg <- vih_primary[lower == min(lower)]
+yg[, upper := lower - 1]
+yg[, lower := 0]
 
 vih_primary <- rbind(vih_primary, yg)
 
@@ -48,17 +48,17 @@ download.file(url = "https://raw.githubusercontent.com/bitowaqr/shortfall/main/s
 vih_secondary <- as.data.table(utils::read.csv(temp))
 
 
-vih_secondary[, age_low := as.numeric(substring(age5_str, 1, 2))]
-vih_secondary[, age_high := as.numeric(substring(age5_str, 4, 5))]
-vih_secondary[age_low == max(age_low), age_high := 200]
+vih_secondary[, lower := as.numeric(substring(age5_str, 1, 2))]
+vih_secondary[, upper := as.numeric(substring(age5_str, 4, 5))]
+vih_secondary[lower == max(lower), upper := 200]
 vih_secondary[, avg_util := sub(" .*", "", m_ci)]
 vih_secondary[, c("age5_str", "m_ci", "n"):=NULL]
 vih_secondary[, norm_id := "vih_secondary"]
 vih_secondary[, norm_country := "England"]
 
-yg <- vih_secondary[age_low == min(age_low)]
-yg[, age_high := age_low - 1]
-yg[, age_low := 0]
+yg <- vih_secondary[lower == min(lower)]
+yg[, upper := lower - 1]
+yg[, lower := 0]
 
 vih_secondary <- rbind(vih_secondary, yg)
 
@@ -108,7 +108,7 @@ transform_janssen_norms <- function(norms, norm_name) {
   # melting wide to long
   norms <- norms[-c(1:2, n:nrow(norms)), -9] |>
     melt(measure = 2:8,
-         variable.name = "age_low",
+         variable.name = "lower",
          value.name = "avg_util")
 
   norms[, avg_util := as.numeric(avg_util)]
@@ -119,14 +119,14 @@ transform_janssen_norms <- function(norms, norm_name) {
   norms[norm_country == "UK", norm_country := "United Kingdom"]
   norms[norm_country == "US", norm_country := "United States of America"]
 
-  norms[, age_high := as.numeric(substring(age_low, 4, 5))]
-  norms[, age_low := as.numeric(substring(age_low, 1, 2))]
-  norms[age_low == max(age_low), age_high := 200]
+  norms[, upper := as.numeric(substring(lower, 4, 5))]
+  norms[, lower := as.numeric(substring(lower, 1, 2))]
+  norms[lower == max(lower), upper := 200]
   norms[, norm_id := norm_name]
 
-  yg <- norms[age_low == min(age_low)]
-  yg[, age_high := age_low - 1]
-  yg[, age_low := 0]
+  yg <- norms[lower == min(lower)]
+  yg[, upper := lower - 1]
+  yg[, lower := 0]
 
   # Other norms are sex-specific
   rbind(norms, yg, norms, yg) |>
@@ -164,22 +164,22 @@ rom_norms <- extract_janssen_norms(url = "https://hqlo.biomedcentral.com/article
 rom_5L <- rom_norms[Indicator == "Mean (SE)", c(1,4,5)] |>
   setnames(new = rom_norms[1, c(1,4,5)] |>
            unlist()) |>
-  setnames(old = "Age group", new = "age_low") |>
+  setnames(old = "Age group", new = "lower") |>
   melt(measure.vars = c("Men", "Women"),
        variable.name = "sex",
        value.name = "avg_util")
 
-rom_5L[, age_high := as.numeric(substring(age_low, 4, 5))]
-rom_5L[, age_low := as.numeric(substring(age_low, 1, 2))]
-rom_5L[age_low == max(age_low), age_high := 200]
+rom_5L[, upper := as.numeric(substring(lower, 4, 5))]
+rom_5L[, lower := as.numeric(substring(lower, 1, 2))]
+rom_5L[lower == max(lower), upper := 200]
 rom_5L[, avg_util := as.numeric(substring(avg_util, 1, 5))]
 rom_5L[, sex := ifelse(sex == "Men", "male", "female")]
 rom_5L[, norm_id := "rom_5L"]
 rom_5L[, norm_country := "Romania"]
 
-yg <- rom_5L[age_low == min(age_low)]
-yg[, age_high := age_low - 1]
-yg[, age_low := 0]
+yg <- rom_5L[lower == min(lower)]
+yg[, upper := lower - 1]
+yg[, lower := 0]
 
 rom_5L <- rbind(yg, rom_5L)
 
@@ -187,22 +187,22 @@ rom_5L <- rbind(yg, rom_5L)
 rom_3L <- rom_norms[Indicator == "Mean (SE)", c(1,7,8)] |>
   setnames(new = rom_norms[1, c(1,7,8)] |>
              unlist()) |>
-  setnames(old = "Age group", new = "age_low") |>
+  setnames(old = "Age group", new = "lower") |>
   melt(measure.vars = c("Men", "Women"),
        variable.name = "sex",
        value.name = "avg_util")
 
-rom_3L[, age_high := as.numeric(substring(age_low, 4, 5))]
-rom_3L[, age_low := as.numeric(substring(age_low, 1, 2))]
-rom_3L[age_low == max(age_low), age_high := 200]
+rom_3L[, upper := as.numeric(substring(lower, 4, 5))]
+rom_3L[, lower := as.numeric(substring(lower, 1, 2))]
+rom_3L[lower == max(lower), upper := 200]
 rom_3L[, avg_util := as.numeric(substring(avg_util, 1, 5))]
 rom_3L[, sex := ifelse(sex == "Men", "male", "female")]
 rom_3L[, norm_id := "rom_3L"]
 rom_3L[, norm_country := "Romania"]
 
-yg <- rom_3L[age_low == min(age_low)]
-yg[, age_high := age_low - 1]
-yg[, age_low := 0]
+yg <- rom_3L[lower == min(lower)]
+yg[, upper := lower - 1]
+yg[, lower := 0]
 
 rom_3L <- rbind(yg, rom_3L)
 
@@ -231,15 +231,15 @@ la_utils <- la_code2name[la_utils,
                          .(norm_country, sex, age_name, avg_util)][
                            , sex := ifelse(sex == "Female", "female", "male")
                          ][
-                           , age_low := as.numeric(substring(age_name, 1, 2))
+                           , lower := as.numeric(substring(age_name, 1, 2))
                          ][
-                           is.na(age_low), age_low := 0
+                           is.na(lower), lower := 0
                          ][
-                           , age_high := as.numeric(substring(age_name, 4, 5))
+                           , upper := as.numeric(substring(age_name, 4, 5))
                          ][
-                           age_low == 0, age_high := 20
+                           lower == 0, upper := 20
                          ][
-                           age_low == 80, age_high := 200
+                           lower == 80, upper := 200
                          ][
                            , age_name := NULL
                          ]
@@ -263,12 +263,12 @@ la_utils <- la_code2name[la_utils,
 #
 # ltc_norms <- ltc_norms[4, -c(1,3,5,7,9:11)] |>
 #   melt(measure.vars = patterns("years"),
-#        variable.name = "age_low",
+#        variable.name = "lower",
 #        value.name = "avg_util")
 #
 # ltc_norms[, avg_util := as.numeric(substring(avg_util, 1, 5))]
-# ltc_norms[, age_high := as.numeric(substring(age_low, 4, 5))]
-# ltc_norms[, age_low := as.numeric(substring(age_low, 1, 2))]
+# ltc_norms[, upper := as.numeric(substring(lower, 4, 5))]
+# ltc_norms[, lower := as.numeric(substring(lower, 1, 2))]
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # collecting into one table
@@ -276,11 +276,11 @@ la_utils <- la_code2name[la_utils,
 
 
 utility_norms <- rbind(mvh, vih_primary, vih_secondary, janssen, rom_3L, rom_5L) |>
-  setcolorder(c("norm_country", "norm_id", "age_low", "age_high", "sex", "avg_util")) |>
-  setorder(norm_country, norm_id, age_low, sex)
+  setcolorder(c("norm_country", "norm_id", "lower", "upper", "sex", "avg_util")) |>
+  setorder(norm_country, norm_id, lower, sex)
 
-utility_norms[, age_low := as.numeric(age_low)]
-utility_norms[, age_high := as.numeric(age_high)]
+utility_norms[, lower := as.numeric(lower)]
+utility_norms[, upper := as.numeric(upper)]
 utility_norms[, avg_util := as.numeric(avg_util)]
 
 

@@ -20,10 +20,12 @@ calculate_dQALY(
 )
 }
 \arguments{
-\item{country}{String
+\item{country}{\verb{[string]}
+
 value is name of a permissible country}
 
-\item{year}{Integer
+\item{year}{\verb{[integer]}
+
 permissible year}
 
 \item{life_table}{Null or data.frame (or tibble or data.table)
@@ -33,8 +35,8 @@ Allows users to supply their own life tables - has to have columns sex, x, q_x}
 (is it ok to allow an argument to be flexible like this?)
 specify which set of utility norms to use in the dQALY calculation by name
 OR
-provide your own norms a dataframe (or tibble or data.table) with columns age_low, age_high, sex = "male" or "female, and avg_util
-min(age_low) needs to be zero and max(age_high) needs to be (lets say) 100 for both sexes?
+provide your own norms a dataframe (or tibble or data.table) with columns lower, upper, sex = "male" or "female, and avg_util
+min(lower) needs to be zero and max(upper) needs to be (lets say) 100 for both sexes?
 Need to make sensible system for naming the norms we collect (eq5d package categorises
 value sets according to version, type, country, and then pubmed/doi/isbn reference)?
 &collect that info in norm_info package data?}
@@ -46,11 +48,15 @@ OR r can be a vectorised function
 the function takes as an argument the number of years into the future
 and returns value of the discount rate at that point}
 
-\item{smr}{Numeric
-a 'mortality ratio' - default is 1 -
-if less than 1 then population is less likely to die than average (and vice versa)}
+\item{smr}{\verb{[numeric]}
 
-\item{qcm}{Numeric
+Represents a standardised mortality ratio
+
+if less than 1 then population is less likely to die than average (and vice versa)
+
+Defaults to 1}
+
+\item{qcm}{\verb{[numeric]}
 adjusts morbidity/quality of life - default is 1 -
 if less than 1 then population has lower quality of life than average (and vice versa)}
 
@@ -65,12 +71,15 @@ data is available) is assumed to have the same avg util value as the youngest gr
 you can change that assumption & set your own value with avg_util_young (most likely other assumption would be
 setting avg_util_young to 1)}
 
-\item{collapse_age}{Boolean (default FALSE) or a dataframe (or tibble or data.table) with cols age_low and age_high
+\item{collapse_age}{Boolean (default FALSE) or a dataframe (or tibble or data.table) with cols lower and upper
 (lower and upper bounds), allowing user to specify age groups for which we should produce grouped estimates
 collapse age is default false, if true then all ages collapsed together,
 OR the user can pass in age groups and that indicates that they want age collapsed into the supplied groups}
 
-\item{collapse_sex}{Boolean, default FALSE
+\item{collapse_sex}{\verb{[numeric]}
+
+default FALSE
+
 Whether or not to group male & female estimates together}
 
 \item{cohort}{Null (default) or a dataframe (or tibble or data.table) with columns named sex, x, and count,
@@ -93,8 +102,8 @@ calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019
 #Output a table of dQALY values for all ages/genders, specifying year & country,
 #with user-specified norms
 my_norms <- data.frame(sex = c(rep("male", 3), rep("female", 3)),
-                       age_low = c(0, 20, 90),
-                       age_high = c(19, 89, 150),
+                       lower = c(0, 20, 90),
+                       upper = c(19, 89, 150),
                        avg_util = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
 calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
 
@@ -114,7 +123,7 @@ calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = rfun
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
                 collapse_sex = TRUE)
 #2) age groups
-my_age_groups <- data.frame(age_low = c(seq(0,90,5)), age_high = c(seq(4,89,5), 100))
+my_age_groups <- data.frame(lower = c(seq(0,90,5)), upper = c(seq(4,89,5), 100))
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups)
 #3) collapse sex and group age
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,

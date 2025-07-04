@@ -58,6 +58,7 @@ download.file(url = "https://population.un.org/wpp/assets/Excel%20Files/1_Indica
 
 lt_female <- fread(file = temp)[, .(Location, Time, Sex, AgeGrpStart, qx)]
 
+
 temp <- tempfile(fileext = ".csv.gz")
 download.file(url = "https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/CSV_FILES/WPP2024_Life_Table_Complete_Medium_Male_1950-2023.csv.gz",
               temp)

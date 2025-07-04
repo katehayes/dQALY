@@ -76,13 +76,9 @@ pop_male <- as.data.table(readxl::read_xlsx(temp, sheet = 1, range = "C17:DH2200
           variable.name = "x",
           value.name = "count")
 
-
-
-
 temp <- tempfile(fileext = ".xlsx")
 download.file(url = "https://population.un.org/wpp/assets/Excel%20Files/1_Indicator%20(Standard)/EXCEL_FILES/2_Population/WPP2024_POP_F01_3_POPULATION_SINGLE_AGE_FEMALE.xlsx",
               temp, mode = "wb")
-
 
 pop_female <- as.data.table(readxl::read_xlsx(temp, sheet = 1, range = "C17:DH22000"))[, -c(2:8)][
   `Region, subregion, country or area *` %in% utility_norms[, norm_country] & Year >= 2015
