@@ -23,8 +23,10 @@
 #' @returns A data frame containing information about available HRQoL norms.
 #'
 #' @examples
-#' hrqol_norms()
+#' head(hrqol_norms())
+#'
 #' hrqol_norms(country = "England")
+#'
 #' hrqol_norms(country = "England", references = TRUE)
 #'
 #'

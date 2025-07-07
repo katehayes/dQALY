@@ -45,46 +45,62 @@ pak::pak("katehayes/dQALY")
 
 ## Calculating QALY loss due to death with life expectancy & quality of life data
 
-Add overview of methods. Using life tables & utility norms. Utility
-norms themselves are constructed from health state data & value sets.
+Add overview of methods. Using life tables & HRQoL norms. HRQoL norms
+themselves are constructed from health state data & value sets.
 
-## Population-average health related quality of life scores (utility norms)
+## Health related quality of life (HRQoL) population norm data
 
-Some discussion of utility norms can be found on the [EuroQol
-website](https://euroqol.org/information-and-support/resources/population-norms/):
+**\[Explain norms\]** Some discussion of HRQoL norms can be found on the
+[EuroQol
+website](https://euroqol.org/information-and-support/resources/population-norms/).
 
-> Population reference data, sometimes called population norm data or
-> simply population norms, provide baseline or reference scores for a
-> specific country or international region, based on representative
-> samples. EQ-5D population norms can be used to to benchmark the
-> outcomes of specific individuals or groups (e.g. patients) against the
-> health of the general population, which also helps to identity the
-> burden of the disease of patients or patient groups.
-
-For most countries, there is more than one set of utility norms stored
-in the package data. For every country, we have chosen a set of default
+For most countries, there is more than one set of HRQoL norms stored in
+the package data. For every country, we have chosen a set of default
 norms - these are the norms that will be used when the `calculate_dQALY`
 function is called without specifying a value for the `norms` argument.
 Alternatively, the user can specify what set of package norms they would
-like to use by passing its ID to `norms`. Its also possible to supply
-custom norms.
+like to use by passing its ID to `norms`. It is also possible for the
+user to supply custom norms.
 
-The list of available utility norms and their IDs can be viewed using
-the `get_norm_info` function. This function also returns information we
-have documented about how each set of utility norms - specifically,
+The list of available HRQoL norms and their IDs can be viewed using the
+`hrqol_norms` function. This function also returns information we have
+documented about the make-up ofeach set of HRQoL norms - specifically,
 about the EQ-5D data and value sets from which the norms are estimated.
 We have tried to adopt the same terminology/categorisation scheme used
-by the eq5d package to document information about value sets.
+by the eq5d package to document information about value sets. Results
+can be filtered by country, and returned with or without reference
+information.
 <!-- Note: we could also store info about the model used to estimate the pop-level norms from the input data (eq5d profiles valued w the value sets) - e.g. in the ViH paper they use a linear model -->
 
-Having this information about the make-up of the utility norms is
-useful - information about, for example, what population the health
-state was data gathered from/ what population valued the health states/
-when the was data collected/ what methods were used to elicit the
-states/values. Being able to access this information allows the user to
+``` r
+library(dQALY)
+
+# Return all English utility norm sets without reference information
+head(hrqol_norms(country = "England", references = F))
+#>   norm_country eq5d_data_year       norm_id eq5d_data_version value_set_country
+#> 1      England           2008 janssen_euvas          EQ-5D-3L            Europe
+#> 2      England           2008   janssen_tto          EQ-5D-3L           England
+#> 3      England           2008   janssen_vas          EQ-5D-3L           England
+#> 4      England      2017-2018   vih_primary          EQ-5D-5L           England
+#> 5      England      2017-2018 vih_secondary          EQ-5D-5L           England
+#>   value_set_version value_set_type value_set_year default
+#> 1          EQ-5D-3L            VAS                  FALSE
+#> 2          EQ-5D-3L            TTO                  FALSE
+#> 3          EQ-5D-3L            VAS                  FALSE
+#> 4          EQ-5D-3L            DSU           1993    TRUE
+#> 5          EQ-5D-3L             CW           1993   FALSE
+```
+
+We can see that the package stores five different sets of English HRQoL
+population norm data. We can also see how these norms differ from each
+other with regards to what population the health state was data gathered
+from/ what population valued the health states/ when the was data
+collected/ what methods were used to elicit the states/values.
+Hopefully, being able to access this information allows the user to
 understand the implications of choosing one set of norms over another -
 and to make a judgement about the set of norms that is most appropriate
 for their purposes.
+
 <!-- What modelling methods were used to estimate population averages? -->
 
 ## Discounting
@@ -103,46 +119,13 @@ Our package allows discount rates to be specified flexibly.
 
 <table>
 
-<thead>
-
-<tr>
-
-<th>
-
-Command
-</th>
-
-<th>
-
-Explanation
-</th>
-
-<th>
-
-Years 0 – 30
-</th>
-
-<th>
-
-Years 31 – 75
-</th>
-
-<th>
-
-Years 76 – 125
-</th>
-
-</tr>
-
-</thead>
-
 <tbody>
 
 <tr>
 
 <td>
 
-r_none()
+`r_none`
 </td>
 
 <td>
@@ -150,28 +133,13 @@ r_none()
 No discounting
 </td>
 
-<td>
-
-0%
-</td>
-
-<td>
-
-0%
-</td>
-
-<td>
-
-0%
-</td>
-
 </tr>
 
 <tr>
 
 <td>
 
-r_default()
+`r_default`
 </td>
 
 <td>
@@ -180,28 +148,13 @@ NICE reference case discount rate/ Green Book standard Social Time
 Preference Rate
 </td>
 
-<td>
-
-3.5%
-</td>
-
-<td>
-
-3.5%
-</td>
-
-<td>
-
-3.5%
-</td>
-
 </tr>
 
 <tr>
 
 <td>
 
-r_health()
+`r_health`
 </td>
 
 <td>
@@ -210,28 +163,13 @@ NICE alternative discount rate/Green Book recommended discount rate for
 health or life values
 </td>
 
-<td>
-
-1.5%
-</td>
-
-<td>
-
-1.5%
-</td>
-
-<td>
-
-1.5%
-</td>
-
 </tr>
 
 <tr>
 
 <td>
 
-r_lt_health()
+`r_lt_health`
 </td>
 
 <td>
@@ -240,28 +178,13 @@ Green Book recommended declining long term discount rate for health or
 life values
 </td>
 
-<td>
-
-1.5%
-</td>
-
-<td>
-
-1.29%
-</td>
-
-<td>
-
-1.07%
-</td>
-
 </tr>
 
 <tr>
 
 <td>
 
-r_lt_health_reduced()
+`r_lt_health_reduced`
 </td>
 
 <td>
@@ -271,23 +194,67 @@ preference (relevant if intervention may effect substantial/irreversible
 wealth transfers between generations)
 </td>
 
-<td>
-
-1%
-</td>
-
-<td>
-
-0.86%
-</td>
-
-<td>
-
-0.71%
-</td>
-
 </tr>
 
 </tbody>
 
 </table>
+
+``` r
+library(dQALY)
+library(ggplot2)
+
+years <- c(0:125)
+  
+ggplot() +
+  geom_line(aes(x = years, y = r_none(years)), colour = "green") +
+  geom_line(aes(x = years, y = r_default(years)), colour = "red") +
+  geom_line(aes(x = years, y = r_health(years)), colour = "blue") +
+  geom_line(aes(x = years, y = r_lt_health(years)), colour = "purple") +
+  geom_line(aes(x = years, y = r_lt_health_reduced(years)), colour = "orange") +
+  scale_x_continuous(name = "Number of years into the future",
+                     limits = c(0, 125),
+                     expand = c(0,0)) +
+  scale_y_continuous(name = "Discount rate",
+                     limits = c(-0.00013, 0.0355),
+                     expand = c(0,0)) +
+  theme_classic()
+```
+
+<img src="man/figures/README-discounting-1.png" width="100%" />
+
+``` r
+
+
+
+ggplot(data = calculate_dQALY(country = "England", year = 2019, 
+                              collapse_sex = T,
+                              r = r_none), 
+       aes(x = age_at_death, y = dQALY)) +
+  geom_line(colour = "green") +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+                                   collapse_sex = T,
+                                   r = r_default),
+            colour = "red") +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019,
+                                   collapse_sex = T,
+                                   r = r_health),
+            colour = "blue") +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+                                   collapse_sex = T,
+                                   r = r_lt_health),
+            colour = "purple") +
+  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+                                   collapse_sex = T,
+                                   r = r_lt_health_reduced),
+            colour = "orange") +
+  scale_x_continuous(name = "Age at death",
+                     limits = c(0, 125),
+                     expand = c(0,0)) +
+  scale_y_continuous(name = "QALY loss",
+                     limits = c(0, 80),
+                     expand = c(0,0)) +
+  theme_classic()
+```
+
+<img src="man/figures/README-discounting-2.png" width="100%" />

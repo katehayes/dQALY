@@ -51,13 +51,12 @@ For most countries, there is more than one set of utility norms stored in the pa
 The available utility norms can be viewed using the `hrqol_norms` function. Results can be filtered by country, and returned with or without reference information.
 
 ```{r hrqol_norms}
-library(data.table)
 
-# Return all utility norm sets for all countries (10 rows only)
-print(hrqol_norms(), class = FALSE, nrows = 10)
+# Return all utility norm sets for all countries
+head(hrqol_norms())
 
 # Return all English utility norm sets with reference information
-print(hrqol_norms(country = "England", references = T), class = FALSE)
+head(hrqol_norms(country = "England", references = T))
 
 ```
 

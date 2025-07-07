@@ -13,7 +13,7 @@ Description: The quality-adjusted life year, or QALY, is a widely used outcome
       would be gained or lost. The goal of the dQALY package is to provide an 
       easy and flexible way of calculating the number of QALYs that are 'lost' 
       when a person dies. The package stores life expectancy and quality of life
-      data, allowing users to 
+      data, allowing users to.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

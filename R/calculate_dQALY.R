@@ -583,22 +583,185 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 
 
 
+
+
 # -------------------------------------------------------------------------
 #' Calculate quality-adjusted life expectancy
 # -------------------------------------------------------------------------
 #' @description
 #' Calculates quality-adjusted life expectancy for a given country and year
 # -------------------------------------------------------------------------
-#' @param ...
+#' @param country `[string]`
+#'
+#' The name of a country (for which data is available & stored in the package).
+#'
+#' Case-sensitive - please use function `hrqol_norms` to see the list of permissible country names.
+#'
+#' Defaults to `NULL` - if `NULL` then the user must supply own life tables and utility norms.
+#'
+#' @param year `[integer]`
+#'
+#' A year (for which data is available & stored in the package).
+#'
+#' Defaults to `NULL` - if `NULL` then the user must supply own life tables.
+#'
+#' @param life_table `[data frame]` or `[tibble]` or `[data table]`
+#'
+#' Allows users to supply their own life tables to the function, instead of using packaged life tables.
+#'
+#' Must have columns named 'sex', 'x' (age), and 'q_x' (mortality rate).
+#'
+#' Defaults to `NULL`.
+#'
+#' @param norms Null or string or data.frame (or tibble or data.table)
+#' MAKING CHANGES HERE - WILL WRITE
+#'
+#' @param smr `[numeric]`
+#'
+#' A standardised mortality ratio.
+#'
+#' Allows the user to make crude adjustments to packaged life table data,
+#' which represent average life expectancy at country level.
+#'
+#' `smr` defaults to 1.
+#'
+#' If it is greater than/ less than 1 - for example 1.05/0.95 -
+#' the calculation will estimate QALE for a population assumed to have a
+#' mortality rate 5% greater/lower than average mortality rate in the
+#' selected country.
+#'
+#' @param qcm `[numeric]`
+#'
+#' Allows the user to make crude adjustments to the packaged utility data,
+#' which represent average health-related quality of life at country level.
+#'
+#' `qcm` defaults to 1.
+#'
+#' If it is greater than/ less than 1 - for example 1.05/0.95 -
+#' the calculation will estimate QALE for a population assumed to experience
+#' health-related quality of life 5% greater/lower than the average
+#' health-related quality of life in the selected country.
+#'
+#'
+#' @param lt_extend `[boolean]` or `[numeric]`
+#'
+#' Allows users to control whether/ the way in which assumptions are made about
+#' mortality rates among people older than 99, for whom data is not available.
+#'
+#' If `FALSE`, no assumption is made, and the function assumes no people live
+#' beyond 99.
+#'
+#' If `TRUE` (default), the function assumes that people can live up to 120
+#' and calculates a mortality rate for the older ages by assuming that
+#' mortality rates increase year on year by a constant increment - which is
+#' set equal to the average rate of increase over the last 10 years for which
+#' data is available.
+#'
+#' Alternatively, the user can specify their own increment, instead of allowing
+#' the function to calculate an increment automatically based on existing data.
+#' This is done by passing `lt_extend` a numeric value greater than 1 - for
+#' example, letting `lt_extend` to 1.05 means the function assumes mortality rates
+#' will increase by 5% year on year after the last year for which data is available.
+#'
+#'
+#' @param avg_util_young `[numeric]`
+#'
+#' Allows users to control the way in which assumptions are made about the average
+#' health-related quality of life of those under 18, for whom data is not typically
+#' available.
+#'
+#' Defaults to `NULL`. In this case the youngest age group is assumed to have
+#' the same average utility score as that of the next youngest group.
+#'
+#' Alternatively, the user can make their own assumption about the utility score
+#' given to the youngest group, by passing `avg_util_young` a numeric value
+#' between 0 and 1, where 1 would be equivalent to assuming the youngest age
+#' group is in perfect health.
+#'
+#'
+#' @param collapse_age `[boolean]` or `[data frame]` or `[tibble]` or `[data table]`
+#'
+#' Allows users to control how function outputs are grouped by age.
+#'
+#' If `FALSE` (default), the function outputs an estimate of QALE at every year
+#' of age.
+#'
+#' Alternatively, if the user passes a data frame, tibble or data table that
+#' describe a set of age groups to `collapse_age`, the function will return the
+#' average QALE for those age groups. The data frame, tibble, or data table must
+#' have two columns named 'lower' and 'upper', indicating the lower and upper
+#' bounds of the desired age groups. See the examples for more details.
+#'
+#' If `collapse_age` is set to `TRUE`, the function outputs a single average
+#' estimate of QALE, aggregated across all ages - this is equivalent to
+#' supplying a single age group that encompasses all ages.
+#'
+#'
+#' @param collapse_sex `[boolean]`
+#'
+#' Allows users to control whether or not the function outputs sex-specific
+#' estimates.
+#'
+#' If `FALSE` (default), outputted estimates are sex-specific. If `collapse_sex`
+#' is set to `TRUE`, then the function outputs estimates aggregated across sex.
+#'
+#'
+#' @param cohort `[data frame]` or `[tibble]` or `[data table]`
+#'
+#' If the user chooses to have the function output grouped estimates,
+#' then the function needs to assume a distribution for the population in order
+#' to calculate weighted averages.
+#'
+#' If `cohort` is `NULL` (default), then (if the user has specified a value for
+#' `country` and `year` in order to use packaged life tables) the calculation
+#' will use packaged population data, selecting the appropriate country and year.
+#'
+#' Alternatively, the user can specify a population distribution across age and
+#' sex to be used in the grouping by passing a  data frame, tibble or data table
+#' to `cohort`, with columns 'sex', 'x' (age), and 'count'. Note that if the
+#' user supplied custom life tables to the function, they will be required to
+#' supply a custom cohort too.
+#'
 # -------------------------------------------------------------------------
 #' @returns
 #'
+#' A data frame. The data frame will have column `QALE` (quality adjusted life
+#' years). Additionally, depending on how the user chooses
+#' to group function outputs, the data frame will have additional columns
+#' `sex` and `age_at_death`.
+#'
 # -------------------------------------------------------------------------
 #' @examples
+#' calculate_QALE(country = "England", year = 2018)
 # -------------------------------------------------------------------------
 #' @export
-calculate_QALE <- function(...) {
-  calculate_dQALY(..., r = 0)
+calculate_QALE <- function(country = NULL,
+                           year = NULL,
+                           life_table = NULL,
+                           norms = NULL,
+                           smr = 1, qcm = 1,
+                           lt_extend = TRUE,
+                           avg_util_young = NULL,
+                           collapse_age = FALSE,
+                           collapse_sex = FALSE,
+                           cohort = NULL) {
+
+  QALE_table <- calculate_dQALY(country = country,
+                                year = year,
+                                life_table = life_table,
+                                norms = norms,
+                                smr = smr,
+                                qcm = qcm,
+                                lt_extend = lt_extend,
+                                avg_util_young = avg_util_young,
+                                collapse_age = collapse_age,
+                                collapse_sex = collapse_sex,
+                                r = 0)
+
+  names(QALE_table)[names(QALE_table) == "dQALY"] <- "QALE"
+
+  QALE_table
+
 }
 
 
