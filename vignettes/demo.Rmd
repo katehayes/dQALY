@@ -48,16 +48,16 @@ library(dQALY)
 
 For most countries, there is more than one set of utility norms stored in the package data. For every country, we have chosen a set of default norms - these are the norms that will be used when the `calculate_dQALY` function is called without specifying a value for the `norms` argument. Alternatively, the user specify what set of package norms they would like to use by passing its ID to `norms`. Its also possible to supply custom norms.
 
-The available utility norms can be viewed using the `get_norm_info` function. Results can be filtered by country, and returned with or without reference information.
+The available utility norms can be viewed using the `hrqol_norms` function. Results can be filtered by country, and returned with or without reference information.
 
-```{r get_norm_info}
+```{r hrqol_norms}
 library(data.table)
 
 # Return all utility norm sets for all countries (10 rows only)
-print(get_norm_info(), class = FALSE, nrows = 10)
+print(hrqol_norms(), class = FALSE, nrows = 10)
 
 # Return all English utility norm sets with reference information
-print(get_norm_info(country = "England", references = T), class = FALSE)
+print(hrqol_norms(country = "England", references = T), class = FALSE)
 
 ```
 

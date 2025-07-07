@@ -3,7 +3,7 @@
 export(calculate_QALE)
 export(calculate_dQALY)
 export(default_norms)
-export(get_norm_info)
+export(hrqol_norms)
 export(r_default)
 export(r_health)
 export(r_lt_health)

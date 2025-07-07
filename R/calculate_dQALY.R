@@ -7,7 +7,7 @@
 #'
 #' The name of a country (for which data is available & stored in the package).
 #'
-#' Case-sensitive - please use function get_norm_info() to see the list of permissible country names.
+#' Case-sensitive - please use function `hrqol_norms` to see the list of permissible country names.
 #'
 #' Defaults to `NULL` - if `NULL` then the user must supply own life tables and utility norms.
 #'
@@ -162,8 +162,10 @@
 #' #Output a table of dQALY values for all ages/genders, minimally specifying year & country
 #' calculate_dQALY(country = "United Kingdom", year = 2019)
 #'
+#'
 #' #Output a table of dQALY values for all ages/genders, specifying year, country and norm by name
 #' calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019)
+#'
 #'
 #' #Output a table of dQALY values for all ages/genders, specifying year & country,
 #' #with user-specified norms
@@ -173,6 +175,7 @@
 #'                        avg_util = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
 #' calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
 #'
+#'
 #' #Output a table of dQALY values for all ages/genders, with user-specified norms and life tables
 #' my_life_table <- data.frame(sex = c(rep("male", 101), rep("female", 101)),
 #'                             x = c(0:100, 0:100),
@@ -180,9 +183,11 @@
 #'
 #' calculate_dQALY(life_table = my_life_table, norms = my_norms)
 #'
+#'
 #' #Calculate dQALY values using a variable discount rate
 #' rfun = function(x) ifelse(x < 31, 0.015, ifelse(x > 75, 0.0107, 0.0129))
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = rfun)
+#'
 #'
 #' #Calculate grouped dQALY values - using default country-level population weightings:
 #' #1) collapse sex
@@ -269,7 +274,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
     avail_countries <- norm_info$norm_country
     if(!(country %in% avail_countries)) {
       stop("Value for `country` must be chosen from the list of available
-      countries. Use get_norm_info() to see the list. If you wish to calculate
+      countries. Use hrqol_norms() to see the list. If you wish to calculate
       QALY loss estimates for a country that is not currently available,
       you can do so by supplying custom life tables and utility norms to
       the function.")
@@ -326,7 +331,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
       # check that the norm id they supplied is valid
       # error message referring user to norm info function - could do with re-write
       if(!(norms %in% norm_info[norm_country == country, norm_id])) {
-        stop("Invalid norm ID. Use function get_norm_info() to see the IDs for the norms available for your chosen country.")
+        stop("Invalid norm ID. Use function hrqol_norms() to see the IDs for the norms available for your chosen country.")
       }
 
       utility_norms <- utility_norms[norm_country == get("country", env) & norm_id == norms][, c("norm_country", "norm_id"):=NULL]
