@@ -1,0 +1,47 @@
+"","norm_country","eq5d_data_year","norm_id","eq5d_data_version","value_set_country","value_set_version","value_set_type","value_set_year","norm_doi","norm_url","default"
+"1","Argentina","2005","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"2","Argentina","2005","janssen_tto","EQ-5D-3L","Argentina","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"3","Argentina","2005","janssen_vas","EQ-5D-3L","Argentina","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"4","Belgium","2001-2003","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"5","Belgium","2001-2003","janssen_vas","EQ-5D-3L","Belgium","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"6","China","2010","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"7","Denmark","2000-2001","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"8","Denmark","2000-2001","janssen_tto","EQ-5D-3L","Denmark","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"9","Denmark","2000-2001","janssen_vas","EQ-5D-3L","Denmark","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"10","England","2008","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"11","England","2008","janssen_tto","EQ-5D-3L","England","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"12","England","2008","janssen_vas","EQ-5D-3L","England","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"13","England","2017-2018","vih_primary","EQ-5D-5L","England","EQ-5D-3L","DSU","1993","10.1016/j.jval.2022.07.005","https://www.valueinhealthjournal.com/article/S1098-3015(22)02101-5/fulltext",TRUE
+"14","England","2017-2018","vih_secondary","EQ-5D-5L","England","EQ-5D-3L","CW","1993","10.1016/j.jval.2022.07.005","https://www.valueinhealthjournal.com/article/S1098-3015(22)02101-5/fulltext",FALSE
+"15","Finland","2000","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"16","Finland","2000","janssen_vas","EQ-5D-3L","Finland","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"17","France","2001-2003","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"18","France","2001-2003","janssen_tto","EQ-5D-3L","France","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"19","Germany","2001-2003","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"20","Germany","2001-2003","janssen_tto","EQ-5D-3L","Germany","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"21","Germany","2001-2003","janssen_vas","EQ-5D-3L","Germany","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"22","Greece","1998","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"23","Hungary","2000","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"24","Italy","2001-2003","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"25","Italy","2001-2003","janssen_tto","EQ-5D-3L","Italy","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"26","Netherlands","2001-2003","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"27","Netherlands","2001-2003","janssen_tto","EQ-5D-3L","Netherlands","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"28","New Zealand","1999","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"29","New Zealand","1999","janssen_vas","EQ-5D-3L","New Zealand","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"30","Republic of Korea","2007","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"31","Republic of Korea","2007","janssen_tto","EQ-5D-3L","Republic of Korea","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"32","Romania","2018-2019","rom_3L","EQ-5D-3L","Romania","EQ-5D-3L","cTTO","2018-2019","10.1186/s12955-023-02144-8","https://hqlo.biomedcentral.com/articles/10.1186/s12955-023-02144-8",TRUE
+"33","Romania","2018-2019","rom_5L","EQ-5D-5L","Romania","EQ-5D-5L","VT","2018-2019","10.1186/s12955-023-02144-8","https://hqlo.biomedcentral.com/articles/10.1186/s12955-023-02144-8",FALSE
+"34","Slovenia","2000","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"35","Slovenia","2000","janssen_vas","EQ-5D-3L","Slovenia","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"36","Spain","2001-2003","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"37","Spain","2001-2003","janssen_tto","EQ-5D-3L","Spain","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"38","Spain","2001-2003","janssen_vas","EQ-5D-3L","Spain","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"39","Sweden","1994","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"40","Thailand","2007","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE
+"41","United Kingdom","1993","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"42","United Kingdom","1993","janssen_tto","EQ-5D-3L","United Kingdom","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"43","United Kingdom","1993","janssen_vas","EQ-5D-3L","United Kingdom","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"44","United Kingdom","1993","mvh","EQ-5D-3L","United Kingdom","EQ-5D-3L","TTO","1993","","https://www.york.ac.uk/che/pdf/DP172.pdf",TRUE
+"45","United States of America","2000-2002","janssen_euvas","EQ-5D-3L","Europe","EQ-5D-3L","VAS","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",FALSE
+"46","United States of America","2000-2002","janssen_tto","EQ-5D-3L","United States of America","EQ-5D-3L","TTO","","10.1007/978-94-007-7596-1_3","https://www.ncbi.nlm.nih.gov/books/NBK500364/",TRUE

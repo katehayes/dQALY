@@ -1,4 +1,6 @@
-# usethis::use_data(life_tables, utility_norms, norm_info, populations, internal = TRUE, overwrite = TRUE)
+root <- file.path(here::here(), "data-raw")
+utility_norms <- as.data.table(read.csv(file.path(root, "utility_norms.csv"), row.names = 1L))
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # English life tables from ONS
@@ -104,7 +106,7 @@ life_tables <- rbind(eng_lt, un_lt) |>
   setorder(country, year, x, sex)
 
 
-
+write.csv(life_tables, file.path(root, "life_tables.csv"))
 
 
 

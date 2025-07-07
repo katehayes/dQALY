@@ -1,3 +1,9 @@
+root <- file.path(here::here(), "data-raw")
+utility_norms <- as.data.table(read.csv(file.path(root, "utility_norms.csv"), row.names = 1L))
+
+
+
+
 # Reading in other ONS population data for England directly from their website
 # You have to specify the year you want to select via the 'year' argument.
 # Note - ONS release data by year of age for ages 0-89 in one Excel workbook,
@@ -107,4 +113,5 @@ populations <- rbind(ons_pop[year >= 2015], un_pop[x != "100+"])[
   setorder(country, year, x, sex)
 
 
+write.csv(populations, file.path(root, "populations.csv"))
 
