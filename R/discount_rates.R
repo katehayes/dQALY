@@ -10,13 +10,26 @@
 
 
 # -------------------------------------------------------------------------
-#' No Discounting
+#' No discount rate
 # -------------------------------------------------------------------------
 #'
-#' @param x Numeric, number of years into the future
+#' One of a set of functions that can be passed to argument `r` in the
+#' `calculate_dQALY` function, that implement common discounting regimes.
+#' Passing `r_none` to `calculate_dQALY` means choosing not to
+#' apply a discount rate when calculating QALY loss due to death (setting
+#' the discount rate to zero).
 #'
-#' @returns Numeric, discount rate at that point in the future
+#' See also functions `r_default`, `r_health`, `r_lt_health`,
+#' `r_lt_health_reduced`.
+# -------------------------------------------------------------------------
 #'
+#' @param x `[numeric]`
+#'
+#' Number of years into the future.
+#'
+#' @returns `[numeric]`
+#'
+#' Discount rate `x` years the future.
 # -------------------------------------------------------------------------
 #' @examples
 #' r_none(10)
@@ -33,9 +46,23 @@ r_none <- function(x) {
 #' NICE Reference Case Discount Rate
 # -------------------------------------------------------------------------
 #'
-#' @param x Numeric, number of years into the future
+#' One of a set of functions that can be passed to argument `r` in the
+#' `calculate_dQALY` function, that implement common discounting regimes.
+#' Passing `r_default` to `calculate_dQALY` means choosing to
+#' apply the NICE reference case discount rate of 3.5% when calculating QALY
+#' loss due to death.
 #'
-#' @returns Numeric, discount rate at that point in the future
+#' See also functions `r_none`, `r_health`, `r_lt_health`,
+#' `r_lt_health_reduced`.
+# -------------------------------------------------------------------------
+#'
+#' @param x `[numeric]`
+#'
+#' Number of years into the future.
+#'
+#' @returns `[numeric]`
+#'
+#' Discount rate `x` years the future.
 #'
 # -------------------------------------------------------------------------
 #' @examples
@@ -54,9 +81,24 @@ r_default <- function(x) {
 #' Green Book Health Discount Rate
 # -------------------------------------------------------------------------
 #'
-#' @param x Numeric, number of years into the future
+#' One of a set of functions that can be passed to argument `r` in the
+#' `calculate_dQALY` function, that implement common discounting regimes.
+#' Passing `r_health` to `calculate_dQALY` means choosing to
+#' apply the NICE alternative discount rate/ Green Book recommended discount
+#' rate for health or life values of 1.5% when calculating QALY
+#' loss due to death.
 #'
-#' @returns Numeric, discount rate at that point in the future
+#' See also functions `r_none`, `r_default`, `r_lt_health`,
+#' `r_lt_health_reduced`.
+# -------------------------------------------------------------------------
+#'
+#' @param x `[numeric]`
+#'
+#' Number of years into the future.
+#'
+#' @returns `[numeric]`
+#'
+#' Discount rate `x` years the future.
 #'
 # -------------------------------------------------------------------------
 #' @examples
@@ -75,9 +117,23 @@ r_health <- function(x) {
 #' Green Book Long Term Health Discount Rate
 # -------------------------------------------------------------------------
 #'
-#' @param x Numeric, number of years into the future
+#' One of a set of functions that can be passed to argument `r` in the
+#' `calculate_dQALY` function, that implement common discounting regimes.
+#' Passing `r_lt_health` to `calculate_dQALY` means choosing to
+#' apply the Green Book recommended declining long term discount rate for health
+#' or life values when calculating QALY loss due to death.
 #'
-#' @returns Numeric, discount rate at that point in the future
+#' See also functions `r_none`, `r_default`, `r_health`,
+#' `r_lt_health_reduced`.
+# -------------------------------------------------------------------------
+#'
+#' @param x `[numeric]`
+#'
+#' Number of years into the future.
+#'
+#' @returns `[numeric]`
+#'
+#' Discount rate `x` years the future.
 #'
 # -------------------------------------------------------------------------
 #' @examples
@@ -97,9 +153,24 @@ r_lt_health <- function(x) {
 #' Green Book Reduced Long Term Health Discount Rate
 # -------------------------------------------------------------------------
 #'
-#' @param x Numeric, number of years into the future
+#' One of a set of functions that can be passed to argument `r` in the
+#' `calculate_dQALY` function, that implement common discounting regimes.
+#' Passing `r_lt_health_reduced` to `calculate_dQALY` means choosing to
+#' apply the Green Book recommended rate reduced by excluding pure social time
+#' preference (relevant if intervention may effect substantial/irreversible
+#' wealth transfers between generations) when calculating QALY loss due to death.
 #'
-#' @returns Numeric, discount rate at that point in the future
+#' See also functions `r_none`, `r_default`, `r_health`,
+#' `r_lt_health`.
+# -------------------------------------------------------------------------
+#'
+#' @param x `[numeric]`
+#'
+#' Number of years into the future.
+#'
+#' @returns `[numeric]`
+#'
+#' Discount rate `x` years the future.
 #'
 # -------------------------------------------------------------------------
 #' @examples

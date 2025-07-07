@@ -7,13 +7,26 @@
 r_health(x)
 }
 \arguments{
-\item{x}{Numeric, number of years into the future}
+\item{x}{\verb{[numeric]}
+
+Number of years into the future.}
 }
 \value{
-Numeric, discount rate at that point in the future
+\verb{[numeric]}
+
+Discount rate \code{x} years the future.
 }
 \description{
-Green Book Health Discount Rate
+One of a set of functions that can be passed to argument \code{r} in the
+\code{calculate_dQALY} function, that implement common discounting regimes.
+Passing \code{r_health} to \code{calculate_dQALY} means choosing to
+apply the NICE alternative discount rate/ Green Book recommended discount
+rate for health or life values of 1.5\% when calculating QALY
+loss due to death.
+}
+\details{
+See also functions \code{r_none}, \code{r_default}, \code{r_lt_health},
+\code{r_lt_health_reduced}.
 }
 \examples{
 r_health(10)
