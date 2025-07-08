@@ -38,7 +38,7 @@ Defaults to \code{NULL} - if \code{NULL} then the user must supply own life tabl
 
 Allows users to supply their own life tables to the function, instead of using packaged life tables.
 
-Must have columns named 'sex', 'x' (age), and 'q_x' (mortality rate).
+Must have columns named 'sex', 'age', and 'q' (probability of death).
 
 Defaults to \code{NULL}.}
 
@@ -157,15 +157,16 @@ will use packaged population data, selecting the appropriate country and year.
 
 Alternatively, the user can specify a population distribution across age and
 sex to be used in the grouping by passing a  data frame, tibble or data table
-to \code{cohort}, with columns 'sex', 'x' (age), and 'count'. Note that if the
+to \code{cohort}, with columns 'sex', 'age', and 'count'. Note that if the
 user supplied custom life tables to the function, they will be required to
 supply a custom cohort too.}
 }
 \value{
 A data frame. The data frame will have column \code{dQALY}, containing estimates
 of QALY loss due to death. Additionally, depending on how the user chooses
-to group function outputs, the data frame will have additional columns
-\code{sex} and \code{age_at_death}.
+to group function outputs, the data frame may additional columns
+\code{sex}, \code{age}, and \code{lower}/\code{upper} (representing the lower and upper bounds
+of age groups).
 }
 \description{
 Calculating QALY loss on death
@@ -190,8 +191,8 @@ calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
 
 #Output a table of dQALY values for all ages/genders, with user-specified norms and life tables
 my_life_table <- data.frame(sex = c(rep("male", 101), rep("female", 101)),
-                            x = c(0:100, 0:100),
-                            q_x = c(seq(0, 1, 0.01)))
+                            age = c(0:100, 0:100),
+                            q = c(seq(0, 1, 0.01)))
 
 calculate_dQALY(life_table = my_life_table, norms = my_norms)
 
@@ -214,7 +215,7 @@ calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
 
 #Do any of these groupings with a user-supplied cohort
 my_cohort <- data.frame(sex = c(rep("male", 5), rep("female", 8)),
-                        x = c(89:93, 89:92, 95:97, 100),
+                        age = c(89:93, 89:92, 95:97, 100),
                         count = c(1, 1, 2, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1))
 #note: any age and gender for which no count value is supplied is considered
 #outside the cohort (count zero)

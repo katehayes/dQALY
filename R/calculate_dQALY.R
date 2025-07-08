@@ -21,7 +21,7 @@
 #'
 #' Allows users to supply their own life tables to the function, instead of using packaged life tables.
 #'
-#' Must have columns named 'sex', 'x' (age), and 'q_x' (mortality rate).
+#' Must have columns named 'sex', 'age', and 'q' (probability of death).
 #'
 #' Defaults to `NULL`.
 #'
@@ -145,7 +145,7 @@
 #'
 #' Alternatively, the user can specify a population distribution across age and
 #' sex to be used in the grouping by passing a  data frame, tibble or data table
-#' to `cohort`, with columns 'sex', 'x' (age), and 'count'. Note that if the
+#' to `cohort`, with columns 'sex', 'age', and 'count'. Note that if the
 #' user supplied custom life tables to the function, they will be required to
 #' supply a custom cohort too.
 #'
@@ -154,8 +154,9 @@
 #'
 #' A data frame. The data frame will have column `dQALY`, containing estimates
 #' of QALY loss due to death. Additionally, depending on how the user chooses
-#' to group function outputs, the data frame will have additional columns
-#' `sex` and `age_at_death`.
+#' to group function outputs, the data frame may additional columns
+#' `sex`, `age`, and `lower`/`upper` (representing the lower and upper bounds
+#' of age groups).
 #'
 # -------------------------------------------------------------------------
 #' @examples
@@ -178,8 +179,8 @@
 #'
 #' #Output a table of dQALY values for all ages/genders, with user-specified norms and life tables
 #' my_life_table <- data.frame(sex = c(rep("male", 101), rep("female", 101)),
-#'                             x = c(0:100, 0:100),
-#'                             q_x = c(seq(0, 1, 0.01)))
+#'                             age = c(0:100, 0:100),
+#'                             q = c(seq(0, 1, 0.01)))
 #'
 #' calculate_dQALY(life_table = my_life_table, norms = my_norms)
 #'
@@ -202,7 +203,7 @@
 #'
 #' #Do any of these groupings with a user-supplied cohort
 #' my_cohort <- data.frame(sex = c(rep("male", 5), rep("female", 8)),
-#'                         x = c(89:93, 89:92, 95:97, 100),
+#'                         age = c(89:93, 89:92, 95:97, 100),
 #'                         count = c(1, 1, 2, 1, 1, 3, 2, 1, 1, 2, 1, 1, 1))
 #' #note: any age and gender for which no count value is supplied is considered
 #' #outside the cohort (count zero)
@@ -303,7 +304,9 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
     if(.is_valid_custom_lt(life_table) == FALSE) {
       stop("User-supplied life tables have failed validity checks.")
     } else {
-      life_table <- as.data.table(life_table)
+      life_table <- as.data.table(life_table) |>
+        setnames(old = c("age", "q"),
+                 new = c("x", "q_x"))
     }
   } else {
     # Filtering the package data to select life tables for the chosen country, year
@@ -349,7 +352,9 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
       if(.is_valid_custom_cohort(cohort) == FALSE) {
         stop("User-supplied cohort has failed validity checks.")
       } else {
-        cohort <- as.data.table(cohort)
+        cohort <- as.data.table(cohort) |>
+          setnames(old = c("age"),
+                   new = c("x"))
       }
     } else {
       # if the user doesn't supply a cohort with specific population distribution across age and sex
@@ -533,7 +538,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
     # the dQALY table
     if(length(collapse_age) > 1L) {
 
-      age_groups <- age_groups[, .(age_group = paste(lower, upper, sep = "-"),
+      age_groups <- age_groups[, .(age = paste(lower, upper, sep = "-"),
                                    x = c(lower:upper)), by = c("lower", "upper")]
 
       dQALY_table <- dQALY_table[age_groups,
@@ -549,7 +554,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
     # like (0-120) now if they want to do this they set collapse_age = TRUE & do
     # not supply any custom age groups
     if(length(collapse_age) > 1L) {
-      cols <- c("age_group")
+      cols <- c("age", "lower", "upper")
     } else if(collapse_age == TRUE) {
       cols <- character()
     } else if(collapse_age == FALSE) {
@@ -570,9 +575,10 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   # changing column names, turning data.table into data.frame
+  # NOTE: not sure of what final output column names should be
   dQALY_table |>
-    setnames(old = c("sex", "x", "dQALY_x", "age_group"),
-             new = c("sex", "age_at_death", "dQALY", "age_at_death"),
+    setnames(old = c("x", "dQALY_x"),
+             new = c("age", "dQALY"),
              skip_absent = TRUE)
 
   setDF(dQALY_table)
@@ -609,7 +615,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 #'
 #' Allows users to supply their own life tables to the function, instead of using packaged life tables.
 #'
-#' Must have columns named 'sex', 'x' (age), and 'q_x' (mortality rate).
+#' Must have columns named 'sex', 'age', and 'q' (probability of death).
 #'
 #' Defaults to `NULL`.
 #'
@@ -718,7 +724,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 #'
 #' Alternatively, the user can specify a population distribution across age and
 #' sex to be used in the grouping by passing a  data frame, tibble or data table
-#' to `cohort`, with columns 'sex', 'x' (age), and 'count'. Note that if the
+#' to `cohort`, with columns 'sex', 'age', and 'count'. Note that if the
 #' user supplied custom life tables to the function, they will be required to
 #' supply a custom cohort too.
 #'
@@ -727,8 +733,9 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 #'
 #' A data frame. The data frame will have column `QALE` (quality adjusted life
 #' years). Additionally, depending on how the user chooses
-#' to group function outputs, the data frame will have additional columns
-#' `sex` and `age_at_death`.
+#' to group function outputs, the data frame may additional columns
+#' `sex`, `age`, and `lower`/`upper` (representing the lower and upper bounds
+#' of age groups).
 #'
 # -------------------------------------------------------------------------
 #' @examples
@@ -1014,19 +1021,19 @@ calculate_QALE <- function(country = NULL,
   # check if there is the right number of columns
   if(length(cohort) != 3L) {
     warning("User-supplied cohort is not in correct form.
-             Cohort need to be list-like object with three columns, with names 'x', 'sex', 'count'.")
+             Cohort need to be list-like object with three columns, with names 'age', 'sex', 'count'.")
     return(FALSE)
 
     # given there is the right number, check that the columns have the right names
-  } else if(any(!colnames(cohort) %in% c("x", "sex", "count"))) {
+  } else if(any(!colnames(cohort) %in% c("age", "sex", "count"))) {
     warning("User-supplied cohort is not in correct form.
-             Columns must have names 'x', 'sex', 'count'.")
+             Columns must have names 'age', 'sex', 'count'.")
     return(FALSE)
 
     # given they have the right names, check that the cols have the right type of values
   } else if(.is_valid_sex_col(cohort$sex) == FALSE) {
     return(FALSE)
-  } else if(.is_valid_cohort_x_col(cohort$x) == FALSE) {
+  } else if(.is_valid_cohort_age_col(cohort$age) == FALSE) {
     return(FALSE)
   } else if(.is_valid_count_col(cohort$count) == FALSE) {
     return(FALSE)
@@ -1043,21 +1050,21 @@ calculate_QALE <- function(country = NULL,
   # check if there is the right number of columns
   if(length(life_table) != 3L) {
     warning("User-supplied life tables are not in correct form.
-             Life tables need to be list-like object with three columns, with names 'sex', 'x', 'q_x'.")
+             Life tables need to be list-like object with three columns, with names 'sex', 'age', 'q'.")
     return(FALSE)
 
   # given there is the right number, check that the columns have the right names
-  } else if(any(!colnames(life_table) %in% c("sex", "x", "q_x"))) {
+  } else if(any(!colnames(life_table) %in% c("sex", "age", "q"))) {
     warning("User-supplied life tables are not in correct form.
-             Columns must have names 'sex', 'x', 'q_x'.")
+             Columns must have names 'sex', 'age', 'q'.")
     return(FALSE)
 
   # given they have the right names, check that the cols have the right type of values
   } else if(.is_valid_sex_col(life_table$sex) == FALSE) {
     return(FALSE)
-  } else if(.is_valid_lt_x_col(life_table$x) == FALSE) {
+  } else if(.is_valid_lt_age_col(life_table$age) == FALSE) {
     return(FALSE)
-  } else if(.is_valid_qx_col(life_table$q_x) == FALSE) {
+  } else if(.is_valid_q_col(life_table$q) == FALSE) {
     return(FALSE)
   } else {
   # all checks are satisfied
@@ -1124,12 +1131,12 @@ calculate_QALE <- function(country = NULL,
 }
 
 
-.is_valid_qx_col <- function(qx_col) {
-  if(any(!is.numeric(qx_col))) {
-    stop("'q_x' column must contain only numbers between 0 and 1.")
+.is_valid_q_col <- function(q_col) {
+  if(any(!is.numeric(q_col))) {
+    stop("'q' column must contain only numbers between 0 and 1.")
     return(FALSE)
-  } else if(any(qx_col < 0) | any(qx_col > 1)) {
-    warning("'q_x' column must contain only numbers between 0 and 1.")
+  } else if(any(q_col < 0) | any(q_col > 1)) {
+    warning("'q' column must contain only numbers between 0 and 1.")
     return(FALSE)
   } else {
     TRUE
@@ -1151,18 +1158,18 @@ calculate_QALE <- function(country = NULL,
 
 # need different things from the x column in a user-supplied life table and a user-supplied cohort
 # not sure about this check yet - not finished
-.is_valid_lt_x_col <- function(x_col) {
+.is_valid_lt_age_col <- function(age_col) {
   # 1. needs to be all natural numbers
   # 2. needs to start at 0 and go to at least....99?
   # 3. needs to have no missing numbers between lowest and highest
   # NEED TO WRITE CHECK FOR THIRD POINT
-  if(any(!is.numeric(x_col))) {
-    stop("'x' column in user-supplied life tables must contain only positive integers.")
+  if(any(!is.numeric(age_col))) {
+    stop("'age' column in user-supplied life tables must contain only positive integers.")
     return(FALSE)
-  } else if(any(x_col < 0) | any(x_col %% 1 != 0)) {
-    warning("'x' column in user-supplied life tables must contain only positive integers.")
+  } else if(any(age_col < 0) | any(age_col %% 1 != 0)) {
+    warning("'age' column in user-supplied life tables must contain only positive integers.")
     return(FALSE)
-  } else if(max(x_col) < 99 | min(x_col) != 0) {
+  } else if(max(age_col) < 99 | min(age_col) != 0) {
     warning("User-supplied life tables must contain data for all ages from 0 up to and including 99.")
     return(FALSE)
   } else {
@@ -1172,19 +1179,24 @@ calculate_QALE <- function(country = NULL,
 
 
 # need different things from the x column in a user-supplied life table and a user-supplied cohort
-.is_valid_cohort_x_col <- function(x_col) {
+.is_valid_cohort_age_col <- function(age_col) {
   # 1. needs to be all natural numbers
-  if(any(!is.numeric(x_col))) {
-    stop("'x' column in user-supplied cohort must contain only positive integers.")
+  if(any(!is.numeric(age_col))) {
+    stop("'age' column in user-supplied cohort must contain only positive integers.")
     return(FALSE)
-  } else if(any(x_col < 0) | any(x_col %% 1 != 0)) {
-    warning("'x' column in user-supplied cohort must contain only positive integers.")
+  } else if(any(age_col < 0) | any(age_col %% 1 != 0)) {
+    warning("'age' column in user-supplied cohort must contain only positive integers.")
     return(FALSE)
   } else {
     TRUE
   }
 }
 
+
+
+# what is needed for lower and upper cols in the case of user-supplied
+# utility norms is different to what is needed for lower and upper cols
+# in the case of age groups supplied for grouping output
 .is_valid_lower_col <- function(lower_col) {
   # 1. needs to be all natural numbers
   # 2. needs to start at 0

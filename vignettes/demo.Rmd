@@ -70,7 +70,7 @@ library(ggplot2)
 # default utility norms set by the package
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
                               collapse_sex = T),
-       aes(x = age_at_death, y = dQALY)) +
+       aes(x = age, y = dQALY)) +
   geom_line(colour = "red") +
   geom_line(data = calculate_dQALY(country = "Argentina", year = 2019, 
                                    collapse_sex = T),
@@ -96,7 +96,7 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
                               collapse_sex = T,
                               norms = "janssen_euvas"),
-       aes(x = age_at_death, y = dQALY)) +
+       aes(x = age, y = dQALY)) +
   geom_line(colour = "red") +
   geom_line(data = calculate_dQALY(country = "Argentina", year = 2019, 
                                    collapse_sex = T,
@@ -138,7 +138,7 @@ my_norms <- data.table(sex = c(rep("male", 3),
 
 ggplot(data = calculate_dQALY(country = "England", year = 2019,
                               collapse_sex = T),
-       aes(x = age_at_death, y = dQALY)) +
+       aes(x = age, y = dQALY)) +
   geom_line(colour = "black") +
   geom_line(data = calculate_dQALY(country = "England", year = 2019,
                                    collapse_sex = T,
@@ -183,7 +183,7 @@ r_health_lt_reduced <- function(x) ifelse(x < 31, 0.01, ifelse(x > 75, 0.0071, 0
 
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
                               collapse_sex = T), #equivalently, r = r_standard
-       aes(x = age_at_death, y = dQALY)) +
+       aes(x = age, y = dQALY)) +
   geom_line(colour = "black") +
   geom_line(data = calculate_dQALY(country = "England", year = 2019, 
                                    collapse_sex = T,
@@ -230,7 +230,7 @@ no_quality_adjustment <- data.table(sex = c("male", "female"),
 
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
                               collapse_sex = T), #default norms, default r
-       aes(x = age_at_death, y = dQALY)) +
+       aes(x = age, y = dQALY)) +
   geom_line() +
   geom_line(data = calculate_dQALY(country = "England", year = 2019,
                                    collapse_sex = T,
@@ -333,7 +333,7 @@ We'll use this example to demonstrate why one might use several of the features 
 # # Examining my estimates
 # ggplot(data = calculate_dQALY(country = "England", year = 2020, 
 #                               collapse_sex = T),
-#        aes(x = age_at_death, y = dQALY)) +
+#        aes(x = age, y = dQALY)) +
 #   geom_line(colour = "black") +
 #   geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
 #                                           collapse_age = all_ages,

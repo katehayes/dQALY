@@ -37,7 +37,7 @@ Defaults to \code{NULL} - if \code{NULL} then the user must supply own life tabl
 
 Allows users to supply their own life tables to the function, instead of using packaged life tables.
 
-Must have columns named 'sex', 'x' (age), and 'q_x' (mortality rate).
+Must have columns named 'sex', 'age', and 'q' (probability of death).
 
 Defaults to \code{NULL}.}
 
@@ -141,15 +141,16 @@ will use packaged population data, selecting the appropriate country and year.
 
 Alternatively, the user can specify a population distribution across age and
 sex to be used in the grouping by passing a  data frame, tibble or data table
-to \code{cohort}, with columns 'sex', 'x' (age), and 'count'. Note that if the
+to \code{cohort}, with columns 'sex', 'age', and 'count'. Note that if the
 user supplied custom life tables to the function, they will be required to
 supply a custom cohort too.}
 }
 \value{
 A data frame. The data frame will have column \code{QALE} (quality adjusted life
 years). Additionally, depending on how the user chooses
-to group function outputs, the data frame will have additional columns
-\code{sex} and \code{age_at_death}.
+to group function outputs, the data frame may additional columns
+\code{sex}, \code{age}, and \code{lower}/\code{upper} (representing the lower and upper bounds
+of age groups).
 }
 \description{
 Calculates quality-adjusted life expectancy for a given country and year
