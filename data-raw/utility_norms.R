@@ -25,7 +25,7 @@ extract_html_norms <- function(url, element = ".large_tbl") {
 mvh <- data.table(sex = c(rep("male", 8), rep("female", 8)),
                   lower = c(0, 18, 25, 35, 45, 55, 65, 75),
                   upper = c(17, 24, 34, 44, 54, 64, 74, 200),
-                  avg_util = c(# male
+                  avg_hrqol = c(# male
                         c(0.94, 0.94, 0.93, 0.91, 0.84, 0.78, 0.78, 0.75),
                         # female
                         c(0.94, 0.94, 0.93, 0.91, 0.85, 0.81, 0.78, 0.71)),
@@ -48,7 +48,7 @@ vih_primary <- as.data.table(utils::read.csv(temp))
 vih_primary[, lower := as.numeric(substring(age5_str, 1, 2))]
 vih_primary[, upper := as.numeric(substring(age5_str, 4, 5))]
 vih_primary[lower == max(lower), upper := 200]
-vih_primary[, avg_util := sub(" .*", "", m_ci)]
+vih_primary[, avg_hrqol := sub(" .*", "", m_ci)]
 vih_primary[, c("age5_str", "m_ci", "n"):=NULL]
 vih_primary[, norm_id := "vih_primary"]
 vih_primary[, norm_country := "England"]
@@ -70,7 +70,7 @@ vih_secondary <- as.data.table(utils::read.csv(temp))
 vih_secondary[, lower := as.numeric(substring(age5_str, 1, 2))]
 vih_secondary[, upper := as.numeric(substring(age5_str, 4, 5))]
 vih_secondary[lower == max(lower), upper := 200]
-vih_secondary[, avg_util := sub(" .*", "", m_ci)]
+vih_secondary[, avg_hrqol := sub(" .*", "", m_ci)]
 vih_secondary[, c("age5_str", "m_ci", "n"):=NULL]
 vih_secondary[, norm_id := "vih_secondary"]
 vih_secondary[, norm_country := "England"]
@@ -119,9 +119,9 @@ transform_janssen_norms <- function(norms, norm_name) {
   norms <- norms[-c(1:2, n:nrow(norms)), -9] |>
     melt(measure = 2:8,
          variable.name = "lower",
-         value.name = "avg_util")
+         value.name = "avg_hrqol")
 
-  norms[, avg_util := as.numeric(avg_util)]
+  norms[, avg_hrqol := as.numeric(avg_hrqol)]
   norms[grepl("England", norm_country), norm_country := "England"]
 
   # changing country names so they line up with UN life tables
@@ -177,12 +177,12 @@ rom_5L <- rom_norms[Indicator == "Mean (SE)", c(1,4,5)] |>
   setnames(old = "Age group", new = "lower") |>
   melt(measure.vars = c("Men", "Women"),
        variable.name = "sex",
-       value.name = "avg_util")
+       value.name = "avg_hrqol")
 
 rom_5L[, upper := as.numeric(substring(lower, 4, 5))]
 rom_5L[, lower := as.numeric(substring(lower, 1, 2))]
 rom_5L[lower == max(lower), upper := 200]
-rom_5L[, avg_util := as.numeric(substring(avg_util, 1, 5))]
+rom_5L[, avg_hrqol := as.numeric(substring(avg_hrqol, 1, 5))]
 rom_5L[, sex := ifelse(sex == "Men", "male", "female")]
 rom_5L[, norm_id := "rom_5L"]
 rom_5L[, norm_country := "Romania"]
@@ -200,12 +200,12 @@ rom_3L <- rom_norms[Indicator == "Mean (SE)", c(1,7,8)] |>
   setnames(old = "Age group", new = "lower") |>
   melt(measure.vars = c("Men", "Women"),
        variable.name = "sex",
-       value.name = "avg_util")
+       value.name = "avg_hrqol")
 
 rom_3L[, upper := as.numeric(substring(lower, 4, 5))]
 rom_3L[, lower := as.numeric(substring(lower, 1, 2))]
 rom_3L[lower == max(lower), upper := 200]
-rom_3L[, avg_util := as.numeric(substring(avg_util, 1, 5))]
+rom_3L[, avg_hrqol := as.numeric(substring(avg_hrqol, 1, 5))]
 rom_3L[, sex := ifelse(sex == "Men", "male", "female")]
 rom_3L[, norm_id := "rom_3L"]
 rom_3L[, norm_country := "Romania"]
@@ -234,11 +234,11 @@ temp <- tempfile()
 download.file(url = "https://osf.io/download/mc2sk/", temp)
 
 la_utils <- as.data.table(utils::read.csv(temp))[, .(sex = sex_name, geography_code = la_code,
-                                                     age_name, avg_util = eq5d_util_lf_6v_wt)]
+                                                     age_name, avg_hrqol = eq5d_util_lf_6v_wt)]
 
 la_utils <- la_code2name[la_utils,
                          on = .(geography_code),
-                         .(norm_country, sex, age_name, avg_util)][
+                         .(norm_country, sex, age_name, avg_hrqol)][
                            , sex := ifelse(sex == "Female", "female", "male")
                          ][
                            , lower := as.numeric(substring(age_name, 1, 2))
@@ -263,12 +263,12 @@ la_utils <- la_code2name[la_utils,
 
 
 utility_norms <- rbind(mvh, vih_primary, vih_secondary, janssen, rom_3L, rom_5L) |>
-  setcolorder(c("norm_country", "norm_id", "lower", "upper", "sex", "avg_util")) |>
+  setcolorder(c("norm_country", "norm_id", "lower", "upper", "sex", "avg_hrqol")) |>
   setorder(norm_country, norm_id, lower, sex)
 
 utility_norms[, lower := as.numeric(lower)]
 utility_norms[, upper := as.numeric(upper)]
-utility_norms[, avg_util := as.numeric(avg_util)]
+utility_norms[, avg_hrqol := as.numeric(avg_hrqol)]
 
 
 root <- file.path(here::here(), "data-raw")
@@ -294,9 +294,9 @@ write.csv(utility_norms, file.path(root, "utility_norms.csv"))
 # ltc_norms <- ltc_norms[4, -c(1,3,5,7,9:11)] |>
 #   melt(measure.vars = patterns("years"),
 #        variable.name = "lower",
-#        value.name = "avg_util")
+#        value.name = "avg_hrqol")
 #
-# ltc_norms[, avg_util := as.numeric(substring(avg_util, 1, 5))]
+# ltc_norms[, avg_hrqol := as.numeric(substring(avg_hrqol, 1, 5))]
 # ltc_norms[, upper := as.numeric(substring(lower, 4, 5))]
 # ltc_norms[, lower := as.numeric(substring(lower, 1, 2))]
 

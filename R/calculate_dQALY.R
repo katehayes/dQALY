@@ -90,7 +90,7 @@
 #' will increase by 5% year on year after the last year for which data is available.
 #'
 #'
-#' @param avg_util_young `[numeric]`
+#' @param avg_hrqol_young `[numeric]`
 #'
 #' Allows users to control the way in which assumptions are made about the average
 #' health-related quality of life of those under 18, for whom data is not typically
@@ -100,7 +100,7 @@
 #' the same average utility score as that of the next youngest group.
 #'
 #' Alternatively, the user can make their own assumption about the utility score
-#' given to the youngest group, by passing `avg_util_young` a numeric value
+#' given to the youngest group, by passing `avg_hrqol_young` a numeric value
 #' between 0 and 1, where 1 would be equivalent to assuming the youngest age
 #' group is in perfect health.
 #'
@@ -173,7 +173,7 @@
 #' my_norms <- data.frame(sex = c(rep("male", 3), rep("female", 3)),
 #'                        lower = c(0, 20, 90),
 #'                        upper = c(19, 89, 150),
-#'                        avg_util = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
+#'                        avg_hrqol = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
 #' calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
 #'
 #'
@@ -196,7 +196,8 @@
 #'                 collapse_sex = TRUE)
 #' #2) age groups
 #' my_age_groups <- data.frame(lower = c(seq(0,90,5)), upper = c(seq(4,89,5), 100))
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups)
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#'                 collapse_age = my_age_groups)
 #' #3) collapse sex and group age
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
 #'                 collapse_age = my_age_groups, collapse_sex = TRUE)
@@ -215,7 +216,8 @@
 #' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
 #'                 collapse_age = my_age_groups, cohort = my_cohort)
 #' #3) collapse sex and group age
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups,
+#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#'                 collapse_age = my_age_groups,
 #'                 collapse_sex = TRUE, cohort = my_cohort)
 # -------------------------------------------------------------------------
 #' @export
@@ -231,8 +233,8 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
                             norms = NULL,
                             r = 0.035,
                             smr = 1, qcm = 1,
-                            lt_extend = TRUE, #needs new name
-                            avg_util_young = NULL, #needs new name
+                            lt_extend = TRUE, #needs new name? what about lt_assumption?
+                            avg_hrqol_young = NULL, #needs new name? what about hrqol_assumption?
                             collapse_age = FALSE,
                             collapse_sex = FALSE,
                             cohort = NULL) { #population_weight
@@ -263,8 +265,6 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 
   # # # # # # # # # 1.1 combination of arguments # # # # # # # # # # # # # # #
   # checking whether the user has given the right combination of arguments
-  # NOTE!! TO do!!! tell user if they supply a cohort when they aren't grouping
-  # that its not necessary & it isn't getting used anywhere
   if(.is_valid_arg_combination(env = env) == FALSE) {
     stop()
   }
@@ -301,7 +301,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # # # # # # # # # 1.3 life_table, norms, cohort # # # # # # # # # # # # # # #
 
   # if the user supplied their own life tables, check they are valid
-  # if no custom life tables, take package data
+  # OR if no custom life tables, retrieve package data
   if(.is_user_supplied(life_table)) {
     if(.is_valid_custom_lt(life_table) == FALSE) {
       stop("User-supplied life tables have failed validity checks.")
@@ -405,7 +405,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   }
 
 
-  # # # # # # 1.6 lt_extend, avg_util_young # # # # # # # # # # # # # # # # # #
+  # # # # # # 1.6 lt_extend, avg_hrqol_young # # # # # # # # # # # # # # # # # #
   # validity checks for the arguments that adjust packaged life tables and
   # utility norms. NOTE: these arguments need new names
 
@@ -414,8 +414,8 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
          greater than 1.")
   }
 
-  if(.is_valid_avg_util_young(avg_util_young) == FALSE) {
-    stop("If not set to its default value of NULL, 'avg_util_young' must be
+  if(.is_valid_avg_hrqol_young(avg_hrqol_young) == FALSE) {
+    stop("If not set to its default value of NULL, 'avg_hrqol_young' must be
            a numeric scalar.")
   }
 
@@ -470,8 +470,8 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # # # 2.2 changing assumption re youngest group in utility norms # # # # # # #
 
   if(ut_is_us == FALSE) {
-    if(!is.null(avg_util_young)) {
-      utility_norms[lower == min(lower), avg_util := avg_util_young]
+    if(!is.null(avg_hrqol_young)) {
+      utility_norms[lower == min(lower), avg_hrqol := avg_hrqol_young]
     }
   }
 
@@ -504,14 +504,14 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # dropping l(x) bc we only need L(x) for the QALY calculation
   dQALY_table <- utility_norms[life_table,
                          on = .(sex, lower <= x, upper >= x),
-                         .(sex, x, L_x, avg_util)]
+                         .(sex, x, L_x, avg_hrqol)]
 
   # adding this line below - so that if the calculation is involving life tables that reach
   # older age groups than the utility norm data being supplied, then we just assume
   # utility after that point is 0 and the rest of the calculation can happen
   # Note: relying on validity checks to catch it if user-supplied norms don't give
   # data for low enough/high enough age groups
-  dQALY_table[is.na(avg_util), avg_util := 0]
+  dQALY_table[is.na(avg_hrqol), avg_hrqol := 0]
 
   # We now have an estimate of the number of years lived between ages x & x+1
   # and a number between 0 and 1 representing the avg quality of life experienced at age x
@@ -531,10 +531,10 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   dQALY_table[, r_col := ifelse(x == 0, 0, r_col)]
 
   dQALY_table[, (paste("v", min_x:max_x, sep="")) := shift(1/cumprod(1+r_col), n = x, type = "lag", fill = 0), by = .(sex)]
-  dQALY_table[, dQALY_x := t(.SD) %*% (L_x*avg_util*qcm), .SDcols = patterns("^v"), by = .(sex)]
+  dQALY_table[, dQALY_x := t(.SD) %*% (L_x*avg_hrqol*qcm), .SDcols = patterns("^v"), by = .(sex)]
 
   # dropping cols we don't need anymore
-  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "r_col", "L_x", "avg_util") := NULL]
+  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "r_col", "L_x", "avg_hrqol") := NULL]
 
   # note - fix ordering of output - by x and then sex
 
@@ -580,8 +580,8 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
     # assign a value to cols (vector of column names) based on whether the user
     # wants to collapse by age group, sex, or both note: previously, if the user
     # wanted to collapse age completely then they needed to specify an age group
-    # like (0-120) now if they want to do this they set collapse_age = TRUE & do
-    # not supply any custom age groups
+    # like (0-120) - now if they want to do this they set collapse_age = TRUE.
+    # (supplying age group 0-120 would still work though)
     if(length(collapse_age) > 1L) {
       cols <- c("age", "lower", "upper")
     } else if(collapse_age == TRUE) {
@@ -699,7 +699,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 #' will increase by 5% year on year after the last year for which data is available.
 #'
 #'
-#' @param avg_util_young `[numeric]`
+#' @param avg_hrqol_young `[numeric]`
 #'
 #' Allows users to control the way in which assumptions are made about the average
 #' health-related quality of life of those under 18, for whom data is not typically
@@ -709,7 +709,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 #' the same average utility score as that of the next youngest group.
 #'
 #' Alternatively, the user can make their own assumption about the utility score
-#' given to the youngest group, by passing `avg_util_young` a numeric value
+#' given to the youngest group, by passing `avg_hrqol_young` a numeric value
 #' between 0 and 1, where 1 would be equivalent to assuming the youngest age
 #' group is in perfect health.
 #'
@@ -777,7 +777,7 @@ calculate_QALE <- function(country = NULL,
                            norms = NULL,
                            smr = 1, qcm = 1,
                            lt_extend = TRUE,
-                           avg_util_young = NULL,
+                           avg_hrqol_young = NULL,
                            collapse_age = FALSE,
                            collapse_sex = FALSE,
                            cohort = NULL) {
@@ -789,7 +789,7 @@ calculate_QALE <- function(country = NULL,
                                 smr = smr,
                                 qcm = qcm,
                                 lt_extend = lt_extend,
-                                avg_util_young = avg_util_young,
+                                avg_hrqol_young = avg_hrqol_young,
                                 collapse_age = collapse_age,
                                 collapse_sex = collapse_sex,
                                 r = 0)
@@ -1003,14 +1003,14 @@ calculate_QALE <- function(country = NULL,
 }
 
 
-.is_valid_avg_util_young <- function(avg_util_young) {
-  if (!is.null(avg_util_young)) {
-    if (length(avg_util_young) != 1L || !is.numeric(avg_util_young)) {
+.is_valid_avg_hrqol_young <- function(avg_hrqol_young) {
+  if (!is.null(avg_hrqol_young)) {
+    if (length(avg_hrqol_young) != 1L || !is.numeric(avg_hrqol_young)) {
       return(FALSE)
-    } else if(avg_util_young < 0 | avg_util_young > 1) {
-      warning("The argument 'avg_util_young' has been supplied a value that is not
+    } else if(avg_hrqol_young < 0 | avg_hrqol_young > 1) {
+      warning("The argument 'avg_hrqol_young' has been supplied a value that is not
             between 0 and 1. This argument sets the utility score of the
-            youngest population group - and utility scores are generally between
+            youngest population group and utility scores are generally between
             0 and 1, likely closer to 1 in younger age groups. Please reconsider
             the value you have supplied to this argument.")
     }
@@ -1060,13 +1060,13 @@ calculate_QALE <- function(country = NULL,
   # check if there is the right number of columns
   if(length(norms) != 4L) {
     warning("User-supplied utility norms are not in correct form.
-             Utility norms need to be list-like object with four columns, with names 'lower', 'upper', 'sex', 'avg_util'.")
+             Utility norms need to be list-like object with four columns, with names 'lower', 'upper', 'sex', 'avg_hrqol'.")
     return(FALSE)
 
     # given there is the right number, check that the columns have the right names
-  } else if(any(!colnames(norms) %in% c("lower", "upper", "sex", "avg_util"))) {
+  } else if(any(!colnames(norms) %in% c("lower", "upper", "sex", "avg_hrqol"))) {
     warning("User-supplied utility norms are not in correct form.
-             Columns must have names 'lower', 'upper', 'sex', 'avg_util'.")
+             Columns must have names 'lower', 'upper', 'sex', 'avg_hrqol'.")
     return(FALSE)
 
     # given they have the right names, check that the cols have the right type of values
@@ -1076,7 +1076,7 @@ calculate_QALE <- function(country = NULL,
     return(FALSE)
   } else if(.is_valid_upper_col(norms$upper) == FALSE) {
     return(FALSE)
-  } else if(.is_valid_avg_util_col(norms$avg_util) == FALSE) {
+  } else if(.is_valid_avg_hrqol_col(norms$avg_hrqol) == FALSE) {
     return(FALSE)
 
     # given the cols have appropriate values individually, check that they relate appropriately to each other
@@ -1242,12 +1242,12 @@ calculate_QALE <- function(country = NULL,
 }
 
 
-.is_valid_avg_util_col <- function(avg_util_col) {
-  if(any(!is.numeric(avg_util_col))) {
-    stop("'avg_util' column must contain only numbers between 0 and 1.")
+.is_valid_avg_hrqol_col <- function(avg_hrqol_col) {
+  if(any(!is.numeric(avg_hrqol_col))) {
+    stop("'avg_hrqol' column must contain only numbers between 0 and 1.")
     return(FALSE)
-  } else if(any(avg_util_col < 0) | any(avg_util_col > 1)) {
-    warning("'avg_util' column must contain only numbers between 0 and 1.")
+  } else if(any(avg_hrqol_col < 0) | any(avg_hrqol_col > 1)) {
+    warning("'avg_hrqol' column must contain only numbers between 0 and 1.")
     return(FALSE)
   } else {
     TRUE
