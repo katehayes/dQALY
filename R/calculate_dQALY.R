@@ -1023,26 +1023,36 @@ calculate_QALE <- function(country = NULL,
 
 # --------Checks at the single argument level when user is supplying own data----------------------------------------------------------
 # need some decisions made about how much data/how complete the data the user
-# supplies has to be/ how unlikely (data supplied for really old ages,
-# really unlikely utility scores or mortality rates) it can be
+# supplies has to be/ how unlikely (data supplied for really old ages) it can be?
 
-# cohort:
-# is it a problem if the age is over 120?
-# at present, no - just if the life tables and utility norms that are
-# provided don't together produce any values for dQALY for some of the upper
-# ages in the cohort, the dQALY values for those ages are assumed 0
+# what about something like the following:
+# all packaged data (life tables, norms, cohorts) goes 0 to 120 (as default - users
+# can still currently decide against extending life tables)
+# all user supplied life tables/norms have to go 0 to 99 and can go further (as far as they want)
+# user-supplied cohorts can do whatever, even things that make little sense
+# (eg include a person aged 200)
 
-# norms:
-# can we give norms for large age groups? presently yes
+# what should happen when there are mismatches between the years of age spanned/present
+# in the different pieces of data?
+# 1. validity checks should demand 0-99 inclusive for life tables and age groups that
+# span 0-99 inclusive from utility norms. So the issues will be in the upper end of
+# the age range - e.g. max age for life tables > max age for norms/
+# max age for cohort > max age for life tables & norms
 
-# life tables
-# can we give mortality rates for howeever old? yes
+# 2. In general, the calculation should still run without throwing an error,
+# but the dQALY values outputted should just be zero - since this will only be
+# happening for older ages I think its ok to assume that the QALY loss due to death
+# in these age groups is 0?
+
+# 3. In the case of awkward mismatches between cohorts & user-supplied
+# age groups - (hopefully this won't happen with frequency) -
+# if the user supplies an age group, and the cohort that is in use in the calculation
+# has no people at all within that age group, then the age group will just not
+# appear in the function output (e.g. if the cohort has people up to 99,
+# and the age groups are 0-49, 50-99, 100-200, then only the first two age
+# groups will appear in the function output)
 
 
-# if custom norms dont go as high as custom life tables
-# then everything comes out NA
-
-# other way around is absolutely fine
 
 
 
@@ -1080,14 +1090,14 @@ calculate_QALE <- function(country = NULL,
             combined they must cover all years of age without gaps (for each sex).
             This means that if the upper bound of one group is 'x', then the lower bound
             of the next group must be 'x+1'.")
-    # confusing error message needs a re-write
+    # confusing error message, needs a re-write
     return(FALSE)
   } else if(sum(norms[norms$sex == "male", ]$lower[-1] != norms[norms$sex == "male",]$upper[-nrow(norms[norms$sex == "male", ])] + 1) > 0) {
     warning("Age groups in user-supplied norms must be non-overlapping, but when
             combined they must cover all years of age without gaps (for each sex).
             This means that if the upper bound of one group is 'x', then the lower bound
             of the next group must be 'x+1'.")
-    # confusing error message needs a re-write
+    # confusing error message, needs a re-write
     return(FALSE)
   } else {
 
@@ -1206,7 +1216,9 @@ calculate_QALE <- function(country = NULL,
     return(FALSE)
   } else if(sum(sex_col == "male") != sum(sex_col == "female")) {
     # check whether there are same number of males as females
-    # I think the function should be able to handle it if there aren't,
+    # I think the function should be able to handle it if there aren't - (in the
+    # case of utility norms & user-supplied cohorts and NOT in the case of life tables,
+    # which do need to be equal (that condition is checked elsewhere)) -
     # but we can warn the user that it's not what we expect
     # NOTE: i need to come back to this warning message and re-write so its clear
     warning("User-supplied data does not have same number of values for sex =  \"female\" and sex = \"male\".")
@@ -1243,7 +1255,6 @@ calculate_QALE <- function(country = NULL,
 }
 
 # need different things from the age column in a user-supplied life table and a user-supplied cohort
-# not sure about this check yet - not finished
 .is_valid_lt_age_col <- function(age_col) {
   # 1. needs to be all natural numbers
   # 2. needs to start at 0 and go to at least....99?
