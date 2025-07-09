@@ -890,6 +890,16 @@ calculate_QALE <- function(country = NULL,
 
   }
 
+  # won't stop the function but just letting user know that if they aren't grouping
+  # then supplying a cohort won't do anything
+  if(.will_group(env$collapse_age, env$collapse_sex) == FALSE) {
+    if(!is.null(env$cohort)) {
+      warning("If you do not want to output estimates averaged across age and/or
+      sex groups, then you do not need to supply cohort data to the function
+      - any cohort data that is supplied will not be used in the calculation.")
+    }
+  }
+
   return(TRUE)
 
 }
@@ -957,8 +967,9 @@ calculate_QALE <- function(country = NULL,
 
 .is_valid_qcm <- function(qcm) {
   if (is.numeric(qcm) && length(qcm) == 1L && !is.na(qcm)) {
-    if (qcm < 0 | qcm > 1) {
-      warning("The value you have set for argument `qcm` is not between 0 and 1.")
+    if (qcm < 0) {
+      warning("Argument `qcm` cannot take negative values.")
+      return(FALSE)
     }
     return(TRUE)
   }
@@ -967,8 +978,9 @@ calculate_QALE <- function(country = NULL,
 
 .is_valid_smr <- function(smr) {
   if (is.numeric(smr) && length(smr) == 1L && !is.na(smr)) {
-    if (smr < 0 | smr > 1) {
-      warning("The value you have set for argument `smr` is not between 0 and 1.")
+    if (smr < 0 ) {
+      warning("Argument `smr` cannot take negative values.")
+      return(FALSE)
     }
     return(TRUE)
   }
@@ -976,12 +988,14 @@ calculate_QALE <- function(country = NULL,
 }
 
 
-# This one needs checks on how sensible the input is
+
 .is_valid_lt_extend <- function(lt_extend) {
   if (length(lt_extend) != 1L || is.na(lt_extend) || (!(is.logical(lt_extend) || is.numeric(lt_extend)))) {
     return(FALSE)
   } else if(is.numeric(lt_extend)) {
     if(lt_extend < 1) {
+      warning("The value passed to argument `lt_extend` must be greater than 1 -
+              mortality rates must increase with age for ages > 99.")
       return(FALSE)
     }
   }
@@ -1061,15 +1075,19 @@ calculate_QALE <- function(country = NULL,
             be lower than or equal to the corresponding value in column 'upper'.")
     return(FALSE)
   #there's probably a neater way to do this by sex
-  } else if(sum(norms[norms$sex == "female",]$upper[-nrow(norms[norms$sex == "female", ])] >= norms[norms$sex == "female", ]$lower[-1]) > 0) {
-    warning("Age groups in user-supplied norms must be non-overlapping. This means that
-            the value given for the upper bound of one group must be strictly
-            lower than the value given for the lower bound of the next group (for each sex).")
+  } else if(sum(norms[norms$sex == "female", ]$lower[-1] != norms[norms$sex == "female",]$upper[-nrow(norms[norms$sex == "female", ])] + 1) > 0) {
+    warning("Age groups in user-supplied norms must be non-overlapping, but when
+            combined they must cover all years of age without gaps (for each sex).
+            This means that if the upper bound of one group is 'x', then the lower bound
+            of the next group must be 'x+1'.")
+    # confusing error message needs a re-write
     return(FALSE)
-  } else if(sum(norms[norms$sex == "male", ]$upper[-nrow(norms[norms$sex == "male", ])] >= norms[norms$sex == "male", ]$lower[-1]) > 0) {
-    warning("Age groups in user-supplied norms must be non-overlapping. This means that
-            the value given for the upper bound of one group must be strictly
-            lower than the value given for the lower bound of the next group (for each sex).")
+  } else if(sum(norms[norms$sex == "male", ]$lower[-1] != norms[norms$sex == "male",]$upper[-nrow(norms[norms$sex == "male", ])] + 1) > 0) {
+    warning("Age groups in user-supplied norms must be non-overlapping, but when
+            combined they must cover all years of age without gaps (for each sex).
+            This means that if the upper bound of one group is 'x', then the lower bound
+            of the next group must be 'x+1'.")
+    # confusing error message needs a re-write
     return(FALSE)
   } else {
 
@@ -1188,10 +1206,10 @@ calculate_QALE <- function(country = NULL,
     return(FALSE)
   } else if(sum(sex_col == "male") != sum(sex_col == "female")) {
     # check whether there are same number of males as females
-    # I think the function should be able to handle it if there aren't (will check this),
+    # I think the function should be able to handle it if there aren't,
     # but we can warn the user that it's not what we expect
     # NOTE: i need to come back to this warning message and re-write so its clear
-    warning("User-supplied data does not have same number of values for sex = female and sex = male.")
+    warning("User-supplied data does not have same number of values for sex =  \"female\" and sex = \"male\".")
     return(TRUE)
   } else {
     TRUE
@@ -1201,7 +1219,7 @@ calculate_QALE <- function(country = NULL,
 
 .is_valid_q_col <- function(q_col) {
   if(any(!is.numeric(q_col))) {
-    stop("'q' column must contain only numbers between 0 and 1.")
+    stop("'q' column contain only numbers between 0 and 1.")
     return(FALSE)
   } else if(any(q_col < 0) | any(q_col > 1)) {
     warning("'q' column must contain only numbers between 0 and 1.")
@@ -1230,7 +1248,6 @@ calculate_QALE <- function(country = NULL,
   # 1. needs to be all natural numbers
   # 2. needs to start at 0 and go to at least....99?
   # 3. needs to have no missing numbers between lowest and highest
-  # NEED TO WRITE CHECK FOR THIRD POINT
   if(any(!is.numeric(age_col))) {
     stop("'age' column in user-supplied life tables must contain only positive integers.")
     return(FALSE)
@@ -1238,7 +1255,20 @@ calculate_QALE <- function(country = NULL,
     warning("'age' column in user-supplied life tables must contain only positive integers.")
     return(FALSE)
   } else if(max(age_col) < 99 | min(age_col) != 0) {
-    warning("User-supplied life tables must contain data for all ages from 0 up to and including 99.")
+    warning("User-supplied life tables must contain data for all ages from 0 up to and including 99
+            (for both sexes).")
+    return(FALSE)
+  } else if(length(age_col) != 2*length(unique(age_col))) {
+    warning("User-supplied life tables must contain data for all ages from 0 up to and including 99
+            (for both sexes). Data provided for any year of age > 99 for males must also be provided
+            for females and vice versa.")
+    # there has to be two of everything (same number of years of data supplied for men & women)
+    # confusing error message, needs re-write.
+    return(FALSE)
+  } else if(any(!(min(age_col):max(age_col) %in% age_col))) {
+    # needs to have no missing numbers between lowest and highest
+    warning("User-supplied life tables must contain data for all ages from 0 up to and including 99
+            (for both sexes.")
     return(FALSE)
   } else {
     TRUE
@@ -1265,6 +1295,7 @@ calculate_QALE <- function(country = NULL,
 # what is needed for lower and upper cols in the case of user-supplied
 # utility norms is different to what is needed for lower and upper cols
 # in the case of age groups supplied for grouping output
+# this is the validity check for lower col in user-supplied utility norms
 .is_valid_lower_col <- function(lower_col) {
   # 1. needs to be all natural numbers
   # 2. needs to start at 0
@@ -1284,7 +1315,7 @@ calculate_QALE <- function(country = NULL,
 
 }
 
-
+# this is the validity check for upper col in user-supplied utility norms
 .is_valid_upper_col <- function(upper_col) {
   # 1. needs to be all natural numbers
   # 2. needs to end at min 99 (placeholder)
