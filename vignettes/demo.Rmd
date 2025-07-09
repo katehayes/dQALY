@@ -132,7 +132,7 @@ my_norms <- data.table(sex = c(rep("male", 3),
                                rep("female", 3)),
                        lower = c(0, 20, 90),
                        upper = c(19, 89, 150),
-                       avg_util = c(1, 0.85, 0.67,
+                       avg_hrqol = c(1, 0.85, 0.67,
                                     0.99, 0.4, 0.2))
 
 
@@ -225,7 +225,7 @@ no_discounting <- 0
 no_quality_adjustment <- data.table(sex = c("male", "female"),
                                     lower = 0,
                                     upper = 150,
-                                    avg_util = 1)
+                                    avg_hrqol = 1)
 
 
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
