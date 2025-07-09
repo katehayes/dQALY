@@ -263,6 +263,8 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 
   # # # # # # # # # 1.1 combination of arguments # # # # # # # # # # # # # # #
   # checking whether the user has given the right combination of arguments
+  # NOTE!! TO do!!! tell user if they supply a cohort when they aren't grouping
+  # that its not necessary & it isn't getting used anywhere
   if(.is_valid_arg_combination(env = env) == FALSE) {
     stop()
   }
@@ -307,10 +309,12 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
       life_table <- as.data.table(life_table) |>
         setnames(old = c("age", "q"),
                  new = c("x", "q_x"))
+      lt_is_us <- TRUE # record that life tables are user-supplied
     }
   } else {
     # Filtering the package data to select life tables for the chosen country, year
     life_table <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
+    lt_is_us <- FALSE # record that life tables are NOT user-supplied
   }
 
 
@@ -320,8 +324,10 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
       stop("User-supplied utility norms have failed validity checks.")
     } else {
       utility_norms <- as.data.table(norms)
+      ut_is_us <- TRUE # record that utility data is user-supplied
     }
   } else {
+    ut_is_us <- FALSE # record that utility data is NOT user-supplied
     if(is.null(norms)) {
       # if user doesn't either a) supply their own utility norms or b) specify by name which ones they want to use by name
       # then we can get info on which norm to use for that country as default, from package data norm_info
@@ -417,6 +423,9 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # 2. Options for altering life tables/ utility norms before the calculation #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+  # NOTE: these extensions are only applied to package data.
+  # we're assuming that the user provides the data they want (makes whatever
+  # assumptions they want already)
 
   # # 2.1 Extending life tables # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -436,30 +445,34 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # (could add the ability to set the upper age limit - doesn't have to be 120)
 
 
-  # now we know lt_extend is bool (TRUE/FALSE) or scalar numeric and we update as long as it is not FALSE
-  if (!isFALSE(lt_extend)) {
-    life_table[, xmax := max(x, na.rm = TRUE), by = "sex"]
-    if (is.numeric(lt_extend)) {
-      life_table[, increment := lt_extend]
-    } else {
-      life_table[, increment := .SD[x >= xmax - 10, mean(q_x / shift(q_x, type = "lag"), na.rm = T)], by = "sex"]
+  if(lt_is_us == FALSE) {
+    # now we know lt_extend is bool (TRUE/FALSE) or scalar numeric and we update as long as it is not FALSE
+    if (!isFALSE(lt_extend)) {
+      life_table[, xmax := max(x, na.rm = TRUE), by = "sex"]
+      if (is.numeric(lt_extend)) {
+        life_table[, increment := lt_extend]
+      } else {
+        life_table[, increment := .SD[x >= xmax - 10, mean(q_x / shift(q_x, type = "lag"), na.rm = T)], by = "sex"]
+      }
+      life_table <- life_table[CJ(sex = c("male", "female"), x = 0:120), on = c("sex", "x")]
+      life_table[, c("xmax", "qmax", "increment") := lapply(list(xmax, q_x, increment), max, na.rm = TRUE), by = "sex"]
+      # q(x) is the probability of dying within the year at age x
+      # to increment the probability without it exceeding 1, we convert to the instantaneous death rate,
+      # apply the increment, then convert back to a probability
+      life_table[x > xmax, q_x := 1 - exp(-(-log(1 - qmax)) * increment^(x - xmax))]
+      life_table[,c("xmax", "qmax", "increment") := NULL]
+      setorder(life_table, x, sex)
     }
-    life_table <- life_table[CJ(sex = c("male", "female"), x = 0:120), on = c("sex", "x")]
-    life_table[, c("xmax", "qmax", "increment") := lapply(list(xmax, q_x, increment), max, na.rm = TRUE), by = "sex"]
-    # q(x) is the probability of dying within the year at age x
-    # to increment the probability without it exceeding 1, we convert to the instantaneous death rate,
-    # apply the increment, then convert back to a probability
-    life_table[x > xmax, q_x := 1 - exp(-(-log(1 - qmax)) * increment^(x - xmax))]
-    life_table[,c("xmax", "qmax", "increment") := NULL]
-    setorder(life_table, x, sex)
   }
 
 
 
   # # # 2.2 changing assumption re youngest group in utility norms # # # # # # #
 
-  if(!is.null(avg_util_young)) {
-    utility_norms[lower == min(lower), avg_util := avg_util_young]
+  if(ut_is_us == FALSE) {
+    if(!is.null(avg_util_young)) {
+      utility_norms[lower == min(lower), avg_util := avg_util_young]
+    }
   }
 
 
@@ -493,6 +506,12 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
                          on = .(sex, lower <= x, upper >= x),
                          .(sex, x, L_x, avg_util)]
 
+  # adding this line below - so that if the calculation is involving life tables that reach
+  # older age groups than the utility norm data being supplied, then we just assume
+  # utility after that point is 0 and the rest of the calculation can happen
+  # Note: relying on validity checks to catch it if user-supplied norms don't give
+  # data for low enough/high enough age groups
+  dQALY_table[is.na(avg_util), avg_util := 0]
 
   # We now have an estimate of the number of years lived between ages x & x+1
   # and a number between 0 and 1 representing the avg quality of life experienced at age x
@@ -515,7 +534,7 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   dQALY_table[, dQALY_x := t(.SD) %*% (L_x*avg_util*qcm), .SDcols = patterns("^v"), by = .(sex)]
 
   # dropping cols we don't need anymore
-  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "r_col", "L_x", "avg_util"):=NULL]
+  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "r_col", "L_x", "avg_util") := NULL]
 
   # note - fix ordering of output - by x and then sex
 
@@ -530,6 +549,16 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 
     dQALY_table <- dQALY_table[cohort,
                                on = .(sex, x)]
+
+    # adding in this line here below
+    # in case user supplies cohort with some years of age > 120
+    # will just set all missing dQALY values to 0
+    # that means that user can (for example) supply a cohort where someone is
+    # older than 120 and also ask for output to be grouped & one of the groups
+    # is (again, for example) 100:200 - and the grouped dQALY value for that
+    # oldest group won't be NA & will take into account the fact that the user
+    # has insisted there is a person alive in their cohort older than 120
+    dQALY_table[is.na(dQALY_x), dQALY_x := 0]
 
 
     # if the user wants to collapse into AGE GROUPS (not just collapse age entirely)
@@ -978,7 +1007,30 @@ calculate_QALE <- function(country = NULL,
 
 
 
-# --------Checks at the single argument level, specifically when user is supplying own data----------------------------------------------------------
+# --------Checks at the single argument level when user is supplying own data----------------------------------------------------------
+# need some decisions made about how much data/how complete the data the user
+# supplies has to be/ how unlikely (data supplied for really old ages,
+# really unlikely utility scores or mortality rates) it can be
+
+# cohort:
+# is it a problem if the age is over 120?
+# at present, no - just if the life tables and utility norms that are
+# provided don't together produce any values for dQALY for some of the upper
+# ages in the cohort, the dQALY values for those ages are assumed 0
+
+# norms:
+# can we give norms for large age groups? presently yes
+
+# life tables
+# can we give mortality rates for howeever old? yes
+
+
+# if custom norms dont go as high as custom life tables
+# then everything comes out NA
+
+# other way around is absolutely fine
+
+
 
 .are_valid_custom_norms <- function(norms) {
   # check if there is the right number of columns
@@ -989,8 +1041,8 @@ calculate_QALE <- function(country = NULL,
 
     # given there is the right number, check that the columns have the right names
   } else if(any(!colnames(norms) %in% c("lower", "upper", "sex", "avg_util"))) {
-    warning("User-supplied life tables are not in correct form.
-             Columns must have names lower', 'upper', 'sex', 'avg_util'.")
+    warning("User-supplied utility norms are not in correct form.
+             Columns must have names 'lower', 'upper', 'sex', 'avg_util'.")
     return(FALSE)
 
     # given they have the right names, check that the cols have the right type of values
@@ -1005,8 +1057,19 @@ calculate_QALE <- function(country = NULL,
 
     # given the cols have appropriate values individually, check that they relate appropriately to each other
   } else if(sum(norms$lower > norms$upper) > 0) {
-    warning("For user-supplied utility norm, the Value in column 'lower' must always
+    warning("For user-supplied utility norm, the value in column 'lower' must always
             be lower than or equal to the corresponding value in column 'upper'.")
+    return(FALSE)
+  #there's probably a neater way to do this by sex
+  } else if(sum(norms[norms$sex == "female",]$upper[-nrow(norms[norms$sex == "female", ])] >= norms[norms$sex == "female", ]$lower[-1]) > 0) {
+    warning("Age groups in user-supplied norms must be non-overlapping. This means that
+            the value given for the upper bound of one group must be strictly
+            lower than the value given for the lower bound of the next group (for each sex).")
+    return(FALSE)
+  } else if(sum(norms[norms$sex == "male", ]$upper[-nrow(norms[norms$sex == "male", ])] >= norms[norms$sex == "male", ]$lower[-1]) > 0) {
+    warning("Age groups in user-supplied norms must be non-overlapping. This means that
+            the value given for the upper bound of one group must be strictly
+            lower than the value given for the lower bound of the next group (for each sex).")
     return(FALSE)
   } else {
 
@@ -1096,8 +1159,13 @@ calculate_QALE <- function(country = NULL,
 
   # given the cols have appropriate values individually, check that they relate appropriately to each other
   } else if(sum(age_groups$lower > age_groups$upper) > 0) {
-    warning("For user-supplied age groups, the Value in column 'lower' must always
+    warning("For user-supplied age groups, the value in column 'lower' must always
             be lower than or equal to the corresponding value in column 'upper'.")
+    return(FALSE)
+  } else if(sum(age_groups$upper[-nrow(age_groups)] >= age_groups$lower[-1]) > 0) {
+    warning("User-supplied age groups must be non-overlapping. This means that
+            the value given for the upper bound of one group must be strictly
+            lower than the value given for the lower bound of the next group.")
     return(FALSE)
   } else {
     # all checks are satisfied
@@ -1156,7 +1224,7 @@ calculate_QALE <- function(country = NULL,
   }
 }
 
-# need different things from the x column in a user-supplied life table and a user-supplied cohort
+# need different things from the age column in a user-supplied life table and a user-supplied cohort
 # not sure about this check yet - not finished
 .is_valid_lt_age_col <- function(age_col) {
   # 1. needs to be all natural numbers
@@ -1178,7 +1246,7 @@ calculate_QALE <- function(country = NULL,
 }
 
 
-# need different things from the x column in a user-supplied life table and a user-supplied cohort
+# need different things from the age column in a user-supplied life table and a user-supplied cohort
 .is_valid_cohort_age_col <- function(age_col) {
   # 1. needs to be all natural numbers
   if(any(!is.numeric(age_col))) {
