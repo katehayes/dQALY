@@ -1,11 +1,33 @@
 Package: dQALY
-Title: What the Package Does (One Line, Title Case)
+Title: Calculates QALY Loss Due to Death
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+    c(person("Kate", "Hayes", email = "kate.hayes2@ukhsa.gov.uk", role = c("aut", "cre")),
+      person("Tim", "Taylor", role = "aut"),
+      person("Lucy", "Miller", role = "aut"),
+      person("Edwin", "van Leeuwen", role = "aut"))
+Description: The quality-adjusted life year, or QALY, is a widely used outcome 
+      measure in the field of health economics. When evaluating a 
+      policy/programme/intervention, we often want to express the health impacts 
+      of preventing or failing to prevent a death in terms of the QALYs that 
+      would be gained or lost. The goal of the dQALY package is to provide an 
+      easy and flexible way of calculating the number of QALYs that are 'lost' 
+      when a person dies. The package stores life expectancy and quality of life
+      data, allowing users to.
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Depends: 
+    R (>= 3.5)
+LazyData: true
+Imports:
+    data.table
+Suggests: 
+    ggplot2,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+BugReports: https://github.com/katehayes/dQALY/issues
+VignetteBuilder: knitr
+Config/testthat/edition: 3

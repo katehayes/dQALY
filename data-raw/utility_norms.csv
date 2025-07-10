@@ -1,0 +1,777 @@
+"","norm_country","norm_id","lower","upper","sex","avg_util"
+"1","Argentina","janssen_euvas",0,17,"female",0.907
+"2","Argentina","janssen_euvas",0,17,"male",0.907
+"3","Argentina","janssen_euvas",18,24,"female",0.907
+"4","Argentina","janssen_euvas",18,24,"male",0.907
+"5","Argentina","janssen_euvas",25,34,"female",0.889
+"6","Argentina","janssen_euvas",25,34,"male",0.889
+"7","Argentina","janssen_euvas",35,44,"female",0.869
+"8","Argentina","janssen_euvas",35,44,"male",0.869
+"9","Argentina","janssen_euvas",45,54,"female",0.849
+"10","Argentina","janssen_euvas",45,54,"male",0.849
+"11","Argentina","janssen_euvas",55,64,"female",0.829
+"12","Argentina","janssen_euvas",55,64,"male",0.829
+"13","Argentina","janssen_euvas",65,74,"female",0.796
+"14","Argentina","janssen_euvas",65,74,"male",0.796
+"15","Argentina","janssen_euvas",75,200,"female",0.724
+"16","Argentina","janssen_euvas",75,200,"male",0.724
+"17","Argentina","janssen_tto",0,17,"female",0.951
+"18","Argentina","janssen_tto",0,17,"male",0.951
+"19","Argentina","janssen_tto",18,24,"female",0.951
+"20","Argentina","janssen_tto",18,24,"male",0.951
+"21","Argentina","janssen_tto",25,34,"female",0.936
+"22","Argentina","janssen_tto",25,34,"male",0.936
+"23","Argentina","janssen_tto",35,44,"female",0.919
+"24","Argentina","janssen_tto",35,44,"male",0.919
+"25","Argentina","janssen_tto",45,54,"female",0.898
+"26","Argentina","janssen_tto",45,54,"male",0.898
+"27","Argentina","janssen_tto",55,64,"female",0.874
+"28","Argentina","janssen_tto",55,64,"male",0.874
+"29","Argentina","janssen_tto",65,74,"female",0.835
+"30","Argentina","janssen_tto",65,74,"male",0.835
+"31","Argentina","janssen_tto",75,200,"female",0.756
+"32","Argentina","janssen_tto",75,200,"male",0.756
+"33","Argentina","janssen_vas",0,17,"female",0.928
+"34","Argentina","janssen_vas",0,17,"male",0.928
+"35","Argentina","janssen_vas",18,24,"female",0.928
+"36","Argentina","janssen_vas",18,24,"male",0.928
+"37","Argentina","janssen_vas",25,34,"female",0.911
+"38","Argentina","janssen_vas",25,34,"male",0.911
+"39","Argentina","janssen_vas",35,44,"female",0.888
+"40","Argentina","janssen_vas",35,44,"male",0.888
+"41","Argentina","janssen_vas",45,54,"female",0.867
+"42","Argentina","janssen_vas",45,54,"male",0.867
+"43","Argentina","janssen_vas",55,64,"female",0.837
+"44","Argentina","janssen_vas",55,64,"male",0.837
+"45","Argentina","janssen_vas",65,74,"female",0.793
+"46","Argentina","janssen_vas",65,74,"male",0.793
+"47","Argentina","janssen_vas",75,200,"female",0.712
+"48","Argentina","janssen_vas",75,200,"male",0.712
+"49","Belgium","janssen_euvas",0,17,"female",0.953
+"50","Belgium","janssen_euvas",0,17,"male",0.953
+"51","Belgium","janssen_euvas",18,24,"female",0.953
+"52","Belgium","janssen_euvas",18,24,"male",0.953
+"53","Belgium","janssen_euvas",25,34,"female",0.921
+"54","Belgium","janssen_euvas",25,34,"male",0.921
+"55","Belgium","janssen_euvas",35,44,"female",0.92
+"56","Belgium","janssen_euvas",35,44,"male",0.92
+"57","Belgium","janssen_euvas",45,54,"female",0.889
+"58","Belgium","janssen_euvas",45,54,"male",0.889
+"59","Belgium","janssen_euvas",55,64,"female",0.881
+"60","Belgium","janssen_euvas",55,64,"male",0.881
+"61","Belgium","janssen_euvas",65,74,"female",0.848
+"62","Belgium","janssen_euvas",65,74,"male",0.848
+"63","Belgium","janssen_euvas",75,200,"female",0.761
+"64","Belgium","janssen_euvas",75,200,"male",0.761
+"65","Belgium","janssen_vas",0,17,"female",0.948
+"66","Belgium","janssen_vas",0,17,"male",0.948
+"67","Belgium","janssen_vas",18,24,"female",0.948
+"68","Belgium","janssen_vas",18,24,"male",0.948
+"69","Belgium","janssen_vas",25,34,"female",0.915
+"70","Belgium","janssen_vas",25,34,"male",0.915
+"71","Belgium","janssen_vas",35,44,"female",0.912
+"72","Belgium","janssen_vas",35,44,"male",0.912
+"73","Belgium","janssen_vas",45,54,"female",0.881
+"74","Belgium","janssen_vas",45,54,"male",0.881
+"75","Belgium","janssen_vas",55,64,"female",0.871
+"76","Belgium","janssen_vas",55,64,"male",0.871
+"77","Belgium","janssen_vas",65,74,"female",0.836
+"78","Belgium","janssen_vas",65,74,"male",0.836
+"79","Belgium","janssen_vas",75,200,"female",0.748
+"80","Belgium","janssen_vas",75,200,"male",0.748
+"81","China","janssen_euvas",0,17,"female",0.99
+"82","China","janssen_euvas",0,17,"male",0.99
+"83","China","janssen_euvas",18,24,"female",0.99
+"84","China","janssen_euvas",18,24,"male",0.99
+"85","China","janssen_euvas",25,34,"female",0.98
+"86","China","janssen_euvas",25,34,"male",0.98
+"87","China","janssen_euvas",35,44,"female",0.97
+"88","China","janssen_euvas",35,44,"male",0.97
+"89","China","janssen_euvas",45,54,"female",0.96
+"90","China","janssen_euvas",45,54,"male",0.96
+"91","China","janssen_euvas",55,64,"female",0.93
+"92","China","janssen_euvas",55,64,"male",0.93
+"93","China","janssen_euvas",65,74,"female",0.9
+"94","China","janssen_euvas",65,74,"male",0.9
+"95","China","janssen_euvas",75,200,"female",0.84
+"96","China","janssen_euvas",75,200,"male",0.84
+"97","Denmark","janssen_euvas",0,17,"female",0.914
+"98","Denmark","janssen_euvas",0,17,"male",0.914
+"99","Denmark","janssen_euvas",18,24,"female",0.914
+"100","Denmark","janssen_euvas",18,24,"male",0.914
+"101","Denmark","janssen_euvas",25,34,"female",0.914
+"102","Denmark","janssen_euvas",25,34,"male",0.914
+"103","Denmark","janssen_euvas",35,44,"female",0.881
+"104","Denmark","janssen_euvas",35,44,"male",0.881
+"105","Denmark","janssen_euvas",45,54,"female",0.861
+"106","Denmark","janssen_euvas",45,54,"male",0.861
+"107","Denmark","janssen_euvas",55,64,"female",0.845
+"108","Denmark","janssen_euvas",55,64,"male",0.845
+"109","Denmark","janssen_euvas",65,74,"female",0.818
+"110","Denmark","janssen_euvas",65,74,"male",0.818
+"111","Denmark","janssen_euvas",75,200,"female",0.753
+"112","Denmark","janssen_euvas",75,200,"male",0.753
+"113","Denmark","janssen_tto",0,17,"female",0.928
+"114","Denmark","janssen_tto",0,17,"male",0.928
+"115","Denmark","janssen_tto",18,24,"female",0.928
+"116","Denmark","janssen_tto",18,24,"male",0.928
+"117","Denmark","janssen_tto",25,34,"female",0.927
+"118","Denmark","janssen_tto",25,34,"male",0.927
+"119","Denmark","janssen_tto",35,44,"female",0.901
+"120","Denmark","janssen_tto",35,44,"male",0.901
+"121","Denmark","janssen_tto",45,54,"female",0.882
+"122","Denmark","janssen_tto",45,54,"male",0.882
+"123","Denmark","janssen_tto",55,64,"female",0.87
+"124","Denmark","janssen_tto",55,64,"male",0.87
+"125","Denmark","janssen_tto",65,74,"female",0.847
+"126","Denmark","janssen_tto",65,74,"male",0.847
+"127","Denmark","janssen_tto",75,200,"female",0.794
+"128","Denmark","janssen_tto",75,200,"male",0.794
+"129","Denmark","janssen_vas",0,17,"female",0.885
+"130","Denmark","janssen_vas",0,17,"male",0.885
+"131","Denmark","janssen_vas",18,24,"female",0.885
+"132","Denmark","janssen_vas",18,24,"male",0.885
+"133","Denmark","janssen_vas",25,34,"female",0.884
+"134","Denmark","janssen_vas",25,34,"male",0.884
+"135","Denmark","janssen_vas",35,44,"female",0.845
+"136","Denmark","janssen_vas",35,44,"male",0.845
+"137","Denmark","janssen_vas",45,54,"female",0.822
+"138","Denmark","janssen_vas",45,54,"male",0.822
+"139","Denmark","janssen_vas",55,64,"female",0.799
+"140","Denmark","janssen_vas",55,64,"male",0.799
+"141","Denmark","janssen_vas",65,74,"female",0.766
+"142","Denmark","janssen_vas",65,74,"male",0.766
+"143","Denmark","janssen_vas",75,200,"female",0.691
+"144","Denmark","janssen_vas",75,200,"male",0.691
+"145","England","janssen_euvas",0,17,"female",0.922
+"146","England","janssen_euvas",0,17,"male",0.922
+"147","England","janssen_euvas",18,24,"female",0.922
+"148","England","janssen_euvas",18,24,"male",0.922
+"149","England","janssen_euvas",25,34,"female",0.915
+"150","England","janssen_euvas",25,34,"male",0.915
+"151","England","janssen_euvas",35,44,"female",0.891
+"152","England","janssen_euvas",35,44,"male",0.891
+"153","England","janssen_euvas",45,54,"female",0.857
+"154","England","janssen_euvas",45,54,"male",0.857
+"155","England","janssen_euvas",55,64,"female",0.819
+"156","England","janssen_euvas",55,64,"male",0.819
+"157","England","janssen_euvas",65,74,"female",0.785
+"158","England","janssen_euvas",65,74,"male",0.785
+"159","England","janssen_euvas",75,200,"female",0.72
+"160","England","janssen_euvas",75,200,"male",0.72
+"161","England","janssen_tto",0,17,"female",0.929
+"162","England","janssen_tto",0,17,"male",0.929
+"163","England","janssen_tto",18,24,"female",0.929
+"164","England","janssen_tto",18,24,"male",0.929
+"165","England","janssen_tto",25,34,"female",0.919
+"166","England","janssen_tto",25,34,"male",0.919
+"167","England","janssen_tto",35,44,"female",0.893
+"168","England","janssen_tto",35,44,"male",0.893
+"169","England","janssen_tto",45,54,"female",0.855
+"170","England","janssen_tto",45,54,"male",0.855
+"171","England","janssen_tto",55,64,"female",0.81
+"172","England","janssen_tto",55,64,"male",0.81
+"173","England","janssen_tto",65,74,"female",0.773
+"174","England","janssen_tto",65,74,"male",0.773
+"175","England","janssen_tto",75,200,"female",0.703
+"176","England","janssen_tto",75,200,"male",0.703
+"177","England","janssen_vas",0,17,"female",0.922
+"178","England","janssen_vas",0,17,"male",0.922
+"179","England","janssen_vas",18,24,"female",0.922
+"180","England","janssen_vas",18,24,"male",0.922
+"181","England","janssen_vas",25,34,"female",0.914
+"182","England","janssen_vas",25,34,"male",0.914
+"183","England","janssen_vas",35,44,"female",0.888
+"184","England","janssen_vas",35,44,"male",0.888
+"185","England","janssen_vas",45,54,"female",0.854
+"186","England","janssen_vas",45,54,"male",0.854
+"187","England","janssen_vas",55,64,"female",0.814
+"188","England","janssen_vas",55,64,"male",0.814
+"189","England","janssen_vas",65,74,"female",0.775
+"190","England","janssen_vas",65,74,"male",0.775
+"191","England","janssen_vas",75,200,"female",0.706
+"192","England","janssen_vas",75,200,"male",0.706
+"193","England","vih_primary",0,15,"female",0.878
+"194","England","vih_primary",0,15,"male",0.918
+"195","England","vih_primary",16,17,"female",0.878
+"196","England","vih_primary",16,17,"male",0.918
+"197","England","vih_primary",18,19,"female",0.856
+"198","England","vih_primary",18,19,"male",0.93
+"199","England","vih_primary",20,24,"female",0.859
+"200","England","vih_primary",20,24,"male",0.894
+"201","England","vih_primary",25,29,"female",0.869
+"202","England","vih_primary",25,29,"male",0.895
+"203","England","vih_primary",30,34,"female",0.869
+"204","England","vih_primary",30,34,"male",0.915
+"205","England","vih_primary",35,39,"female",0.854
+"206","England","vih_primary",35,39,"male",0.863
+"207","England","vih_primary",40,44,"female",0.846
+"208","England","vih_primary",40,44,"male",0.872
+"209","England","vih_primary",45,49,"female",0.806
+"210","England","vih_primary",45,49,"male",0.822
+"211","England","vih_primary",50,54,"female",0.798
+"212","England","vih_primary",50,54,"male",0.836
+"213","England","vih_primary",55,59,"female",0.791
+"214","England","vih_primary",55,59,"male",0.809
+"215","England","vih_primary",60,64,"female",0.776
+"216","England","vih_primary",60,64,"male",0.803
+"217","England","vih_primary",65,69,"female",0.775
+"218","England","vih_primary",65,69,"male",0.797
+"219","England","vih_primary",70,74,"female",0.784
+"220","England","vih_primary",70,74,"male",0.801
+"221","England","vih_primary",75,79,"female",0.73
+"222","England","vih_primary",75,79,"male",0.788
+"223","England","vih_primary",80,84,"female",0.71
+"224","England","vih_primary",80,84,"male",0.767
+"225","England","vih_primary",85,89,"female",0.666
+"226","England","vih_primary",85,89,"male",0.727
+"227","England","vih_primary",90,200,"female",0.666
+"228","England","vih_primary",90,200,"male",0.656
+"229","England","vih_secondary",0,15,"female",0.881
+"230","England","vih_secondary",0,15,"male",0.916
+"231","England","vih_secondary",16,17,"female",0.881
+"232","England","vih_secondary",16,17,"male",0.916
+"233","England","vih_secondary",18,19,"female",0.864
+"234","England","vih_secondary",18,19,"male",0.933
+"235","England","vih_secondary",20,24,"female",0.866
+"236","England","vih_secondary",20,24,"male",0.895
+"237","England","vih_secondary",25,29,"female",0.873
+"238","England","vih_secondary",25,29,"male",0.895
+"239","England","vih_secondary",30,34,"female",0.87
+"240","England","vih_secondary",30,34,"male",0.916
+"241","England","vih_secondary",35,39,"female",0.857
+"242","England","vih_secondary",35,39,"male",0.862
+"243","England","vih_secondary",40,44,"female",0.85
+"244","England","vih_secondary",40,44,"male",0.87
+"245","England","vih_secondary",45,49,"female",0.815
+"246","England","vih_secondary",45,49,"male",0.824
+"247","England","vih_secondary",50,54,"female",0.805
+"248","England","vih_secondary",50,54,"male",0.837
+"249","England","vih_secondary",55,59,"female",0.802
+"250","England","vih_secondary",55,59,"male",0.817
+"251","England","vih_secondary",60,64,"female",0.784
+"252","England","vih_secondary",60,64,"male",0.809
+"253","England","vih_secondary",65,69,"female",0.782
+"254","England","vih_secondary",65,69,"male",0.798
+"255","England","vih_secondary",70,74,"female",0.787
+"256","England","vih_secondary",70,74,"male",0.802
+"257","England","vih_secondary",75,79,"female",0.741
+"258","England","vih_secondary",75,79,"male",0.791
+"259","England","vih_secondary",80,84,"female",0.717
+"260","England","vih_secondary",80,84,"male",0.773
+"261","England","vih_secondary",85,89,"female",0.665
+"262","England","vih_secondary",85,89,"male",0.718
+"263","England","vih_secondary",90,200,"female",0.665
+"264","England","vih_secondary",90,200,"male",0.663
+"265","Finland","janssen_euvas",0,17,"female",NA
+"266","Finland","janssen_euvas",0,17,"male",NA
+"267","Finland","janssen_euvas",18,24,"female",NA
+"268","Finland","janssen_euvas",18,24,"male",NA
+"269","Finland","janssen_euvas",25,34,"female",0.919
+"270","Finland","janssen_euvas",25,34,"male",0.919
+"271","Finland","janssen_euvas",35,44,"female",0.891
+"272","Finland","janssen_euvas",35,44,"male",0.891
+"273","Finland","janssen_euvas",45,54,"female",0.853
+"274","Finland","janssen_euvas",45,54,"male",0.853
+"275","Finland","janssen_euvas",55,64,"female",0.805
+"276","Finland","janssen_euvas",55,64,"male",0.805
+"277","Finland","janssen_euvas",65,74,"female",0.762
+"278","Finland","janssen_euvas",65,74,"male",0.762
+"279","Finland","janssen_euvas",75,200,"female",0.573
+"280","Finland","janssen_euvas",75,200,"male",0.573
+"281","Finland","janssen_vas",0,17,"female",NA
+"282","Finland","janssen_vas",0,17,"male",NA
+"283","Finland","janssen_vas",18,24,"female",NA
+"284","Finland","janssen_vas",18,24,"male",NA
+"285","Finland","janssen_vas",25,34,"female",0.909
+"286","Finland","janssen_vas",25,34,"male",0.909
+"287","Finland","janssen_vas",35,44,"female",0.878
+"288","Finland","janssen_vas",35,44,"male",0.878
+"289","Finland","janssen_vas",45,54,"female",0.835
+"290","Finland","janssen_vas",45,54,"male",0.835
+"291","Finland","janssen_vas",55,64,"female",0.781
+"292","Finland","janssen_vas",55,64,"male",0.781
+"293","Finland","janssen_vas",65,74,"female",0.738
+"294","Finland","janssen_vas",65,74,"male",0.738
+"295","Finland","janssen_vas",75,200,"female",0.583
+"296","Finland","janssen_vas",75,200,"male",0.583
+"297","France","janssen_euvas",0,17,"female",0.924
+"298","France","janssen_euvas",0,17,"male",0.924
+"299","France","janssen_euvas",18,24,"female",0.924
+"300","France","janssen_euvas",18,24,"male",0.924
+"301","France","janssen_euvas",25,34,"female",0.921
+"302","France","janssen_euvas",25,34,"male",0.921
+"303","France","janssen_euvas",35,44,"female",0.883
+"304","France","janssen_euvas",35,44,"male",0.883
+"305","France","janssen_euvas",45,54,"female",0.893
+"306","France","janssen_euvas",45,54,"male",0.893
+"307","France","janssen_euvas",55,64,"female",0.836
+"308","France","janssen_euvas",55,64,"male",0.836
+"309","France","janssen_euvas",65,74,"female",0.804
+"310","France","janssen_euvas",65,74,"male",0.804
+"311","France","janssen_euvas",75,200,"female",0.756
+"312","France","janssen_euvas",75,200,"male",0.756
+"313","France","janssen_tto",0,17,"female",0.948
+"314","France","janssen_tto",0,17,"male",0.948
+"315","France","janssen_tto",18,24,"female",0.948
+"316","France","janssen_tto",18,24,"male",0.948
+"317","France","janssen_tto",25,34,"female",0.946
+"318","France","janssen_tto",25,34,"male",0.946
+"319","France","janssen_tto",35,44,"female",0.913
+"320","France","janssen_tto",35,44,"male",0.913
+"321","France","janssen_tto",45,54,"female",0.922
+"322","France","janssen_tto",45,54,"male",0.922
+"323","France","janssen_tto",55,64,"female",0.853
+"324","France","janssen_tto",55,64,"male",0.853
+"325","France","janssen_tto",65,74,"female",0.81
+"326","France","janssen_tto",65,74,"male",0.81
+"327","France","janssen_tto",75,200,"female",0.735
+"328","France","janssen_tto",75,200,"male",0.735
+"329","Germany","janssen_euvas",0,17,"female",0.95
+"330","Germany","janssen_euvas",0,17,"male",0.95
+"331","Germany","janssen_euvas",18,24,"female",0.95
+"332","Germany","janssen_euvas",18,24,"male",0.95
+"333","Germany","janssen_euvas",25,34,"female",0.949
+"334","Germany","janssen_euvas",25,34,"male",0.949
+"335","Germany","janssen_euvas",35,44,"female",0.943
+"336","Germany","janssen_euvas",35,44,"male",0.943
+"337","Germany","janssen_euvas",45,54,"female",0.908
+"338","Germany","janssen_euvas",45,54,"male",0.908
+"339","Germany","janssen_euvas",55,64,"female",0.881
+"340","Germany","janssen_euvas",55,64,"male",0.881
+"341","Germany","janssen_euvas",65,74,"female",0.838
+"342","Germany","janssen_euvas",65,74,"male",0.838
+"343","Germany","janssen_euvas",75,200,"female",0.771
+"344","Germany","janssen_euvas",75,200,"male",0.771
+"345","Germany","janssen_tto",0,17,"female",0.972
+"346","Germany","janssen_tto",0,17,"male",0.972
+"347","Germany","janssen_tto",18,24,"female",0.972
+"348","Germany","janssen_tto",18,24,"male",0.972
+"349","Germany","janssen_tto",25,34,"female",0.973
+"350","Germany","janssen_tto",25,34,"male",0.973
+"351","Germany","janssen_tto",35,44,"female",0.966
+"352","Germany","janssen_tto",35,44,"male",0.966
+"353","Germany","janssen_tto",45,54,"female",0.945
+"354","Germany","janssen_tto",45,54,"male",0.945
+"355","Germany","janssen_tto",55,64,"female",0.922
+"356","Germany","janssen_tto",55,64,"male",0.922
+"357","Germany","janssen_tto",65,74,"female",0.891
+"358","Germany","janssen_tto",65,74,"male",0.891
+"359","Germany","janssen_tto",75,200,"female",0.839
+"360","Germany","janssen_tto",75,200,"male",0.839
+"361","Germany","janssen_vas",0,17,"female",0.962
+"362","Germany","janssen_vas",0,17,"male",0.962
+"363","Germany","janssen_vas",18,24,"female",0.962
+"364","Germany","janssen_vas",18,24,"male",0.962
+"365","Germany","janssen_vas",25,34,"female",0.966
+"366","Germany","janssen_vas",25,34,"male",0.966
+"367","Germany","janssen_vas",35,44,"female",0.962
+"368","Germany","janssen_vas",35,44,"male",0.962
+"369","Germany","janssen_vas",45,54,"female",0.937
+"370","Germany","janssen_vas",45,54,"male",0.937
+"371","Germany","janssen_vas",55,64,"female",0.915
+"372","Germany","janssen_vas",55,64,"male",0.915
+"373","Germany","janssen_vas",65,74,"female",0.882
+"374","Germany","janssen_vas",65,74,"male",0.882
+"375","Germany","janssen_vas",75,200,"female",0.817
+"376","Germany","janssen_vas",75,200,"male",0.817
+"377","Greece","janssen_euvas",0,17,"female",0.979
+"378","Greece","janssen_euvas",0,17,"male",0.979
+"379","Greece","janssen_euvas",18,24,"female",0.979
+"380","Greece","janssen_euvas",18,24,"male",0.979
+"381","Greece","janssen_euvas",25,34,"female",0.972
+"382","Greece","janssen_euvas",25,34,"male",0.972
+"383","Greece","janssen_euvas",35,44,"female",0.957
+"384","Greece","janssen_euvas",35,44,"male",0.957
+"385","Greece","janssen_euvas",45,54,"female",0.916
+"386","Greece","janssen_euvas",45,54,"male",0.916
+"387","Greece","janssen_euvas",55,64,"female",0.817
+"388","Greece","janssen_euvas",55,64,"male",0.817
+"389","Greece","janssen_euvas",65,74,"female",0.793
+"390","Greece","janssen_euvas",65,74,"male",0.793
+"391","Greece","janssen_euvas",75,200,"female",0.739
+"392","Greece","janssen_euvas",75,200,"male",0.739
+"393","Hungary","janssen_euvas",0,17,"female",0.934
+"394","Hungary","janssen_euvas",0,17,"male",0.934
+"395","Hungary","janssen_euvas",18,24,"female",0.934
+"396","Hungary","janssen_euvas",18,24,"male",0.934
+"397","Hungary","janssen_euvas",25,34,"female",0.911
+"398","Hungary","janssen_euvas",25,34,"male",0.911
+"399","Hungary","janssen_euvas",35,44,"female",0.873
+"400","Hungary","janssen_euvas",35,44,"male",0.873
+"401","Hungary","janssen_euvas",45,54,"female",0.802
+"402","Hungary","janssen_euvas",45,54,"male",0.802
+"403","Hungary","janssen_euvas",55,64,"female",0.755
+"404","Hungary","janssen_euvas",55,64,"male",0.755
+"405","Hungary","janssen_euvas",65,74,"female",0.716
+"406","Hungary","janssen_euvas",65,74,"male",0.716
+"407","Hungary","janssen_euvas",75,200,"female",0.639
+"408","Hungary","janssen_euvas",75,200,"male",0.639
+"409","Italy","janssen_euvas",0,17,"female",0.969
+"410","Italy","janssen_euvas",0,17,"male",0.969
+"411","Italy","janssen_euvas",18,24,"female",0.969
+"412","Italy","janssen_euvas",18,24,"male",0.969
+"413","Italy","janssen_euvas",25,34,"female",0.956
+"414","Italy","janssen_euvas",25,34,"male",0.956
+"415","Italy","janssen_euvas",35,44,"female",0.943
+"416","Italy","janssen_euvas",35,44,"male",0.943
+"417","Italy","janssen_euvas",45,54,"female",0.91
+"418","Italy","janssen_euvas",45,54,"male",0.91
+"419","Italy","janssen_euvas",55,64,"female",0.877
+"420","Italy","janssen_euvas",55,64,"male",0.877
+"421","Italy","janssen_euvas",65,74,"female",0.823
+"422","Italy","janssen_euvas",65,74,"male",0.823
+"423","Italy","janssen_euvas",75,200,"female",0.724
+"424","Italy","janssen_euvas",75,200,"male",0.724
+"425","Italy","janssen_tto",0,17,"female",0.984
+"426","Italy","janssen_tto",0,17,"male",0.984
+"427","Italy","janssen_tto",18,24,"female",0.984
+"428","Italy","janssen_tto",18,24,"male",0.984
+"429","Italy","janssen_tto",25,34,"female",0.978
+"430","Italy","janssen_tto",25,34,"male",0.978
+"431","Italy","janssen_tto",35,44,"female",0.973
+"432","Italy","janssen_tto",35,44,"male",0.973
+"433","Italy","janssen_tto",45,54,"female",0.955
+"434","Italy","janssen_tto",45,54,"male",0.955
+"435","Italy","janssen_tto",55,64,"female",0.936
+"436","Italy","janssen_tto",55,64,"male",0.936
+"437","Italy","janssen_tto",65,74,"female",0.904
+"438","Italy","janssen_tto",65,74,"male",0.904
+"439","Italy","janssen_tto",75,200,"female",0.839
+"440","Italy","janssen_tto",75,200,"male",0.839
+"441","Netherlands","janssen_euvas",0,17,"female",0.938
+"442","Netherlands","janssen_euvas",0,17,"male",0.938
+"443","Netherlands","janssen_euvas",18,24,"female",0.938
+"444","Netherlands","janssen_euvas",18,24,"male",0.938
+"445","Netherlands","janssen_euvas",25,34,"female",0.91
+"446","Netherlands","janssen_euvas",25,34,"male",0.91
+"447","Netherlands","janssen_euvas",35,44,"female",0.922
+"448","Netherlands","janssen_euvas",35,44,"male",0.922
+"449","Netherlands","janssen_euvas",45,54,"female",0.874
+"450","Netherlands","janssen_euvas",45,54,"male",0.874
+"451","Netherlands","janssen_euvas",55,64,"female",0.869
+"452","Netherlands","janssen_euvas",55,64,"male",0.869
+"453","Netherlands","janssen_euvas",65,74,"female",0.863
+"454","Netherlands","janssen_euvas",65,74,"male",0.863
+"455","Netherlands","janssen_euvas",75,200,"female",0.798
+"456","Netherlands","janssen_euvas",75,200,"male",0.798
+"457","Netherlands","janssen_tto",0,17,"female",0.95
+"458","Netherlands","janssen_tto",0,17,"male",0.95
+"459","Netherlands","janssen_tto",18,24,"female",0.95
+"460","Netherlands","janssen_tto",18,24,"male",0.95
+"461","Netherlands","janssen_tto",25,34,"female",0.927
+"462","Netherlands","janssen_tto",25,34,"male",0.927
+"463","Netherlands","janssen_tto",35,44,"female",0.935
+"464","Netherlands","janssen_tto",35,44,"male",0.935
+"465","Netherlands","janssen_tto",45,54,"female",0.89
+"466","Netherlands","janssen_tto",45,54,"male",0.89
+"467","Netherlands","janssen_tto",55,64,"female",0.89
+"468","Netherlands","janssen_tto",55,64,"male",0.89
+"469","Netherlands","janssen_tto",65,74,"female",0.886
+"470","Netherlands","janssen_tto",65,74,"male",0.886
+"471","Netherlands","janssen_tto",75,200,"female",0.83
+"472","Netherlands","janssen_tto",75,200,"male",0.83
+"473","New Zealand","janssen_euvas",0,17,"female",0.913
+"474","New Zealand","janssen_euvas",0,17,"male",0.913
+"475","New Zealand","janssen_euvas",18,24,"female",0.913
+"476","New Zealand","janssen_euvas",18,24,"male",0.913
+"477","New Zealand","janssen_euvas",25,34,"female",0.906
+"478","New Zealand","janssen_euvas",25,34,"male",0.906
+"479","New Zealand","janssen_euvas",35,44,"female",0.893
+"480","New Zealand","janssen_euvas",35,44,"male",0.893
+"481","New Zealand","janssen_euvas",45,54,"female",0.858
+"482","New Zealand","janssen_euvas",45,54,"male",0.858
+"483","New Zealand","janssen_euvas",55,64,"female",0.817
+"484","New Zealand","janssen_euvas",55,64,"male",0.817
+"485","New Zealand","janssen_euvas",65,74,"female",0.8
+"486","New Zealand","janssen_euvas",65,74,"male",0.8
+"487","New Zealand","janssen_euvas",75,200,"female",0.712
+"488","New Zealand","janssen_euvas",75,200,"male",0.712
+"489","New Zealand","janssen_vas",0,17,"female",0.89
+"490","New Zealand","janssen_vas",0,17,"male",0.89
+"491","New Zealand","janssen_vas",18,24,"female",0.89
+"492","New Zealand","janssen_vas",18,24,"male",0.89
+"493","New Zealand","janssen_vas",25,34,"female",0.883
+"494","New Zealand","janssen_vas",25,34,"male",0.883
+"495","New Zealand","janssen_vas",35,44,"female",0.869
+"496","New Zealand","janssen_vas",35,44,"male",0.869
+"497","New Zealand","janssen_vas",45,54,"female",0.827
+"498","New Zealand","janssen_vas",45,54,"male",0.827
+"499","New Zealand","janssen_vas",55,64,"female",0.782
+"500","New Zealand","janssen_vas",55,64,"male",0.782
+"501","New Zealand","janssen_vas",65,74,"female",0.763
+"502","New Zealand","janssen_vas",65,74,"male",0.763
+"503","New Zealand","janssen_vas",75,200,"female",0.672
+"504","New Zealand","janssen_vas",75,200,"male",0.672
+"505","Republic of Korea","janssen_euvas",0,17,"female",0.957
+"506","Republic of Korea","janssen_euvas",0,17,"male",0.957
+"507","Republic of Korea","janssen_euvas",18,24,"female",0.957
+"508","Republic of Korea","janssen_euvas",18,24,"male",0.957
+"509","Republic of Korea","janssen_euvas",25,34,"female",0.958
+"510","Republic of Korea","janssen_euvas",25,34,"male",0.958
+"511","Republic of Korea","janssen_euvas",35,44,"female",0.949
+"512","Republic of Korea","janssen_euvas",35,44,"male",0.949
+"513","Republic of Korea","janssen_euvas",45,54,"female",0.915
+"514","Republic of Korea","janssen_euvas",45,54,"male",0.915
+"515","Republic of Korea","janssen_euvas",55,64,"female",0.828
+"516","Republic of Korea","janssen_euvas",55,64,"male",0.828
+"517","Republic of Korea","janssen_euvas",65,74,"female",0.787
+"518","Republic of Korea","janssen_euvas",65,74,"male",0.787
+"519","Republic of Korea","janssen_euvas",75,200,"female",NA
+"520","Republic of Korea","janssen_euvas",75,200,"male",NA
+"521","Republic of Korea","janssen_tto",0,17,"female",0.981
+"522","Republic of Korea","janssen_tto",0,17,"male",0.981
+"523","Republic of Korea","janssen_tto",18,24,"female",0.981
+"524","Republic of Korea","janssen_tto",18,24,"male",0.981
+"525","Republic of Korea","janssen_tto",25,34,"female",0.982
+"526","Republic of Korea","janssen_tto",25,34,"male",0.982
+"527","Republic of Korea","janssen_tto",35,44,"female",0.976
+"528","Republic of Korea","janssen_tto",35,44,"male",0.976
+"529","Republic of Korea","janssen_tto",45,54,"female",0.96
+"530","Republic of Korea","janssen_tto",45,54,"male",0.96
+"531","Republic of Korea","janssen_tto",55,64,"female",0.909
+"532","Republic of Korea","janssen_tto",55,64,"male",0.909
+"533","Republic of Korea","janssen_tto",65,74,"female",0.888
+"534","Republic of Korea","janssen_tto",65,74,"male",0.888
+"535","Republic of Korea","janssen_tto",75,200,"female",NA
+"536","Republic of Korea","janssen_tto",75,200,"male",NA
+"537","Romania","rom_3L",0,17,"female",0.976
+"538","Romania","rom_3L",0,17,"male",0.984
+"539","Romania","rom_3L",18,24,"female",0.976
+"540","Romania","rom_3L",18,24,"male",0.984
+"541","Romania","rom_3L",25,34,"female",0.979
+"542","Romania","rom_3L",25,34,"male",0.973
+"543","Romania","rom_3L",35,44,"female",0.969
+"544","Romania","rom_3L",35,44,"male",0.968
+"545","Romania","rom_3L",45,54,"female",0.951
+"546","Romania","rom_3L",45,54,"male",0.946
+"547","Romania","rom_3L",55,64,"female",0.906
+"548","Romania","rom_3L",55,64,"male",0.907
+"549","Romania","rom_3L",65,74,"female",0.838
+"550","Romania","rom_3L",65,74,"male",0.893
+"551","Romania","rom_3L",75,200,"female",0.76
+"552","Romania","rom_3L",75,200,"male",0.823
+"553","Romania","rom_5L",0,17,"female",0.981
+"554","Romania","rom_5L",0,17,"male",0.974
+"555","Romania","rom_5L",18,24,"female",0.981
+"556","Romania","rom_5L",18,24,"male",0.974
+"557","Romania","rom_5L",25,34,"female",0.974
+"558","Romania","rom_5L",25,34,"male",0.951
+"559","Romania","rom_5L",35,44,"female",0.963
+"560","Romania","rom_5L",35,44,"male",0.979
+"561","Romania","rom_5L",45,54,"female",0.95
+"562","Romania","rom_5L",45,54,"male",0.947
+"563","Romania","rom_5L",55,64,"female",0.896
+"564","Romania","rom_5L",55,64,"male",0.915
+"565","Romania","rom_5L",65,74,"female",0.826
+"566","Romania","rom_5L",65,74,"male",0.885
+"567","Romania","rom_5L",75,200,"female",0.743
+"568","Romania","rom_5L",75,200,"male",0.804
+"569","Slovenia","janssen_euvas",0,17,"female",0.879
+"570","Slovenia","janssen_euvas",0,17,"male",0.879
+"571","Slovenia","janssen_euvas",18,24,"female",0.879
+"572","Slovenia","janssen_euvas",18,24,"male",0.879
+"573","Slovenia","janssen_euvas",25,34,"female",0.859
+"574","Slovenia","janssen_euvas",25,34,"male",0.859
+"575","Slovenia","janssen_euvas",35,44,"female",0.831
+"576","Slovenia","janssen_euvas",35,44,"male",0.831
+"577","Slovenia","janssen_euvas",45,54,"female",0.772
+"578","Slovenia","janssen_euvas",45,54,"male",0.772
+"579","Slovenia","janssen_euvas",55,64,"female",0.697
+"580","Slovenia","janssen_euvas",55,64,"male",0.697
+"581","Slovenia","janssen_euvas",65,74,"female",0.663
+"582","Slovenia","janssen_euvas",65,74,"male",0.663
+"583","Slovenia","janssen_euvas",75,200,"female",0.621
+"584","Slovenia","janssen_euvas",75,200,"male",0.621
+"585","Slovenia","janssen_vas",0,17,"female",0.869
+"586","Slovenia","janssen_vas",0,17,"male",0.869
+"587","Slovenia","janssen_vas",18,24,"female",0.869
+"588","Slovenia","janssen_vas",18,24,"male",0.869
+"589","Slovenia","janssen_vas",25,34,"female",0.841
+"590","Slovenia","janssen_vas",25,34,"male",0.841
+"591","Slovenia","janssen_vas",35,44,"female",0.794
+"592","Slovenia","janssen_vas",35,44,"male",0.794
+"593","Slovenia","janssen_vas",45,54,"female",0.712
+"594","Slovenia","janssen_vas",45,54,"male",0.712
+"595","Slovenia","janssen_vas",55,64,"female",0.619
+"596","Slovenia","janssen_vas",55,64,"male",0.619
+"597","Slovenia","janssen_vas",65,74,"female",0.554
+"598","Slovenia","janssen_vas",65,74,"male",0.554
+"599","Slovenia","janssen_vas",75,200,"female",0.498
+"600","Slovenia","janssen_vas",75,200,"male",0.498
+"601","Spain","janssen_euvas",0,17,"female",0.968
+"602","Spain","janssen_euvas",0,17,"male",0.968
+"603","Spain","janssen_euvas",18,24,"female",0.968
+"604","Spain","janssen_euvas",18,24,"male",0.968
+"605","Spain","janssen_euvas",25,34,"female",0.963
+"606","Spain","janssen_euvas",25,34,"male",0.963
+"607","Spain","janssen_euvas",35,44,"female",0.939
+"608","Spain","janssen_euvas",35,44,"male",0.939
+"609","Spain","janssen_euvas",45,54,"female",0.911
+"610","Spain","janssen_euvas",45,54,"male",0.911
+"611","Spain","janssen_euvas",55,64,"female",0.884
+"612","Spain","janssen_euvas",55,64,"male",0.884
+"613","Spain","janssen_euvas",65,74,"female",0.87
+"614","Spain","janssen_euvas",65,74,"male",0.87
+"615","Spain","janssen_euvas",75,200,"female",0.773
+"616","Spain","janssen_euvas",75,200,"male",0.773
+"617","Spain","janssen_tto",0,17,"female",0.982
+"618","Spain","janssen_tto",0,17,"male",0.982
+"619","Spain","janssen_tto",18,24,"female",0.982
+"620","Spain","janssen_tto",18,24,"male",0.982
+"621","Spain","janssen_tto",25,34,"female",0.975
+"622","Spain","janssen_tto",25,34,"male",0.975
+"623","Spain","janssen_tto",35,44,"female",0.949
+"624","Spain","janssen_tto",35,44,"male",0.949
+"625","Spain","janssen_tto",45,54,"female",0.923
+"626","Spain","janssen_tto",45,54,"male",0.923
+"627","Spain","janssen_tto",55,64,"female",0.901
+"628","Spain","janssen_tto",55,64,"male",0.901
+"629","Spain","janssen_tto",65,74,"female",0.891
+"630","Spain","janssen_tto",65,74,"male",0.891
+"631","Spain","janssen_tto",75,200,"female",0.781
+"632","Spain","janssen_tto",75,200,"male",0.781
+"633","Spain","janssen_vas",0,17,"female",0.969
+"634","Spain","janssen_vas",0,17,"male",0.969
+"635","Spain","janssen_vas",18,24,"female",0.969
+"636","Spain","janssen_vas",18,24,"male",0.969
+"637","Spain","janssen_vas",25,34,"female",0.963
+"638","Spain","janssen_vas",25,34,"male",0.963
+"639","Spain","janssen_vas",35,44,"female",0.939
+"640","Spain","janssen_vas",35,44,"male",0.939
+"641","Spain","janssen_vas",45,54,"female",0.912
+"642","Spain","janssen_vas",45,54,"male",0.912
+"643","Spain","janssen_vas",55,64,"female",0.883
+"644","Spain","janssen_vas",55,64,"male",0.883
+"645","Spain","janssen_vas",65,74,"female",0.866
+"646","Spain","janssen_vas",65,74,"male",0.866
+"647","Spain","janssen_vas",75,200,"female",0.761
+"648","Spain","janssen_vas",75,200,"male",0.761
+"649","Sweden","janssen_euvas",0,17,"female",0.888
+"650","Sweden","janssen_euvas",0,17,"male",0.888
+"651","Sweden","janssen_euvas",18,24,"female",0.888
+"652","Sweden","janssen_euvas",18,24,"male",0.888
+"653","Sweden","janssen_euvas",25,34,"female",0.893
+"654","Sweden","janssen_euvas",25,34,"male",0.893
+"655","Sweden","janssen_euvas",35,44,"female",0.868
+"656","Sweden","janssen_euvas",35,44,"male",0.868
+"657","Sweden","janssen_euvas",45,54,"female",0.835
+"658","Sweden","janssen_euvas",45,54,"male",0.835
+"659","Sweden","janssen_euvas",55,64,"female",0.813
+"660","Sweden","janssen_euvas",55,64,"male",0.813
+"661","Sweden","janssen_euvas",65,74,"female",0.836
+"662","Sweden","janssen_euvas",65,74,"male",0.836
+"663","Sweden","janssen_euvas",75,200,"female",0.701
+"664","Sweden","janssen_euvas",75,200,"male",0.701
+"665","Thailand","janssen_euvas",0,17,"female",0.814
+"666","Thailand","janssen_euvas",0,17,"male",0.814
+"667","Thailand","janssen_euvas",18,24,"female",0.814
+"668","Thailand","janssen_euvas",18,24,"male",0.814
+"669","Thailand","janssen_euvas",25,34,"female",0.785
+"670","Thailand","janssen_euvas",25,34,"male",0.785
+"671","Thailand","janssen_euvas",35,44,"female",0.771
+"672","Thailand","janssen_euvas",35,44,"male",0.771
+"673","Thailand","janssen_euvas",45,54,"female",0.717
+"674","Thailand","janssen_euvas",45,54,"male",0.717
+"675","Thailand","janssen_euvas",55,64,"female",0.694
+"676","Thailand","janssen_euvas",55,64,"male",0.694
+"677","Thailand","janssen_euvas",65,74,"female",0.67
+"678","Thailand","janssen_euvas",65,74,"male",0.67
+"679","Thailand","janssen_euvas",75,200,"female",0.657
+"680","Thailand","janssen_euvas",75,200,"male",0.657
+"681","United Kingdom","janssen_euvas",0,17,"female",0.934
+"682","United Kingdom","janssen_euvas",0,17,"male",0.934
+"683","United Kingdom","janssen_euvas",18,24,"female",0.934
+"684","United Kingdom","janssen_euvas",18,24,"male",0.934
+"685","United Kingdom","janssen_euvas",25,34,"female",0.922
+"686","United Kingdom","janssen_euvas",25,34,"male",0.922
+"687","United Kingdom","janssen_euvas",35,44,"female",0.905
+"688","United Kingdom","janssen_euvas",35,44,"male",0.905
+"689","United Kingdom","janssen_euvas",45,54,"female",0.849
+"690","United Kingdom","janssen_euvas",45,54,"male",0.849
+"691","United Kingdom","janssen_euvas",55,64,"female",0.804
+"692","United Kingdom","janssen_euvas",55,64,"male",0.804
+"693","United Kingdom","janssen_euvas",65,74,"female",0.785
+"694","United Kingdom","janssen_euvas",65,74,"male",0.785
+"695","United Kingdom","janssen_euvas",75,200,"female",0.734
+"696","United Kingdom","janssen_euvas",75,200,"male",0.734
+"697","United Kingdom","janssen_tto",0,17,"female",0.94
+"698","United Kingdom","janssen_tto",0,17,"male",0.94
+"699","United Kingdom","janssen_tto",18,24,"female",0.94
+"700","United Kingdom","janssen_tto",18,24,"male",0.94
+"701","United Kingdom","janssen_tto",25,34,"female",0.927
+"702","United Kingdom","janssen_tto",25,34,"male",0.927
+"703","United Kingdom","janssen_tto",35,44,"female",0.911
+"704","United Kingdom","janssen_tto",35,44,"male",0.911
+"705","United Kingdom","janssen_tto",45,54,"female",0.847
+"706","United Kingdom","janssen_tto",45,54,"male",0.847
+"707","United Kingdom","janssen_tto",55,64,"female",0.799
+"708","United Kingdom","janssen_tto",55,64,"male",0.799
+"709","United Kingdom","janssen_tto",65,74,"female",0.779
+"710","United Kingdom","janssen_tto",65,74,"male",0.779
+"711","United Kingdom","janssen_tto",75,200,"female",0.726
+"712","United Kingdom","janssen_tto",75,200,"male",0.726
+"713","United Kingdom","janssen_vas",0,17,"female",0.931
+"714","United Kingdom","janssen_vas",0,17,"male",0.931
+"715","United Kingdom","janssen_vas",18,24,"female",0.931
+"716","United Kingdom","janssen_vas",18,24,"male",0.931
+"717","United Kingdom","janssen_vas",25,34,"female",0.92
+"718","United Kingdom","janssen_vas",25,34,"male",0.92
+"719","United Kingdom","janssen_vas",35,44,"female",0.902
+"720","United Kingdom","janssen_vas",35,44,"male",0.902
+"721","United Kingdom","janssen_vas",45,54,"female",0.846
+"722","United Kingdom","janssen_vas",45,54,"male",0.846
+"723","United Kingdom","janssen_vas",55,64,"female",0.799
+"724","United Kingdom","janssen_vas",55,64,"male",0.799
+"725","United Kingdom","janssen_vas",65,74,"female",0.778
+"726","United Kingdom","janssen_vas",65,74,"male",0.778
+"727","United Kingdom","janssen_vas",75,200,"female",0.726
+"728","United Kingdom","janssen_vas",75,200,"male",0.726
+"729","United Kingdom","mvh",0,17,"female",0.94
+"730","United Kingdom","mvh",0,17,"male",0.94
+"731","United Kingdom","mvh",18,24,"female",0.94
+"732","United Kingdom","mvh",18,24,"male",0.94
+"733","United Kingdom","mvh",25,34,"female",0.93
+"734","United Kingdom","mvh",25,34,"male",0.93
+"735","United Kingdom","mvh",35,44,"female",0.91
+"736","United Kingdom","mvh",35,44,"male",0.91
+"737","United Kingdom","mvh",45,54,"female",0.85
+"738","United Kingdom","mvh",45,54,"male",0.84
+"739","United Kingdom","mvh",55,64,"female",0.81
+"740","United Kingdom","mvh",55,64,"male",0.78
+"741","United Kingdom","mvh",65,74,"female",0.78
+"742","United Kingdom","mvh",65,74,"male",0.78
+"743","United Kingdom","mvh",75,200,"female",0.71
+"744","United Kingdom","mvh",75,200,"male",0.75
+"745","United States of America","janssen_euvas",0,17,"female",0.899
+"746","United States of America","janssen_euvas",0,17,"male",0.899
+"747","United States of America","janssen_euvas",18,24,"female",0.899
+"748","United States of America","janssen_euvas",18,24,"male",0.899
+"749","United States of America","janssen_euvas",25,34,"female",0.883
+"750","United States of America","janssen_euvas",25,34,"male",0.883
+"751","United States of America","janssen_euvas",35,44,"female",0.853
+"752","United States of America","janssen_euvas",35,44,"male",0.853
+"753","United States of America","janssen_euvas",45,54,"female",0.809
+"754","United States of America","janssen_euvas",45,54,"male",0.809
+"755","United States of America","janssen_euvas",55,64,"female",0.776
+"756","United States of America","janssen_euvas",55,64,"male",0.776
+"757","United States of America","janssen_euvas",65,74,"female",0.756
+"758","United States of America","janssen_euvas",65,74,"male",0.756
+"759","United States of America","janssen_euvas",75,200,"female",0.677
+"760","United States of America","janssen_euvas",75,200,"male",0.677
+"761","United States of America","janssen_tto",0,17,"female",0.924
+"762","United States of America","janssen_tto",0,17,"male",0.924
+"763","United States of America","janssen_tto",18,24,"female",0.924
+"764","United States of America","janssen_tto",18,24,"male",0.924
+"765","United States of America","janssen_tto",25,34,"female",0.912
+"766","United States of America","janssen_tto",25,34,"male",0.912
+"767","United States of America","janssen_tto",35,44,"female",0.889
+"768","United States of America","janssen_tto",35,44,"male",0.889
+"769","United States of America","janssen_tto",45,54,"female",0.855
+"770","United States of America","janssen_tto",45,54,"male",0.855
+"771","United States of America","janssen_tto",55,64,"female",0.83
+"772","United States of America","janssen_tto",55,64,"male",0.83
+"773","United States of America","janssen_tto",65,74,"female",0.817
+"774","United States of America","janssen_tto",65,74,"male",0.817
+"775","United States of America","janssen_tto",75,200,"female",0.755
+"776","United States of America","janssen_tto",75,200,"male",0.755
