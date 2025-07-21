@@ -105,17 +105,29 @@ for their purposes.
 
 ## Discounting
 
-To get the net present value of the losses, we apply a discount rate. In
-our package, the default discount rate is set at 3.5% as per the [NICE
-health technology evaluations
+To get the net present value to society of the quality-adjusted life
+years that are ‘lost’ when an individual dies, we apply a discount rate.
+In our package, the default discount rate is set at 3.5% as per the
+[NICE health technology evaluations
 manual](https://www.nice.org.uk/process/pmg36/chapter/economic-evaluation-2#discounting).
-However, the most appropriate discount rate to apply in a given
-evaluation/analysis is commonly subject to debate. [The Green
+However, the most appropriate discount rate to apply will differ
+according to the context of the evaluation/analysis.
+
+When using the function `calculate_dQALY`, our package allows the user
+to specify the discount rate they would like to use in the calculation
+via setting the value of the argument `r`. `r` can be a scalar numeric
+(e.g. for a discount rate of 1%, set `r = 0.01`) or, so that the
+discount rate can vary across time, `r` also accepts vectorised
+functions (e.g. for a discount rate of 2% a year for 50 years into the
+future and 1% a year thereafter, set
+`r = function(x) ifelse(x < 50, 0.02, 0.01)`).
+
+[The Green
 Book](https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2020#a6-discounting),
 guidance on evaluation methods issued by the Treasury, discusses a
 number of discounting regimes and the reasons one might use them.
 
-Our package allows discount rates to be specified flexibly.
+This package includes a number of discount rate functions, which
 
 <table>
 
@@ -201,11 +213,12 @@ wealth transfers between generations)
 </table>
 
 ``` r
+
 library(dQALY)
 library(ggplot2)
 
 years <- c(0:125)
-  
+
 ggplot() +
   geom_line(aes(x = years, y = r_none(years)), colour = "green") +
   geom_line(aes(x = years, y = r_default(years)), colour = "red") +
@@ -227,12 +240,12 @@ ggplot() +
 
 
 
-ggplot(data = calculate_dQALY(country = "England", year = 2019, 
+ggplot(data = calculate_dQALY(country = "England", year = 2019,
                               collapse_sex = T,
-                              r = r_none), 
-       aes(x = age_at_death, y = dQALY)) +
+                              r = r_none),
+       aes(x = age, y = dQALY)) +
   geom_line(colour = "green") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+  geom_line(data = calculate_dQALY(country = "England", year = 2019,
                                    collapse_sex = T,
                                    r = r_default),
             colour = "red") +
@@ -240,11 +253,11 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
                                    collapse_sex = T,
                                    r = r_health),
             colour = "blue") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+  geom_line(data = calculate_dQALY(country = "England", year = 2019,
                                    collapse_sex = T,
                                    r = r_lt_health),
             colour = "purple") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
+  geom_line(data = calculate_dQALY(country = "England", year = 2019,
                                    collapse_sex = T,
                                    r = r_lt_health_reduced),
             colour = "orange") +

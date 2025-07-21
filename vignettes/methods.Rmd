@@ -25,11 +25,11 @@ We want to produce an estimate of $dQALY(x)$, the QALY loss associated with deat
 To produce estimates of QALY loss due to death for a given population, we require data regarding life expectancy and health-related quality of life within that population. 
 
 
-Life tables report $q(x)$, the probability of dying between ages $x$ and $x+1$, for $x = 0,1,..,x_{max}$, $x_{max}$ being the max age we are interested in or have data for. With $q(x)$, we can calculate $l(x)$, the number surviving to age $x \ge 1$ for a reference population of 100,000,
+Life tables report $q(x)$, the probability of dying between ages $x$ and $x+1$, for $x = 0,1,..,x_{max}$, $x_{max}$ being the max age we are interested in or have data for. With $q(x)$, we can calculate $l(x)$, the number surviving to age $x \ge 1$ for a reference population of size N,
 
-$$l(x) = 100,000\cdot\prod_{i=0}^{x}\big(1-q(i)\big) \tag{1}$$
+$$l(x) = N\cdot\prod_{i=0}^{x}\big(1-q(i)\big) \tag{1}$$
 
-and then $L(x)$, the number of years lived between ages $x$ and $x+1$, 
+and then (assuming a uniform distribution of death during the year) $L(x)$, the number of years lived between ages $x$ and $x+1$, 
 
 $$L(x) = \frac{l(x) + l(x+1)}{2} \tag{2}$$
 
@@ -64,17 +64,25 @@ If we let $q_{adj}(x) = SMR \cdot q(x)$, then it would be possible that where $x
 
 The relationship between $q(x)$ and $d(x)$ is the relationship between a probability and a rate:
 
-$$q(x) =1 - e^{-d(x)}$$ 
-$$d(x) = -ln\big(1-q(x)\big)$$ 
+$$q(x) =1 - e^{-d(x)} \iff d(x) = -ln\big(1-q(x)\big)$$ 
+
 
  
 Instead of adjusting $q(x)$ directly, we apply our adjustment to $d(x)$, letting $d_{adj}(x) = SMR \cdot d(x)$ - so we can express $q_{adj}(x)$ in terms of $q(x)$ and $SMR$ as follows:<br/>
 
 
-$$q_{adj}(x) = 1 - e^{-d_{adj}(x)} = 1 - e^{-SMR \cdot d(x)} = 1 -  e^{-SMR \cdot \big( -ln(1-q(x))\big)} = 1 - e^{ln((1-q(x))^{SMR})} = 1 - (1 - q(x))^{SMR}$$
+$$
+\begin{aligned}
+q_{adj}(x) &= 1 - e^{-d_{adj}(x)} \\&= 1 - e^{-SMR \cdot d(x)} \\&= 1 -  e^{-SMR \cdot \big( -ln(1-q(x))\big)} \\&= 1 - e^{ln((1-q(x))^{SMR})} \\&= 1 - (1 - q(x))^{SMR}
+\end{aligned}
+$$
 So, 
 
-$$l_{adj}(x)  = 100,000 \cdot \prod_{i=0}^{x}\big(1-q_{adj}(i)\big) = 100,000 \cdot \prod_{i=0}^{x}\big(1-q(i)\big)^{SMR}$$
+$$
+\begin{aligned}
+l_{adj}(x) &= N \cdot \prod_{i=0}^{x}\big(1-q_{adj}(i)\big) \\&= N \cdot \prod_{i=0}^{x}\big(1-q(i)\big)^{SMR}
+\end{aligned}
+$$
 
 and 
 

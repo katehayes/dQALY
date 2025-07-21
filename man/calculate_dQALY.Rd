@@ -13,7 +13,7 @@ calculate_dQALY(
   smr = 1,
   qcm = 1,
   lt_extend = TRUE,
-  avg_util_young = NULL,
+  avg_hrqol_young = NULL,
   collapse_age = FALSE,
   collapse_sex = FALSE,
   cohort = NULL
@@ -105,7 +105,7 @@ This is done by passing \code{lt_extend} a numeric value greater than 1 - for
 example, letting \code{lt_extend} to 1.05 means the function assumes mortality rates
 will increase by 5\% year on year after the last year for which data is available.}
 
-\item{avg_util_young}{\verb{[numeric]}
+\item{avg_hrqol_young}{\verb{[numeric]}
 
 Allows users to control the way in which assumptions are made about the average
 health-related quality of life of those under 18, for whom data is not typically
@@ -114,8 +114,8 @@ available.
 Defaults to \code{NULL}. In this case the youngest age group is assumed to have
 the same average utility score as that of the next youngest group.
 
-Alternatively, the user can make their own assumption about the utility score
-given to the youngest group, by passing \code{avg_util_young} a numeric value
+Alternatively, the user can make their own assumption about the HRQoL score
+given to the youngest group, by passing \code{avg_hrqol_young} a numeric value
 between 0 and 1, where 1 would be equivalent to assuming the youngest age
 group is in perfect health.}
 
@@ -185,7 +185,7 @@ calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019
 my_norms <- data.frame(sex = c(rep("male", 3), rep("female", 3)),
                        lower = c(0, 20, 90),
                        upper = c(19, 89, 150),
-                       avg_util = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
+                       avg_hrqol = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
 calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
 
 
@@ -208,7 +208,8 @@ calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
                 collapse_sex = TRUE)
 #2) age groups
 my_age_groups <- data.frame(lower = c(seq(0,90,5)), upper = c(seq(4,89,5), 100))
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups)
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+                collapse_age = my_age_groups)
 #3) collapse sex and group age
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
                 collapse_age = my_age_groups, collapse_sex = TRUE)
@@ -227,6 +228,7 @@ calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
 calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
                 collapse_age = my_age_groups, cohort = my_cohort)
 #3) collapse sex and group age
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, collapse_age = my_age_groups,
+calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+                collapse_age = my_age_groups,
                 collapse_sex = TRUE, cohort = my_cohort)
 }

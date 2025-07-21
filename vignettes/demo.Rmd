@@ -46,7 +46,7 @@ library(dQALY)
 
 ## Population-average health related quality of life scores (utility norms)
 
-For most countries, there is more than one set of utility norms stored in the package data. For every country, we have chosen a set of default norms - these are the norms that will be used when the `calculate_dQALY` function is called without specifying a value for the `norms` argument. Alternatively, the user specify what set of package norms they would like to use by passing its ID to `norms`. Its also possible to supply custom norms.
+For most countries, there is more than one set of utility norms stored in the package data. For every country, we have chosen a set of default norms - these are the norms that will be used when the `calculate_dQALY` function is called without specifying a value for the `norms` argument. Alternatively, the user specify what set of package norms they would like to use by passing its ID to `norms`. Its also possible for the user to supply their own HRQoL population norm data.
 
 The available utility norms can be viewed using the `hrqol_norms` function. Results can be filtered by country, and returned with or without reference information.
 

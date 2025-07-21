@@ -12,7 +12,7 @@ calculate_QALE(
   smr = 1,
   qcm = 1,
   lt_extend = TRUE,
-  avg_util_young = NULL,
+  avg_hrqol_young = NULL,
   collapse_age = FALSE,
   collapse_sex = FALSE,
   cohort = NULL
@@ -90,7 +90,7 @@ This is done by passing \code{lt_extend} a numeric value greater than 1 - for
 example, letting \code{lt_extend} to 1.05 means the function assumes mortality rates
 will increase by 5\% year on year after the last year for which data is available.}
 
-\item{avg_util_young}{\verb{[numeric]}
+\item{avg_hrqol_young}{\verb{[numeric]}
 
 Allows users to control the way in which assumptions are made about the average
 health-related quality of life of those under 18, for whom data is not typically
@@ -100,7 +100,7 @@ Defaults to \code{NULL}. In this case the youngest age group is assumed to have
 the same average utility score as that of the next youngest group.
 
 Alternatively, the user can make their own assumption about the utility score
-given to the youngest group, by passing \code{avg_util_young} a numeric value
+given to the youngest group, by passing \code{avg_hrqol_young} a numeric value
 between 0 and 1, where 1 would be equivalent to assuming the youngest age
 group is in perfect health.}
 

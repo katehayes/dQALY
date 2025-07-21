@@ -1,4 +1,4 @@
-"","norm_country","norm_id","lower","upper","sex","avg_util"
+"","norm_country","norm_id","lower","upper","sex","avg_hrqol"
 "1","Argentina","janssen_euvas",0,17,"female",0.907
 "2","Argentina","janssen_euvas",0,17,"male",0.907
 "3","Argentina","janssen_euvas",18,24,"female",0.907
