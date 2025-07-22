@@ -501,14 +501,14 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # (here to probability of surviving ie 1-prob of dying)
   # then calculating L(x): years lived between ages x & x+1 for x>=1: (l(x) + l(x+1))/2
   # Note: This calculation assumes a uniform distribution of deaths during the year
-  life_table[,l_x := cumprod(shift(1-q_x, fill = 1)^smr), by=.(sex)]
+  life_table[, l_x := cumprod(shift(1-q_x, fill = 1)^smr), by=.(sex)]
   life_table[, L_x := (l_x + shift(l_x, type = "lead", fill = 0))/2, , by = .(sex)]
 
   # assigning the appropriate population-level utility norm to corresponding age, sex
   # dropping l(x) bc we only need L(x) for the QALY calculation
   dQALY_table <- utility_norms[life_table,
                          on = .(sex, lower <= x, upper >= x),
-                         .(sex, x, L_x, avg_hrqol)]
+                         .(sex, x, l_x, L_x, avg_hrqol)]
 
   # adding this line below - so that if the calculation is involving life tables that reach
   # older age groups than the utility norm data being supplied, then we just assume
@@ -535,10 +535,10 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   dQALY_table[x == 0, r_col := 0]
 
   dQALY_table[, (paste("v", min_x:max_x, sep="")) := shift(1/cumprod(1+r_col), n = x, type = "lag", fill = 0), by = .(sex)]
-  dQALY_table[, dQALY_x := t(.SD) %*% (L_x*avg_hrqol*qcm), .SDcols = patterns("^v"), by = .(sex)]
+  dQALY_table[, dQALY_x := (t(.SD) %*% (L_x*avg_hrqol*qcm))/l_x, .SDcols = patterns("^v"), by = .(sex)]
 
   # dropping cols we don't need anymore
-  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "r_col", "L_x", "avg_hrqol") := NULL]
+  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "r_col", "l_x", "L_x", "avg_hrqol") := NULL]
 
   # note - fix ordering of output - by x and then sex
 
@@ -796,6 +796,7 @@ calculate_QALE <- function(country = NULL,
                                 avg_hrqol_young = avg_hrqol_young,
                                 collapse_age = collapse_age,
                                 collapse_sex = collapse_sex,
+                                cohort = cohort,
                                 r = 0)
 
   names(QALE_table)[names(QALE_table) == "dQALY"] <- "QALE"
