@@ -33,6 +33,8 @@
 #' @export
 hrqol_norms <- function(country = NULL, references = FALSE) {
 
+  norm_country <- NULL # due to NSE notes in R CMD check
+
   norm_copy <- copy(norm_info)
 
   avail_countries <- unique(norm_copy$norm_country)
@@ -76,6 +78,8 @@ hrqol_norms <- function(country = NULL, references = FALSE) {
 #'
 #' @export
 default_norms <- function(country) {
+
+  default <- norm_country <- NULL # due to NSE notes in R CMD check
 
   # we could also make it more complicated & allow user to choose between rules for selecting the default?
   # eg most recent study, largest sample size, & so on
