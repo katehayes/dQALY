@@ -6,6 +6,10 @@
 # calculate_dQALY(life_table = package_lt(country = "England", year = 2019), norms = package_norms(country = "France"), cohort = package_cohort(country = "Spain", year = 2020), collapse_sex = T)
 # you can currently do something like the above
 
+# whats the reason for the specific error this gives
+# calculate_dQALY(life_table = package_lt(country = "England", year = 2019), norms = package_norms(country = "France"), collapse_sex = T)
+#
+
 # -------------------------------------------------------------------------
 #' Use norm data stored by package
 # -------------------------------------------------------------------------
@@ -21,6 +25,11 @@
 package_norms <- function(country,
                           id = default_norms(country),
                           avg_hrqol_young = NULL) {
+
+
+  # due to NSE notes in R CMD check
+  norm_country <- norm_id <- lower <- avg_hrqol <- NULL
+
 
   # check that country supplied is valid
   if (!is.null(country)) {
@@ -79,6 +88,9 @@ package_lt <- function(country, year,
 
   # Capturing the environment here because we're using data.table
   env <- environment()
+
+  # due to NSE notes in R CMD check
+  xmax <- age <- increment <- qmax <- sex <- NULL
 
   # check that country supplied is valid
   if (!is.null(country)) {

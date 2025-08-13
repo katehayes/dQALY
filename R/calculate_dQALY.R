@@ -165,7 +165,8 @@
 #'
 #'
 #' #Output a table of dQALY values for all ages/genders, specifying year, country and norm by name
-#' calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019)
+#' calculate_dQALY(country = "United Kingdom", year = 2019,
+#'                 norms = package_norms(country, id ="janssen_euvas"))
 #'
 #'
 #' #Output a table of dQALY values for all ages/genders, specifying year & country,
@@ -174,7 +175,7 @@
 #'                        lower = c(0, 20, 90),
 #'                        upper = c(19, 89, 150),
 #'                        avg_hrqol = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
-#' calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
+#' calculate_dQALY(country = "United Kingdom", year = 2019, norms = my_norms)
 #'
 #'
 #' #Output a table of dQALY values for all ages/genders, with user-specified norms and life tables
@@ -187,19 +188,19 @@
 #'
 #' #Calculate dQALY values using a variable discount rate
 #' rfun = function(x) ifelse(x < 31, 0.015, ifelse(x > 75, 0.0107, 0.0129))
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = rfun)
+#' calculate_dQALY(country = "United Kingdom", year = 2019, r = rfun)
 #'
 #'
 #' #Calculate grouped dQALY values - using default country-level population weightings:
 #' #1) collapse sex
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#' calculate_dQALY(country = "United Kingdom", year = 2019,
 #'                 collapse_sex = TRUE)
 #' #2) age groups
 #' my_age_groups <- data.frame(lower = c(seq(0,90,5)), upper = c(seq(4,89,5), 100))
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#' calculate_dQALY(country = "United Kingdom", year = 2019,
 #'                 collapse_age = my_age_groups)
 #' #3) collapse sex and group age
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#' calculate_dQALY(country = "United Kingdom", year = 2019,
 #'                 collapse_age = my_age_groups, collapse_sex = TRUE)
 #'
 #' #Do any of these groupings with a user-supplied cohort
@@ -209,14 +210,14 @@
 #' #note: any age and gender for which no count value is supplied is considered
 #' #outside the cohort (count zero)
 #' #1) collapse sex
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#' calculate_dQALY(country = "United Kingdom", year = 2019,
 #'                 collapse_sex = TRUE, cohort = my_cohort)
 #' #2) age groups (note: of the age groups specified, only estimates for age groups that contain a
 #' #member of the specified cohort are returned)
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#' calculate_dQALY(country = "United Kingdom", year = 2019,
 #'                 collapse_age = my_age_groups, cohort = my_cohort)
 #' #3) collapse sex and group age
-#' calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+#' calculate_dQALY(country = "United Kingdom", year = 2019,
 #'                 collapse_age = my_age_groups,
 #'                 collapse_sex = TRUE, cohort = my_cohort)
 # -------------------------------------------------------------------------
@@ -234,7 +235,16 @@ calculate_dQALY <- function(country = NULL, #population
                             collapse_sex = FALSE,
                             cohort = package_cohort(country, year)) { #population_weight
 
+
+  # if you specify a country and a year argument, those are the default
+  # but you can override with the country/year args in the package functions if you want
+  # is that a sensible set up?
+
+  # only want to take my own function - because anything else, we're messing w the evaluation so it could give unexpected results?
+
+  # can't remember why this was relevant
   # put three dots? https://adv-r.hadley.nz/functions.html#fun-dot-dot-dot
+
 
   # Capturing the environment here because we're using data.table
   env <- environment()
@@ -243,6 +253,7 @@ calculate_dQALY <- function(country = NULL, #population
   . <-  avg_hrqol <- count <- default <- dQALY_x <- increment <- lower <- NULL
   l_x <- L_x <- norm_country <- norm_id <- qmax <- q_x <- r_col <- sex <- NULL
   upper <- x <- xmax <- NULL
+
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # 1.Validity checks # # # # # # # # # # # # # # # # # #
@@ -267,11 +278,8 @@ calculate_dQALY <- function(country = NULL, #population
 
   # # # # # # # # # 1.1 combination of arguments # # # # # # # # # # # # # # #
   # checking whether the user has given the right combination of arguments
-  if(!.is_valid_arg_combination(life_table, country, year,
-                               collapse_age, collapse_sex, cohort,
-                               norms)) {
-    stop()
-  }
+
+  # This needs a rethink
 
   # # # # # # # # # 1.2 country, year # # # # # # # # # # # # # # # # # # # # #
   # doing validity checks for appropriate values for country, year
@@ -304,23 +312,56 @@ calculate_dQALY <- function(country = NULL, #population
 
   # # # # # # # # # 1.3 life_table, norms, cohort # # # # # # # # # # # # # # #
 
-  # i don't know how to distinguish between user-supplied and package data anymore
-  # the package data is also going through the checks
+  # if the user calls the function like this (or similar):
+  # calculate_dQALY(year = 2019, life_table = package_lt(country, year), norms = package_norms(country = "France"))
+  # ie no overarching value for country set in the calculate_dQALY function arguments
+  # and no local value for country set within one of the package_ function arguments
+  # then the defuse/eval line (the next line of code) will throw an error that looks like this:
+  # Error in .prepareFastSubset(isub = isub, x = x, enclos = parent.frame(),  :
+  #                               RHS of == is length 0 which is not 1 or nrow (37010). For robustness, no recycling is allowed (other than of length 1 RHS). Consider %in% instead.
+  # which is not super informative as to what the issue is (basically no values given for country)
+  # i could suppress & replace the error message? but that seems risky?
 
-  if(!.is_valid_custom_lt(life_table)) {
-    stop("User-supplied life tables have failed validity checks.")
+
+  exprssn <- rlang::get_expr(rlang::enquo(life_table))
+  if(is.call(exprssn)) {
+    if(rlang::call_name(exprssn) == "package_lt") {
+      # we're using the package data
+      life_table <- eval(rlang::get_expr(rlang::enquo(life_table))) |>
+        setnames(old = c("age", "q"),
+                 new = c("x", "q_x"))
+    } else {
+      # its a function but not the package data function
+      stop("Don't pass functions other than package_lt to the life_table argument.")
+    }
   } else {
-    life_table <- as.data.table(life_table) |>
-      setnames(old = c("age", "q"),
-               new = c("x", "q_x"))
+    # its user supplied data
+    if(!.is_valid_custom_lt(life_table)) {
+      stop("User-supplied life tables have failed validity checks.")
+    } else {
+      life_table <- as.data.table(life_table) |>
+        setnames(old = c("age", "q"),
+                 new = c("x", "q_x"))
+    }
   }
 
 
-
-  if(!.are_valid_custom_norms(norms)) {
-    stop("User-supplied utility norms have failed validity checks.")
+  exprssn <- rlang::get_expr(rlang::enquo(norms))
+  if(is.call(exprssn)) {
+    if(rlang::call_name(exprssn) == "package_norms") {
+      # we're using the package data
+      utility_norms <- eval(rlang::get_expr(rlang::enquo(norms)))
+    } else {
+      # its a function but not the package data function
+      stop("Don't pass functions other than package_norms to the norms argument.")
+    }
   } else {
-    utility_norms <- as.data.table(norms)
+    # its user supplied data
+    if(!.are_valid_custom_norms(norms)) {
+      stop("User-supplied utility norms have failed validity checks.")
+    } else {
+      utility_norms <- as.data.table(norms)
+    }
   }
 
 
@@ -330,23 +371,39 @@ calculate_dQALY <- function(country = NULL, #population
   # check whether we need a cohort - i.e. check whether the user wants
   # grouped output. otherwise we won't need to set a value for the cohort object
   if(.will_group(env$collapse_age, env$collapse_sex)) {
-    # check cohort meets standards
-    if(.is_valid_custom_cohort(cohort) == FALSE) {
-      stop("User-supplied cohort has failed validity checks.")
-    } else {
-      cohort <- as.data.table(cohort)
-      setnames(cohort,
-               old = c("age"),
-               new = c("x"))
 
+    exprssn <- rlang::get_expr(rlang::enquo(cohort))
+    if(is.call(exprssn)) {
+      if(rlang::call_name(exprssn) == "package_cohort") {
+        # we're using the package data
+        cohort <- eval(rlang::get_expr(rlang::enquo(cohort)))
+        setnames(cohort,
+                 old = c("age"),
+                 new = c("x"))
+      } else {
+        # its a function but not the package data function
+        stop("Don't pass functions other than package_cohort to the cohort argument.")
+      }
+    } else {
+      # its user supplied data - check cohort meets standards
+      if(!.is_valid_custom_cohort(cohort)) {
+        stop("User-supplied cohort has failed validity checks.")
+      } else {
+        cohort <- as.data.table(cohort)
+        setnames(cohort,
+                 old = c("age"),
+                 new = c("x"))
+
+      }
     }
+
   }
 
 
 
   # # # # # 1.4 grouping arguments: collapse_age, collapse_sex # # # # # # # # #
 
-  if(.is_user_supplied(collapse_age)) {
+  if(length(collapse_age) > 1L) {
     if(!.are_valid_custom_age_groups(collapse_age)) {
       stop("User-supplied age groups for grouping output, supplied in argument 'collapse_age', have failed validity checks.")
     } else {
@@ -673,16 +730,17 @@ calculate_dQALY <- function(country = NULL, #population
 #' calculate_QALE(country = "England", year = 2018)
 # -------------------------------------------------------------------------
 #' @export
-calculate_QALE <- function(country = NULL,
+calculate_QALE <- function(country = NULL, #population
                            year = NULL,
-                           life_table = NULL,
-                           norms = NULL,
+                           life_table = package_lt(country, year,
+                                                   lt_extend = TRUE),
+                           norms = package_norms(country,
+                                                 id = default_norms(country),
+                                                 avg_hrqol_young = NULL),
                            smr = 1, qcm = 1,
-                           lt_extend = TRUE,
-                           avg_hrqol_young = NULL,
                            collapse_age = FALSE,
                            collapse_sex = FALSE,
-                           cohort = NULL) {
+                           cohort = package_cohort(country, year)) {
 
   QALE_table <- calculate_dQALY(country = country,
                                 year = year,
@@ -690,8 +748,6 @@ calculate_QALE <- function(country = NULL,
                                 norms = norms,
                                 smr = smr,
                                 qcm = qcm,
-                                lt_extend = lt_extend,
-                                avg_hrqol_young = avg_hrqol_young,
                                 collapse_age = collapse_age,
                                 collapse_sex = collapse_sex,
                                 cohort = cohort,
@@ -712,121 +768,6 @@ calculate_QALE <- function(country = NULL,
 # ---------------- INTERNALS - VALIDITY CHECKING -------------------------- #
 # ------------------------------------------------------------------------- #
 
-
-# --------Checking for appropriate combinations of arguments ---------------#
-
-# Note: error messages need a re-write for clarity/completeness
-
-.is_valid_arg_combination <- function(life_table, country, year,
-                                      collapse_age, collapse_sex, cohort,
-                                      norms) {
-  # browser()
-  # check for appropriate combination of parameters:
-  # User can interact with function in a number of ways
-  # 1. rely entirely on package data
-  # 2. supply all their own data - life tables, utility norms & (if needed bc user is grouping) cohort
-  # 3. use mix of package & own data
-  # As a result there are a few different sets of possible combinations of values for arguments
-
-
-  # 1. in the case when the user is relying on package life tables
-  if(.is_user_supplied(life_table) == FALSE) {
-
-    # The user must specify a country and a year
-    if(is.null(country) || is.null(year)) {
-      warning("Since you are not providing your own life tables, please specify values for both of the arguments 'country' and 'year'.")
-      return(FALSE)
-    }
-
-  # 2. in the case when the user is supplying their own life tables
-  } else if(.is_user_supplied(life_table) == TRUE) {
-
-    # RULE: if the user would like to group output, they need to supply their own cohort too
-    # (this could change if it isn't sensible - my the logic for this choice is that it doesn't
-    # make a lot of sense to me methodologically to provide your own custom life tables
-    # and then use a default country-level population weighting to group, since saying that survival is
-    # significantly different from the country-level average in the cohort you're trying to study is
-    # equivalent to saying that the cohort structure is significantly different)
-    if(.will_group(collapse_age, collapse_sex) == TRUE) {
-      if(is.null(cohort)) {
-        warning("If you are supplying your own custom life tables to the function, and you would
-        like to group the function output, then you must also supply your own custom cohort
-        to the function.")
-        # need to redo all of this - all arg combination validity checks
-        # return(FALSE)
-      }
-    }
-
-
-    # 2.1 in the case when the user is supplying their own life tables but NOT supplying their own utility norms (ie using package utility norms)
-    if(.is_user_supplied(norms) == FALSE) {
-
-      # the user doesn't have to specify YEAR but must still specify COUNTRY
-      if(is.null(country)) {
-        # Very much need to return to re-write warning
-        # This check/this error message might change subject to whether we allow users to select a norm from ANY country
-        # using norm_ids (would have to revise norm_ids so they are all unique - not just as they are presently which is
-        # unique within countries)
-        # (note to self - another option - probably more complicated?, would be to have a function that allows users to
-        # return instances of the actual norm data the package stores, and then they could use this data as input to the
-        # calculation, and we'd treat it as a user-supplied custom set of norms??)
-        warning("No custom utility norms have been supplied to the function.
-        That means an appropriate set of utility norms stored in package data must be selected for use in the calculation.
-        Please indicate which country you intend to produce estimates for, by specifying a value for the argument 'country',
-        so that the function can make an appropriate selection.")
-        # PERHAPS ADD: "or evaluate the appropriateness of your selection."
-        return(FALSE)
-      }
-
-      # 2.2 in the case when the user is supplying their own life tables and utility norms
-    } else if(.is_user_supplied(norms) == TRUE) {
-
-      # if the user also supplied country and year, let them know that the values they chose are
-      # irrelevant/are not being used to produce estimates.
-      # Previously, the function didn't stop in this case, but I think it might be simpler
-      # to write the argument by argument validation checks if this extraneous provision
-      # of year or country does actually stop the function
-      if(!is.null(country) || !is.null(year)) {
-        warning("If you are supplying your own custom life tables AND custom utility norms
-        to the function, then you do not have to supply a value for arguments 'country'
-        and 'year' - please re-run the function without supplying a value to these arguments.")
-        # commenting this out for now -
-        # need to redo all of these combination checks
-        # return(FALSE)
-      }
-    }
-
-  }
-
-  # won't stop the function but just letting user know that if they aren't grouping
-  # then supplying a cohort won't do anything
-  if(.will_group(collapse_age, collapse_sex) == FALSE) {
-    if(!is.null(cohort)) {
-      warning("If you do not want to output estimates averaged across age and/or
-      sex groups, then you do not need to supply cohort data to the function
-      - any cohort data that is supplied will not be used in the calculation.")
-    }
-  }
-
-  return(TRUE)
-
-}
-
-
-
-.is_user_supplied <- function(argument) {
-  if(is.null(argument)) {
-    return(FALSE)
-  } else if(length(argument) > 1L) {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-}
-
-
-
-
 .will_group <- function(collapse_age, collapse_sex) {
   if(length(collapse_age) > 1L) {
     return(TRUE)
@@ -836,6 +777,10 @@ calculate_QALE <- function(country = NULL,
     return(FALSE)
   }
 }
+
+# --------Checking for appropriate combinations of arguments ---------------#
+
+# old function is defunct - will think about writing new
 
 
 # --------Checks at the single argument level---------------------------------#
@@ -1017,6 +962,7 @@ calculate_QALE <- function(country = NULL,
 
 
 .is_valid_custom_cohort <- function(cohort) {
+
   # check if there is the right number of columns
   if(length(cohort) != 3L) {
     warning("User-supplied cohort is not in correct form.
@@ -1052,13 +998,13 @@ calculate_QALE <- function(country = NULL,
              Life tables need to be list-like object with three columns, with names 'sex', 'age', 'q'.")
     return(FALSE)
 
-  # given there is the right number, check that the columns have the right names
+    # given there is the right number, check that the columns have the right names
   } else if(any(!colnames(life_table) %in% c("sex", "age", "q"))) {
     warning("User-supplied life tables are not in correct form.
              Columns must have names 'sex', 'age', 'q'.")
     return(FALSE)
 
-  # given they have the right names, check that the cols have the right type of values
+    # given they have the right names, check that the cols have the right type of values
   } else if(.is_valid_sex_col(life_table$sex) == FALSE) {
     return(FALSE)
   } else if(.is_valid_lt_age_col(life_table$age) == FALSE) {
@@ -1066,7 +1012,7 @@ calculate_QALE <- function(country = NULL,
   } else if(.is_valid_q_col(life_table$q) == FALSE) {
     return(FALSE)
   } else {
-  # all checks are satisfied
+    # all checks are satisfied
     TRUE
   }
 

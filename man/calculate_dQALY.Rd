@@ -7,16 +7,14 @@
 calculate_dQALY(
   country = NULL,
   year = NULL,
-  life_table = NULL,
-  norms = NULL,
+  life_table = package_lt(country, year, lt_extend = TRUE),
+  norms = package_norms(country, id = default_norms(country), avg_hrqol_young = NULL),
   r = 0.035,
   smr = 1,
   qcm = 1,
-  lt_extend = TRUE,
-  avg_hrqol_young = NULL,
   collapse_age = FALSE,
   collapse_sex = FALSE,
-  cohort = NULL
+  cohort = package_cohort(country, year)
 )
 }
 \arguments{
@@ -85,40 +83,6 @@ the calculation will estimate QALY loss due to death for a population assumed
 experience health-related quality of life 5\% greater/lower than the average
 health related quality of life in the selected country.}
 
-\item{lt_extend}{\verb{[boolean]} or \verb{[numeric]}
-
-Allows users to control whether/ the way in which assumptions are made about
-mortality rates among people older than 99, for whom data is not available.
-
-If \code{FALSE}, no assumption is made, and the function assumes no people live
-beyond 99.
-
-If \code{TRUE} (default), the function assumes that people can live up to 120
-and calculates a mortality rate for the older ages by assuming that
-mortality rates increase year on year by a constant increment - which is
-set equal to the average rate of increase over the last 10 years for which
-data is available.
-
-Alternatively, the user can specify their own increment, instead of allowing
-the function to calculate an increment automatically based on existing data.
-This is done by passing \code{lt_extend} a numeric value greater than 1 - for
-example, letting \code{lt_extend} to 1.05 means the function assumes mortality rates
-will increase by 5\% year on year after the last year for which data is available.}
-
-\item{avg_hrqol_young}{\verb{[numeric]}
-
-Allows users to control the way in which assumptions are made about the average
-health-related quality of life of those under 18, for whom data is not typically
-available.
-
-Defaults to \code{NULL}. In this case the youngest age group is assumed to have
-the same average utility score as that of the next youngest group.
-
-Alternatively, the user can make their own assumption about the HRQoL score
-given to the youngest group, by passing \code{avg_hrqol_young} a numeric value
-between 0 and 1, where 1 would be equivalent to assuming the youngest age
-group is in perfect health.}
-
 \item{collapse_age}{\verb{[boolean]} or \verb{[data frame]} or \verb{[tibble]} or \verb{[data table]}
 
 Allows users to control how function outputs are grouped by age.
@@ -160,6 +124,40 @@ sex to be used in the grouping by passing a  data frame, tibble or data table
 to \code{cohort}, with columns 'sex', 'age', and 'count'. Note that if the
 user supplied custom life tables to the function, they will be required to
 supply a custom cohort too.}
+
+\item{lt_extend}{\verb{[boolean]} or \verb{[numeric]}
+
+Allows users to control whether/ the way in which assumptions are made about
+mortality rates among people older than 99, for whom data is not available.
+
+If \code{FALSE}, no assumption is made, and the function assumes no people live
+beyond 99.
+
+If \code{TRUE} (default), the function assumes that people can live up to 120
+and calculates a mortality rate for the older ages by assuming that
+mortality rates increase year on year by a constant increment - which is
+set equal to the average rate of increase over the last 10 years for which
+data is available.
+
+Alternatively, the user can specify their own increment, instead of allowing
+the function to calculate an increment automatically based on existing data.
+This is done by passing \code{lt_extend} a numeric value greater than 1 - for
+example, letting \code{lt_extend} to 1.05 means the function assumes mortality rates
+will increase by 5\% year on year after the last year for which data is available.}
+
+\item{avg_hrqol_young}{\verb{[numeric]}
+
+Allows users to control the way in which assumptions are made about the average
+health-related quality of life of those under 18, for whom data is not typically
+available.
+
+Defaults to \code{NULL}. In this case the youngest age group is assumed to have
+the same average utility score as that of the next youngest group.
+
+Alternatively, the user can make their own assumption about the HRQoL score
+given to the youngest group, by passing \code{avg_hrqol_young} a numeric value
+between 0 and 1, where 1 would be equivalent to assuming the youngest age
+group is in perfect health.}
 }
 \value{
 A data frame. The data frame will have column \code{dQALY}, containing estimates
@@ -177,7 +175,8 @@ calculate_dQALY(country = "United Kingdom", year = 2019)
 
 
 #Output a table of dQALY values for all ages/genders, specifying year, country and norm by name
-calculate_dQALY(country = "United Kingdom", norms = "janssen_euvas", year = 2019)
+calculate_dQALY(country = "United Kingdom", year = 2019,
+                norms = package_norms(country, id ="janssen_euvas"))
 
 
 #Output a table of dQALY values for all ages/genders, specifying year & country,
@@ -186,7 +185,7 @@ my_norms <- data.frame(sex = c(rep("male", 3), rep("female", 3)),
                        lower = c(0, 20, 90),
                        upper = c(19, 89, 150),
                        avg_hrqol = c(1, 0.85, 0.67, 0.99, 0.4, 0.2))
-calculate_dQALY(country = "United Kingdom", norms = my_norms, year = 2019)
+calculate_dQALY(country = "United Kingdom", year = 2019, norms = my_norms)
 
 
 #Output a table of dQALY values for all ages/genders, with user-specified norms and life tables
@@ -199,19 +198,19 @@ calculate_dQALY(life_table = my_life_table, norms = my_norms)
 
 #Calculate dQALY values using a variable discount rate
 rfun = function(x) ifelse(x < 31, 0.015, ifelse(x > 75, 0.0107, 0.0129))
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019, r = rfun)
+calculate_dQALY(country = "United Kingdom", year = 2019, r = rfun)
 
 
 #Calculate grouped dQALY values - using default country-level population weightings:
 #1) collapse sex
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+calculate_dQALY(country = "United Kingdom", year = 2019,
                 collapse_sex = TRUE)
 #2) age groups
 my_age_groups <- data.frame(lower = c(seq(0,90,5)), upper = c(seq(4,89,5), 100))
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+calculate_dQALY(country = "United Kingdom", year = 2019,
                 collapse_age = my_age_groups)
 #3) collapse sex and group age
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+calculate_dQALY(country = "United Kingdom", year = 2019,
                 collapse_age = my_age_groups, collapse_sex = TRUE)
 
 #Do any of these groupings with a user-supplied cohort
@@ -221,14 +220,14 @@ my_cohort <- data.frame(sex = c(rep("male", 5), rep("female", 8)),
 #note: any age and gender for which no count value is supplied is considered
 #outside the cohort (count zero)
 #1) collapse sex
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+calculate_dQALY(country = "United Kingdom", year = 2019,
                 collapse_sex = TRUE, cohort = my_cohort)
 #2) age groups (note: of the age groups specified, only estimates for age groups that contain a
 #member of the specified cohort are returned)
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+calculate_dQALY(country = "United Kingdom", year = 2019,
                 collapse_age = my_age_groups, cohort = my_cohort)
 #3) collapse sex and group age
-calculate_dQALY(country = "United Kingdom", norms = "mvh", year = 2019,
+calculate_dQALY(country = "United Kingdom", year = 2019,
                 collapse_age = my_age_groups,
                 collapse_sex = TRUE, cohort = my_cohort)
 }

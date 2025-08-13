@@ -22,7 +22,8 @@ Depends:
     R (>= 3.5)
 LazyData: true
 Imports:
-    data.table
+    data.table,
+    rlang
 Suggests: 
     ggplot2,
     knitr,

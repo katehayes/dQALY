@@ -95,22 +95,22 @@ ggplot(data = calculate_dQALY(country = "England", year = 2019,
 # calculate_dQALY(country = "England", year = 2019, norms = "invalid") won't work
 ggplot(data = calculate_dQALY(country = "England", year = 2019, 
                               collapse_sex = T,
-                              norms = "janssen_euvas"),
+                              norms = package_norms(country, id = "janssen_euvas")),
        aes(x = age, y = dQALY)) +
   geom_line(colour = "red") +
   geom_line(data = calculate_dQALY(country = "Argentina", year = 2019, 
                                    collapse_sex = T,
-                                   norms = "janssen_euvas"),
+                                   norms = package_norms(country, id = "janssen_euvas")),
             colour = "green") +
   geom_line(data = calculate_dQALY(country = "France", year = 2019, 
                                    collapse_sex = T,
-                                   norms = "janssen_euvas"),
+                                   norms = package_norms(country, id = "janssen_euvas")),
             colour = "blue") +
   geom_line(data = calculate_dQALY(country = "Hungary", year = 2019, 
                                    collapse_sex = T,
                                    #in hungary's case, EUVAS norms
                                    #are already the default
-                                   norms = "janssen_euvas"),
+                                   norms = package_norms(country, id = "janssen_euvas")),
             colour = "purple") +
   scale_x_continuous(name = "Age at death",
                      limits = c(0, 125),

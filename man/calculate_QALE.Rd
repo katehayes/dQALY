@@ -7,15 +7,13 @@
 calculate_QALE(
   country = NULL,
   year = NULL,
-  life_table = NULL,
-  norms = NULL,
+  life_table = package_lt(country, year, lt_extend = TRUE),
+  norms = package_norms(country, id = default_norms(country), avg_hrqol_young = NULL),
   smr = 1,
   qcm = 1,
-  lt_extend = TRUE,
-  avg_hrqol_young = NULL,
   collapse_age = FALSE,
   collapse_sex = FALSE,
-  cohort = NULL
+  cohort = package_cohort(country, year)
 )
 }
 \arguments{
@@ -70,40 +68,6 @@ the calculation will estimate QALE for a population assumed to experience
 health-related quality of life 5\% greater/lower than the average
 health-related quality of life in the selected country.}
 
-\item{lt_extend}{\verb{[boolean]} or \verb{[numeric]}
-
-Allows users to control whether/ the way in which assumptions are made about
-mortality rates among people older than 99, for whom data is not available.
-
-If \code{FALSE}, no assumption is made, and the function assumes no people live
-beyond 99.
-
-If \code{TRUE} (default), the function assumes that people can live up to 120
-and calculates a mortality rate for the older ages by assuming that
-mortality rates increase year on year by a constant increment - which is
-set equal to the average rate of increase over the last 10 years for which
-data is available.
-
-Alternatively, the user can specify their own increment, instead of allowing
-the function to calculate an increment automatically based on existing data.
-This is done by passing \code{lt_extend} a numeric value greater than 1 - for
-example, letting \code{lt_extend} to 1.05 means the function assumes mortality rates
-will increase by 5\% year on year after the last year for which data is available.}
-
-\item{avg_hrqol_young}{\verb{[numeric]}
-
-Allows users to control the way in which assumptions are made about the average
-health-related quality of life of those under 18, for whom data is not typically
-available.
-
-Defaults to \code{NULL}. In this case the youngest age group is assumed to have
-the same average utility score as that of the next youngest group.
-
-Alternatively, the user can make their own assumption about the utility score
-given to the youngest group, by passing \code{avg_hrqol_young} a numeric value
-between 0 and 1, where 1 would be equivalent to assuming the youngest age
-group is in perfect health.}
-
 \item{collapse_age}{\verb{[boolean]} or \verb{[data frame]} or \verb{[tibble]} or \verb{[data table]}
 
 Allows users to control how function outputs are grouped by age.
@@ -144,6 +108,40 @@ sex to be used in the grouping by passing a  data frame, tibble or data table
 to \code{cohort}, with columns 'sex', 'age', and 'count'. Note that if the
 user supplied custom life tables to the function, they will be required to
 supply a custom cohort too.}
+
+\item{lt_extend}{\verb{[boolean]} or \verb{[numeric]}
+
+Allows users to control whether/ the way in which assumptions are made about
+mortality rates among people older than 99, for whom data is not available.
+
+If \code{FALSE}, no assumption is made, and the function assumes no people live
+beyond 99.
+
+If \code{TRUE} (default), the function assumes that people can live up to 120
+and calculates a mortality rate for the older ages by assuming that
+mortality rates increase year on year by a constant increment - which is
+set equal to the average rate of increase over the last 10 years for which
+data is available.
+
+Alternatively, the user can specify their own increment, instead of allowing
+the function to calculate an increment automatically based on existing data.
+This is done by passing \code{lt_extend} a numeric value greater than 1 - for
+example, letting \code{lt_extend} to 1.05 means the function assumes mortality rates
+will increase by 5\% year on year after the last year for which data is available.}
+
+\item{avg_hrqol_young}{\verb{[numeric]}
+
+Allows users to control the way in which assumptions are made about the average
+health-related quality of life of those under 18, for whom data is not typically
+available.
+
+Defaults to \code{NULL}. In this case the youngest age group is assumed to have
+the same average utility score as that of the next youngest group.
+
+Alternatively, the user can make their own assumption about the utility score
+given to the youngest group, by passing \code{avg_hrqol_young} a numeric value
+between 0 and 1, where 1 would be equivalent to assuming the youngest age
+group is in perfect health.}
 }
 \value{
 A data frame. The data frame will have column \code{QALE} (quality adjusted life
