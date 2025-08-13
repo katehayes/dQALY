@@ -1,3 +1,14 @@
+
+#
+
+
+
+
+
+
+
+
+
 norms_valid <- data.frame(sex = c(rep("male", 3), rep("female", 3)),
                           lower= c(0, 20, 90),
                           upper = c(19, 89, 150),

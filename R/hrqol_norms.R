@@ -1,3 +1,85 @@
+
+# so is there any way to do it so that when you call the function within the other functions arguments,
+# and you want to change one thing, don't have to specify country again?
+# calculate_dQALY(country = "England", year = 2019, norms = package_norms(country = "England", id = "vih_secondary"))
+
+
+#' Use norm data stored in package
+#'
+#' @param country
+#' @param id
+#' @param avg_hrqol_young
+#'
+#' @returns
+#'
+#' @examples
+#' @export
+package_norms <- function(country,
+                          id = default_norms(country),
+                          avg_hrqol_young = NULL) {
+
+  # check that country supplied is valid
+  if (!is.null(country)) {
+    avail_countries <- norm_info$norm_country
+    if(!(country %in% avail_countries)) {
+      stop("Value for `country` must be chosen from the list of available
+      countries. Use hrqol_norms() to see the list.")
+    }
+  }
+
+  # check that the norm id they supplied is valid
+  # error message referring user to norm info function - could do with re-write
+  # formerly in section 1.3
+  if(!(id %in% norm_info[norm_country == country, norm_id])) {
+    stop("Invalid norm ID. Use function hrqol_norms() to see the IDs for the norms available for your chosen country.")
+  }
+
+  # validity check - formerly 1.6
+  if(!.is_valid_avg_hrqol_young(avg_hrqol_young)) {
+    stop("If not set to its default value of NULL, 'avg_hrqol_young' must be
+           a numeric scalar.")
+  }
+
+  # retrieving norms from package data
+  utility_norms <- utility_norms[norm_country == country & norm_id == id][, c("norm_country", "norm_id"):=NULL]
+
+
+  # changing assumption re youngest group in utility norms
+  # formerly 2.2
+  if(!is.null(avg_hrqol_young)) {
+    utility_norms[lower == min(lower), avg_hrqol := avg_hrqol_young]
+  }
+
+
+  utility_norms[]
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # -------------------------------------------------------------------------
 #' Get info on the available HRQoL population norms
 # -------------------------------------------------------------------------

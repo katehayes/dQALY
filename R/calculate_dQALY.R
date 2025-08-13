@@ -230,11 +230,12 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
                             year = NULL,
                             # put three dots? https://adv-r.hadley.nz/functions.html#fun-dot-dot-dot
                             life_table = NULL,
-                            norms = NULL,
+                            norms = package_norms(country,
+                                                  id = default_norms(country),
+                                                  avg_hrqol_young = NULL),
                             r = 0.035,
                             smr = 1, qcm = 1,
                             lt_extend = TRUE, #needs new name? what about lt_assumption?
-                            avg_hrqol_young = NULL, #needs new name? what about hrqol_assumption?
                             collapse_age = FALSE,
                             collapse_sex = FALSE,
                             cohort = NULL) { #population_weight
@@ -326,34 +327,18 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 
 
 
-  if(.is_user_supplied(norms)) {
-    if(!.are_valid_custom_norms(norms)) {
-      stop("User-supplied utility norms have failed validity checks.")
-    } else {
-      utility_norms <- as.data.table(norms)
-      ut_is_us <- TRUE # record that utility data is user-supplied
-    }
+
+  # i don't know how to distinguish between user-supplied and package data anymore
+  if(!.are_valid_custom_norms(norms)) {
+    stop("User-supplied utility norms have failed validity checks.")
   } else {
-    ut_is_us <- FALSE # record that utility data is NOT user-supplied
-    if(is.null(norms)) {
-      # if user doesn't either a) supply their own utility norms or b) specify by name which ones they want to use by name
-      # then we can get info on which norm to use for that country as default, from package data norm_info
-      utility_norms <- utility_norms[norm_info[, .(norm_country, norm_id, default)],
-                                     , on = .(norm_country, norm_id)]
-      utility_norms <- utility_norms[norm_country == get("country", env) & default == T][, c("norm_country", "norm_id", "default"):=NULL]
-
-    } else {
-      # if the user specified norms using our norm ids
-      # check that the norm id they supplied is valid
-      # error message referring user to norm info function - could do with re-write
-      if(!(norms %in% norm_info[norm_country == country, norm_id])) {
-        stop("Invalid norm ID. Use function hrqol_norms() to see the IDs for the norms available for your chosen country.")
-      }
-
-      utility_norms <- utility_norms[norm_country == get("country", env) & norm_id == norms][, c("norm_country", "norm_id"):=NULL]
-
-    }
+    utility_norms <- as.data.table(norms)
   }
+
+
+
+
+
 
 
   # check whether we need a cohort - i.e. check whether the user wants
@@ -414,19 +399,14 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   }
 
 
-  # # # # # # 1.6 lt_extend, avg_hrqol_young # # # # # # # # # # # # # # # # # #
-  # validity checks for the arguments that adjust packaged life tables and
-  # utility norms. NOTE: these arguments need new names
+  # # # # # # 1.6 lt_extend # # # # # # # # # # # # # # # # # #
+  # validity checks for the arguments that adjust packaged life tables. NOTE: these arguments need new names
 
   if(!.is_valid_lt_extend(lt_extend)) {
     stop("'lt_extend' must be a boolean value or a numeric scalar that is
          greater than 1.")
   }
 
-  if(!.is_valid_avg_hrqol_young(avg_hrqol_young)) {
-    stop("If not set to its default value of NULL, 'avg_hrqol_young' must be
-           a numeric scalar.")
-  }
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # 2. Options for altering life tables/ utility norms before the calculation #
@@ -473,17 +453,6 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
       setorder(life_table, x, sex)
     }
   }
-
-
-
-  # # # 2.2 changing assumption re youngest group in utility norms # # # # # # #
-
-  if(ut_is_us == FALSE) {
-    if(!is.null(avg_hrqol_young)) {
-      utility_norms[lower == min(lower), avg_hrqol := avg_hrqol_young]
-    }
-  }
-
 
 
 
