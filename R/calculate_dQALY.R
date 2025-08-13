@@ -242,6 +242,11 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
   # Capturing the environment here because we're using data.table
   env <- environment()
 
+  # due to NSE notes in R CMD check
+  . <-  avg_hrqol <- count <- default <- dQALY_x <- increment <- lower <- NULL
+  l_x <- L_x <- norm_country <- norm_id <- qmax <- q_x <- r_col <- sex <- NULL
+  upper <- x <- xmax <- NULL
+
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # 1.Validity checks # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
