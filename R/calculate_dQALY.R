@@ -221,14 +221,8 @@
 #'                 collapse_sex = TRUE, cohort = my_cohort)
 # -------------------------------------------------------------------------
 #' @export
-calculate_dQALY <- function(# we had discussed removing the default NULL from country & year parameters
-                            # but I've remembered that actually it is possible to run the function without
-                            # specifying values for country or year - in the case where the user
-                            # is not relying on package data at all, is instead supplying all their own
-                            # data (life tables, utility norms, cohort if grouping)
-                            country = NULL, #population
+calculate_dQALY <- function(country = NULL, #population
                             year = NULL,
-                            # put three dots? https://adv-r.hadley.nz/functions.html#fun-dot-dot-dot
                             life_table = package_lt(country, year,
                                                     lt_extend = TRUE),
                             norms = package_norms(country,
@@ -238,7 +232,9 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
                             smr = 1, qcm = 1,
                             collapse_age = FALSE,
                             collapse_sex = FALSE,
-                            cohort = NULL) { #population_weight
+                            cohort = package_cohort(country, year)) { #population_weight
+
+  # put three dots? https://adv-r.hadley.nz/functions.html#fun-dot-dot-dot
 
   # Capturing the environment here because we're using data.table
   env <- environment()
@@ -331,27 +327,18 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 
 
 
-
-
   # check whether we need a cohort - i.e. check whether the user wants
   # grouped output. otherwise we won't need to set a value for the cohort object
   if(.will_group(env$collapse_age, env$collapse_sex)) {
-    # in the case that we need a cohort to group the output, check if user gives one
-    if(.is_user_supplied(cohort)) {
-      # if user gives a cohort, check it meets standards
-      if(.is_valid_custom_cohort(cohort) == FALSE) {
-        stop("User-supplied cohort has failed validity checks.")
-      } else {
-        cohort <- as.data.table(cohort)
-        setnames(cohort,
-                 old = c("age"),
-                 new = c("x"))
-
-      }
+    # check cohort meets standards
+    if(.is_valid_custom_cohort(cohort) == FALSE) {
+      stop("User-supplied cohort has failed validity checks.")
     } else {
-      # if the user doesn't supply a cohort with specific population distribution across age and sex
-      # then use the population distribution of whatever country has been selected (this is the default)
-      cohort <- populations[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
+      cohort <- as.data.table(cohort)
+      setnames(cohort,
+               old = c("age"),
+               new = c("x"))
+
     }
   }
 
@@ -765,7 +752,8 @@ calculate_QALE <- function(country = NULL,
         warning("If you are supplying your own custom life tables to the function, and you would
         like to group the function output, then you must also supply your own custom cohort
         to the function.")
-        return(FALSE)
+        # need to redo all of this - all arg combination validity checks
+        # return(FALSE)
       }
     }
 

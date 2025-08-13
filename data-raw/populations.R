@@ -110,8 +110,12 @@ populations <- rbind(ons_pop[year >= 2015], un_pop[x != "100+"])[
   , x := as.numeric(x)
 ] |>
   setcolorder(c("country", "year", "sex", "x", "count")) |>
-  setorder(country, year, x, sex)
-
+  setorder(country, year, x, sex) |>
+  # should make a long term fix to this
+  # same problem described in lifetable script
+  # for now just changing the names of the cols in the cohort data we store, as a fudge
+  setnames(old = c("x"),
+           new = c("age"))
 
 write.csv(populations, file.path(root, "populations.csv"))
 

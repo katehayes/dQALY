@@ -3,8 +3,12 @@
 # and you want to change one thing, don't have to specify country again?
 # calculate_dQALY(country = "England", year = 2019, norms = package_norms(country = "England", id = "vih_secondary"))
 
+# calculate_dQALY(life_table = package_lt(country = "England", year = 2019), norms = package_norms(country = "France"), cohort = package_cohort(country = "Spain", year = 2020), collapse_sex = T)
+# you can currently do something like the above
 
-#' Use norm data stored in package
+# -------------------------------------------------------------------------
+#' Use norm data stored by package
+# -------------------------------------------------------------------------
 #'
 #' @param country
 #' @param id
@@ -56,17 +60,20 @@ package_norms <- function(country,
 }
 
 
-#
-# check <- function(country,
-#                   id = default_norms(country)) {
-#
-# return(quote(id))
-#
-# }
-#
-# check(country = "England")
 
-
+# -------------------------------------------------------------------------
+#' Use life table data stored by package
+# -------------------------------------------------------------------------
+#'
+#' @param country
+#' @param year
+#' @param lt_extend
+#'
+#' @returns
+#'
+#' @examples
+#'
+#' @export
 package_lt <- function(country, year,
                        lt_extend = TRUE) {
 
@@ -152,15 +159,50 @@ package_lt <- function(country, year,
 }
 
 
+# -------------------------------------------------------------------------
+#' Use population data stored by package
+# -------------------------------------------------------------------------
+#'
+#' @param country
+#' @param year
+#'
+#' @returns
+#'
+#' @examples
+#'
+#' @export
+package_cohort <- function(country, year) {
 
 
+  # Capturing the environment here because we're using data.table
+  env <- environment()
+
+  # check that country supplied is valid
+  if (!is.null(country)) {
+    avail_countries <- norm_info$norm_country
+    if(!(country %in% avail_countries)) {
+      stop("Value for `country` must be chosen from the list of available
+      countries. Use hrqol_norms() to see the list.")
+    }
+  }
+
+  # check the year is valid
+  if (!is.null(year)) {
+    avail_years <- populations[country == get("country", env), year]
+    if (!(year %in% avail_years)) {
+      stop(paste("Currently the package only stores population data for ", country,
+                 " for the years ",
+                 min(avail_years), "-", max(avail_years), ".
+                 Please set `year` to a value within this period.", sep = ""))
+    }
+  }
 
 
+  cohort <- populations[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
 
+  cohort[]
 
-
-
-
+}
 
 
 
