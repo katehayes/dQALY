@@ -229,13 +229,13 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
                             country = NULL, #population
                             year = NULL,
                             # put three dots? https://adv-r.hadley.nz/functions.html#fun-dot-dot-dot
-                            life_table = NULL,
+                            life_table = package_lt(country, year,
+                                                    lt_extend = TRUE),
                             norms = package_norms(country,
                                                   id = default_norms(country),
                                                   avg_hrqol_young = NULL),
                             r = 0.035,
                             smr = 1, qcm = 1,
-                            lt_extend = TRUE, #needs new name? what about lt_assumption?
                             collapse_age = FALSE,
                             collapse_sex = FALSE,
                             cohort = NULL) { #population_weight
@@ -308,27 +308,19 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
 
   # # # # # # # # # 1.3 life_table, norms, cohort # # # # # # # # # # # # # # #
 
-  # if the user supplied their own life tables, check they are valid
-  # OR if no custom life tables, retrieve package data
-  if(.is_user_supplied(life_table)) {
-    if(!.is_valid_custom_lt(life_table)) {
-      stop("User-supplied life tables have failed validity checks.")
-    } else {
-      life_table <- as.data.table(life_table) |>
-        setnames(old = c("age", "q"),
-                 new = c("x", "q_x"))
-      lt_is_us <- TRUE # record that life tables are user-supplied
-    }
+  # i don't know how to distinguish between user-supplied and package data anymore
+  # the package data is also going through the checks
+
+  if(!.is_valid_custom_lt(life_table)) {
+    stop("User-supplied life tables have failed validity checks.")
   } else {
-    # Filtering the package data to select life tables for the chosen country, year
-    life_table <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
-    lt_is_us <- FALSE # record that life tables are NOT user-supplied
+    life_table <- as.data.table(life_table) |>
+      setnames(old = c("age", "q"),
+               new = c("x", "q_x"))
   }
 
 
 
-
-  # i don't know how to distinguish between user-supplied and package data anymore
   if(!.are_valid_custom_norms(norms)) {
     stop("User-supplied utility norms have failed validity checks.")
   } else {
@@ -398,61 +390,6 @@ calculate_dQALY <- function(# we had discussed removing the default NULL from co
     stop("Argument 'qcm' must be a numeric scalar.")
   }
 
-
-  # # # # # # 1.6 lt_extend # # # # # # # # # # # # # # # # # #
-  # validity checks for the arguments that adjust packaged life tables. NOTE: these arguments need new names
-
-  if(!.is_valid_lt_extend(lt_extend)) {
-    stop("'lt_extend' must be a boolean value or a numeric scalar that is
-         greater than 1.")
-  }
-
-
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # 2. Options for altering life tables/ utility norms before the calculation #
-  # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-  # NOTE: these extensions are only applied to package data.
-  # we're assuming that the user provides the data they want (makes whatever
-  # assumptions they want already)
-
-  # # 2.1 Extending life tables # # # # # # # # # # # # # # # # # # # # # # # #
-
-  # Life tables given by UN and ONS only go up to 99/100 - what if we want dQALY
-  # estimates for people older than that - we might want to extend life tables
-
-  # at the moment lt_extend controls whether we extend or not (default we do)
-  # and also controls how the extension is done - the default is that, for
-  # the selected life tables, the mean increase in mortality rate across the 10
-  # highest years for which mortality rates are given to us is calculated (for males and females)
-  # we then say that mortality rates from q(max x) onwards increases by this same amount each year
-  # (note: this is a deviation from the way Lucy & I originally were doing the extension,
-  # where, say for example the max age for which we have data is 100, then q(101) is set as 1/e(100)
-  # (life expectancy at age 100) and q(x) for x > 101 is then incremented
-  # - that's just one extra step, which I can include at the small?/large?? cost
-  # of storing an additional life expectancy column for each set of life tables (or just e(100) for m/f))
-  # (could add the ability to set the upper age limit - doesn't have to be 120)
-
-
-  if(lt_is_us == FALSE) {
-    # now we know lt_extend is bool (TRUE/FALSE) or scalar numeric and we update as long as it is not FALSE
-    if (!isFALSE(lt_extend)) {
-      life_table[, xmax := max(x, na.rm = TRUE), by = "sex"]
-      if (is.numeric(lt_extend)) {
-        life_table[, increment := lt_extend]
-      } else {
-        life_table[, increment := .SD[x >= xmax - 10, mean(q_x / shift(q_x, type = "lag"), na.rm = T)], by = "sex"]
-      }
-      life_table <- life_table[CJ(sex = c("male", "female"), x = 0:120), on = c("sex", "x")]
-      life_table[, c("xmax", "qmax", "increment") := lapply(list(xmax, q_x, increment), max, na.rm = TRUE), by = "sex"]
-      # q(x) is the probability of dying within the year at age x
-      # to increment the probability without it exceeding 1, we convert to the instantaneous death rate,
-      # apply the increment, then convert back to a probability
-      life_table[x > xmax,q_x :=  1- (1-qmax) ^ increment^(x - xmax)]
-      life_table[,c("xmax", "qmax", "increment") := NULL]
-      setorder(life_table, x, sex)
-    }
-  }
 
 
 
@@ -865,7 +802,9 @@ calculate_QALE <- function(country = NULL,
         warning("If you are supplying your own custom life tables AND custom utility norms
         to the function, then you do not have to supply a value for arguments 'country'
         and 'year' - please re-run the function without supplying a value to these arguments.")
-        return(FALSE)
+        # commenting this out for now -
+        # need to redo all of these combination checks
+        # return(FALSE)
       }
     }
 

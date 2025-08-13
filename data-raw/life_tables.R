@@ -103,8 +103,16 @@ la_lts <- as.data.table(utils::read.csv(temp))[, .(country = geography_name, yea
 
 life_tables <- rbind(eng_lt, un_lt) |>
   setcolorder(c("country", "year", "sex", "x", "q_x")) |>
-  setorder(country, year, x, sex)
-
+  setorder(country, year, x, sex) |>
+  # should make a long term fix to this
+  # currently adding a use package life tables function
+  # and at the moment I can't figure out a sensible way to only run
+  # the validity checks I wrote for the custom life tables to the custom life tables
+  # and not to the package data.
+  # those checks want the col names to be age and q
+  # so just changing the names of the cols in the lt data we store, as a fudge
+  setnames(old = c("x", "q_x"),
+           new = c("age", "q"))
 
 write.csv(life_tables, file.path(root, "life_tables.csv"))
 

@@ -56,8 +56,100 @@ package_norms <- function(country,
 }
 
 
+#
+# check <- function(country,
+#                   id = default_norms(country)) {
+#
+# return(quote(id))
+#
+# }
+#
+# check(country = "England")
 
 
+package_lt <- function(country, year,
+                       lt_extend = TRUE) {
+
+  # Capturing the environment here because we're using data.table
+  env <- environment()
+
+  # check that country supplied is valid
+  if (!is.null(country)) {
+    avail_countries <- norm_info$norm_country
+    if(!(country %in% avail_countries)) {
+      stop("Value for `country` must be chosen from the list of available
+      countries. Use hrqol_norms() to see the list.")
+    }
+  }
+
+  # check the year is valid
+  if (!is.null(year)) {
+    avail_years <- life_tables[country == get("country", env), year]
+    if (!(year %in% avail_years)) {
+      stop(paste("Currently the package only stores life table data for ", country,
+                 " for the years ",
+                 min(avail_years), "-", max(avail_years), ".
+                 Please set `year` to a value within this period.", sep = ""))
+    }
+  }
+
+
+  # checking if lt_extend is valid - formerly 1.6
+  # NOTE - do I need to incorporate some guidelines into this check so users don't put silly numbers?
+  if(!.is_valid_lt_extend(lt_extend)) {
+    stop("'lt_extend' must be a boolean value or a numeric scalar that is
+         greater than 1.")
+  }
+
+
+  # Filtering the package data to select life tables for the chosen country, year
+  # Used to happen in section  1.3
+  life_table <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
+
+
+  # Formerly section 2.1 - Extending life tables
+  # NOTE: these extensions are only applied to package data.
+  # we're assuming that the user provides the data they want (makes whatever
+  # assumptions they want already)
+
+  # Life tables given by UN and ONS only go up to 99/100 - what if we want dQALY
+  # estimates for people older than that - we might want to extend life tables
+
+  # at the moment lt_extend controls whether we extend or not (default we do)
+  # and also controls how the extension is done - the default is that, for
+  # the selected life tables, the mean increase in mortality rate across the 10
+  # highest years for which mortality rates are given to us is calculated (for males and females)
+  # we then say that mortality rates from q(max x) onwards increases by this same amount each year
+  # (note: this is a deviation from the way Lucy & I originally were doing the extension,
+  # where, say for example the max age for which we have data is 100, then q(101) is set as 1/e(100)
+  # (life expectancy at age 100) and q(x) for x > 101 is then incremented
+  # - that's just one extra step, which I can include at the small?/large?? cost
+  # of storing an additional life expectancy column for each set of life tables (or just e(100) for m/f))
+  # (could add the ability to set the upper age limit - doesn't have to be 120)
+
+
+  # now we know lt_extend is bool (TRUE/FALSE) or scalar numeric and we update as long as it is not FALSE
+  if (!isFALSE(lt_extend)) {
+    life_table[, xmax := max(age, na.rm = TRUE), by = "sex"]
+    if (is.numeric(lt_extend)) {
+      life_table[, increment := lt_extend]
+    } else {
+      life_table[, increment := .SD[age >= xmax - 10, mean(q/shift(q, type = "lag"), na.rm = T)], by = "sex"]
+    }
+    life_table <- life_table[CJ(sex = c("male", "female"), age = 0:120), on = c("sex", "age")]
+    life_table[, c("xmax", "qmax", "increment") := lapply(list(xmax, q, increment), max, na.rm = TRUE), by = "sex"]
+    # q(x) is the probability of dying within the year at age x
+    # to increment the probability without it exceeding 1, we convert to the instantaneous death rate,
+    # apply the increment, then convert back to a probability
+    life_table[age > xmax, q :=  1 - (1 - qmax)^increment^(age - xmax)]
+    life_table[,c("xmax", "qmax", "increment") := NULL]
+    setorder(life_table, age, sex)
+  }
+
+
+  life_table[]
+
+}
 
 
 
