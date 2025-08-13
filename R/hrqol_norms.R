@@ -33,13 +33,15 @@
 #' @export
 hrqol_norms <- function(country = NULL, references = FALSE) {
 
+  norm_country <- NULL # due to NSE notes in R CMD check
+
   norm_copy <- copy(norm_info)
 
   avail_countries <- unique(norm_copy$norm_country)
 
   if(!is.null(country)) {
     if(!(country %in% avail_countries)) {
-      stop(paste("Country not found. Countries for which HRQoL norms are available currently include:", paste(avail_countries, collapse = ", ")))
+      stop("Country not found. Countries for which HRQoL norms are available currently include: ", toString(avail_countries))
     } else {
       norm_copy <- norm_copy[norm_country == country]
     }
@@ -77,20 +79,18 @@ hrqol_norms <- function(country = NULL, references = FALSE) {
 #' @export
 default_norms <- function(country) {
 
+  default <- norm_country <- NULL # due to NSE notes in R CMD check
+
   # we could also make it more complicated & allow user to choose between rules for selecting the default?
   # eg most recent study, largest sample size, & so on
 
-  norm_copy <- copy(norm_info)
-  avail_countries <- unique(norm_copy$norm_country)
+  avail_countries <- unique(norm_info$norm_country)
 
   if(!(country %in% avail_countries)) {
-    stop(paste("Country not found. Countries for which utility norms are available currently include:", paste(avail_countries, collapse = ", ")))
-  } else {
-    default_norms <- norm_copy[norm_country == country & default == T]$norm_id
+    stop("Country not found. Countries for which utility norms are available currently include: ", toString(avail_countries))
   }
 
-  default_norms
-
+  norm_info[norm_country == country & default == TRUE]$norm_id
 }
 
 
