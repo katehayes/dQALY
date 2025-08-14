@@ -222,10 +222,11 @@
 #'                 collapse_sex = TRUE, cohort = my_cohort)
 # -------------------------------------------------------------------------
 #' @export
-calculate_dQALY <- function(country = NULL, #population
+calculate_dQALY <- function(country = NULL,
                             year = NULL,
                             life_table = package_lt(country, year,
                                                     lt_extend = TRUE),
+                            # is it ridiculous to have three nested function calls
                             norms = package_norms(country,
                                                   id = default_norms(country),
                                                   avg_hrqol_young = NULL),
@@ -233,17 +234,10 @@ calculate_dQALY <- function(country = NULL, #population
                             smr = 1, qcm = 1,
                             collapse_age = FALSE,
                             collapse_sex = FALSE,
-                            cohort = package_cohort(country, year)) { #population_weight
-
-
-  # if you specify a country and a year argument, those are the default
+                            cohort = package_cohort(country, year)) {
+  # if you specify a country and a year argument, those are the default for the get package data functions
   # but you can override with the country/year args in the package functions if you want
   # is that a sensible set up?
-
-  # only want to take my own function - because anything else, we're messing w the evaluation so it could give unexpected results?
-
-  # can't remember why this was relevant
-  # put three dots? https://adv-r.hadley.nz/functions.html#fun-dot-dot-dot
 
 
   # Capturing the environment here because we're using data.table
@@ -262,80 +256,73 @@ calculate_dQALY <- function(country = NULL, #population
   # all validity checking is moved to the top of the function
   # lots of the checks are done with internal functions, found at the end of
   # this script
-  # first we check whether an appropriate combination of arguments has been
-  # supplied, then we check that each argument has an appropriate value
-
-  # a change: while doing the validity checks (which involve checking whether
-  # or not the user is supplying custom data), at that point we also
-  # "get" the life tables, utility norms, and (if needed) cohorts that will
-  # be used in the calculation - we either retrieve life tables, utility norms,
-  # and cohorts from the packaged data (when appropriate) OR, when those
-  # objects are user-supplied, we run them through as.data.table()
-  # Previously this was done in the first part of parts 2, 3 & 5 of the
-  # function, labelled "getting life tables" and "getting utility norms" and
-  # "organising output"
-  # if it doesn't make sense to do it like this, can change
+  # While doing validity checks on life tables, norms, cohort, we also set
+  # up the data for use later in the function
 
   # # # # # # # # # 1.1 combination of arguments # # # # # # # # # # # # # # #
-  # checking whether the user has given the right combination of arguments
+  # Previously at this point we checked whether the user has given an ok
+  # combination of arguments - need to think about whether this would still be
+  # necessary
+  # for example do we want to stop people from doing something like this:
+  # calculate_dQALY(year = 2019,
+  #                   life_table = package_lt(country = "England", year),
+  #                   norms = package_norms(country = "France"),
+  #                   cohort = package(country = "Spain", year))
 
-  # This needs a rethink
+
 
   # # # # # # # # # 1.2 country, year # # # # # # # # # # # # # # # # # # # # #
-  # doing validity checks for appropriate values for country, year
-  # these are relevant when the user wants to use our package data
+  # previously at this point we did validity checks for appropriate values for
+  # country, year - these are relevant when the user wants to use our package data
+  # Now the checks are done inside the use package data functions instead
 
-  if (!is.null(country)) {
-    avail_countries <- norm_info$norm_country
-    if(!(country %in% avail_countries)) {
-      stop("Value for `country` must be chosen from the list of available
-      countries. Use hrqol_norms() to see the list. If you wish to calculate
-      QALY loss estimates for a country that is not currently available,
-      you can do so by supplying custom life tables and utility norms to
-      the function.")
-    }
-  }
 
-  # if year is specified (and the arg combination validity check was passed),
-  # then country has to have been specified
-  if (!is.null(year)) {
-    avail_years <- life_tables[country == get("country", env), year]
-    if (!(year %in% avail_years)) {
-      stop(paste("Currently, QALY loss estimates for ", country,
-                 " can only be calculated for the years ",
-                 min(avail_years), "-", max(avail_years), ".
-                 Please set `year` to a value within this period.", sep = ""))
-    }
-  }
 
 
 
   # # # # # # # # # 1.3 life_table, norms, cohort # # # # # # # # # # # # # # #
+  # Will bring this up to discuss whenever next meeting -
+  # I'm trying to use rlang to delay the evaluation of user-supplied (as opposed
+  # to default) arguments
+  # (I have read that) Default arguments are evaluated inside the function
+  # & user-supplied arguments are evaluated outside the function
 
-  # if the user calls the function like this (or similar):
-  # calculate_dQALY(year = 2019, life_table = package_lt(country, year), norms = package_norms(country = "France"))
-  # ie no overarching value for country set in the calculate_dQALY function arguments
-  # and no local value for country set within one of the package_ function arguments
-  # then the defuse/eval line (the next line of code) will throw an error that looks like this:
-  # Error in .prepareFastSubset(isub = isub, x = x, enclos = parent.frame(),  :
-  #                               RHS of == is length 0 which is not 1 or nrow (37010). For robustness, no recycling is allowed (other than of length 1 RHS). Consider %in% instead.
-  # which is not super informative as to what the issue is (basically no values given for country)
-  # i could suppress & replace the error message? but that seems risky?
+  # this is the reason I want to delay the evaluation of non-default arguments:
+  # Say the user wants to use package life tables but doesn't want to extend them
+  # - so this is moving away from the default life_table argument where
+  # the argument lt_extend of the function package_lt is set to TRUE -
+  # I'd like the user to be able to write this
+  # calculate_dQALY(country = "England", year = 2019,
+  #                 life_table = package_lt(country, year, lt_extend = FALSE))
+  # rather than have to write this to avoid erroring:
+  # calculate_dQALY(country = "England", year = 2019,
+  #                 life_table = package_lt(country = "England", year = 2019, lt_extend = FALSE))
+  # So (I think) I want the user-supplied argument evaluated inside the function, where
+  # values for country and year are defined
+
+  # I don't have a good working understanding of environments/evaluation and so on
+  # so I have little confidence in this set-up - but, as I said, will ask about it
+  # in next meeting
 
 
-  exprssn <- rlang::get_expr(rlang::enquo(life_table))
+  # Setting up the life table that will be used in the calculation
+  exprssn <- rlang::enexpr(life_table)
   if(is.call(exprssn)) {
     if(rlang::call_name(exprssn) == "package_lt") {
-      # we're using the package data
-      life_table <- eval(rlang::get_expr(rlang::enquo(life_table))) |>
+      # we're using the package data function - evaluate the expression now
+      # checks for valid country, year, and extend argument happen inside the package_lt function
+      life_table <- eval(exprssn) |>
         setnames(old = c("age", "q"),
                  new = c("x", "q_x"))
     } else {
       # its a function but not the package data function
-      stop("Don't pass functions other than package_lt to the life_table argument.")
+      stop("Its not permitted pass function calls other than calls to package_lt to the life_table argument.")
+      # The reason I'm doing this is because I am messing with the environment in which non-default arguments will
+      # be evaluated - so I don't want other people to pass their own functions & have those functions behave strangely/
+      # in unexpected ways?
     }
   } else {
-    # its user supplied data
+    # its a user supplied list-like object- check it meets standards
     if(!.is_valid_custom_lt(life_table)) {
       stop("User-supplied life tables have failed validity checks.")
     } else {
@@ -346,17 +333,20 @@ calculate_dQALY <- function(country = NULL, #population
   }
 
 
-  exprssn <- rlang::get_expr(rlang::enquo(norms))
+  # Setting up the utility norms that will be used in the calculation
+  exprssn <- rlang::enexpr(norms)
   if(is.call(exprssn)) {
     if(rlang::call_name(exprssn) == "package_norms") {
-      # we're using the package data
-      utility_norms <- eval(rlang::get_expr(rlang::enquo(norms)))
+      # we're using the package data function - evaluate the expression now
+      # checks for valid country, norm id, and avg_hrqol_young argument
+      # happen inside the package_norms function
+      utility_norms <- eval(exprssn)
     } else {
       # its a function but not the package data function
-      stop("Don't pass functions other than package_norms to the norms argument.")
+      stop("Its not permitted pass function calls other than calls to package_norms to the norms argument.")
     }
   } else {
-    # its user supplied data
+    # its a user supplied list-like object - check it meets standards
     if(!.are_valid_custom_norms(norms)) {
       stop("User-supplied utility norms have failed validity checks.")
     } else {
@@ -370,22 +360,24 @@ calculate_dQALY <- function(country = NULL, #population
 
   # check whether we need a cohort - i.e. check whether the user wants
   # grouped output. otherwise we won't need to set a value for the cohort object
+  # If we're grouping, then set up the cohort that will be used to take weighted averages
   if(.will_group(env$collapse_age, env$collapse_sex)) {
 
-    exprssn <- rlang::get_expr(rlang::enquo(cohort))
+    exprssn <- rlang::enexpr(cohort)
     if(is.call(exprssn)) {
       if(rlang::call_name(exprssn) == "package_cohort") {
-        # we're using the package data
-        cohort <- eval(rlang::get_expr(rlang::enquo(cohort)))
+        # we're using the package data function - evaluate the expression now
+        # checks for valid country & year happen inside the package_cohort function
+        cohort <- eval(exprssn)
         setnames(cohort,
                  old = c("age"),
                  new = c("x"))
       } else {
         # its a function but not the package data function
-        stop("Don't pass functions other than package_cohort to the cohort argument.")
+        stop("Its not permitted pass function calls other than calls to package_cohort to the cohort argument.")
       }
     } else {
-      # its user supplied data - check cohort meets standards
+      # its a user-supplied list-like object - check it meets standards
       if(!.is_valid_custom_cohort(cohort)) {
         stop("User-supplied cohort has failed validity checks.")
       } else {

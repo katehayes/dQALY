@@ -32,13 +32,17 @@ package_norms <- function(country,
 
 
   # check that country supplied is valid
-  if (!is.null(country)) {
+  if(is.null(country)) {
+    stop("No value for `country` supplied to function `package_norms`.
+         Use function `hrqol_norms` to see the list of available countries.")
+  } else {
     avail_countries <- norm_info$norm_country
     if(!(country %in% avail_countries)) {
       stop("Value for `country` must be chosen from the list of available
       countries. Use hrqol_norms() to see the list.")
     }
   }
+
 
   # check that the norm id they supplied is valid
   # error message referring user to norm info function - could do with re-write
@@ -92,17 +96,27 @@ package_lt <- function(country, year,
   # due to NSE notes in R CMD check
   xmax <- age <- increment <- qmax <- sex <- NULL
 
+
+
+
+
   # check that country supplied is valid
-  if (!is.null(country)) {
-    avail_countries <- norm_info$norm_country
+  if(is.null(country)) {
+    stop("No value for `country` supplied to function `package_lt`.
+         Use function `hrqol_norms` to see the list of available countries.")
+  } else {
+    avail_countries <- life_tables$country
     if(!(country %in% avail_countries)) {
       stop("Value for `country` must be chosen from the list of available
       countries. Use hrqol_norms() to see the list.")
     }
   }
 
+
   # check the year is valid
-  if (!is.null(year)) {
+  if(is.null(year)) {
+    stop("No value for `year` supplied to function `package_lt`.")
+  } else {
     avail_years <- life_tables[country == get("country", env), year]
     if (!(year %in% avail_years)) {
       stop(paste("Currently the package only stores life table data for ", country,
@@ -111,6 +125,7 @@ package_lt <- function(country, year,
                  Please set `year` to a value within this period.", sep = ""))
     }
   }
+
 
 
   # checking if lt_extend is valid - formerly 1.6
@@ -171,6 +186,7 @@ package_lt <- function(country, year,
 }
 
 
+
 # -------------------------------------------------------------------------
 #' Use population data stored by package
 # -------------------------------------------------------------------------
@@ -185,21 +201,27 @@ package_lt <- function(country, year,
 #' @export
 package_cohort <- function(country, year) {
 
-
   # Capturing the environment here because we're using data.table
   env <- environment()
 
+
   # check that country supplied is valid
-  if (!is.null(country)) {
-    avail_countries <- norm_info$norm_country
+  if(is.null(country)) {
+    stop("No value for `country` supplied to function `package_cohort`.
+         Use function `hrqol_norms` to see the list of available countries.")
+  } else {
+    avail_countries <- populations$country
     if(!(country %in% avail_countries)) {
       stop("Value for `country` must be chosen from the list of available
       countries. Use hrqol_norms() to see the list.")
     }
   }
 
+
   # check the year is valid
-  if (!is.null(year)) {
+  if(is.null(year)) {
+    stop("No value for `year` supplied to function `package_cohort`.")
+  } else {
     avail_years <- populations[country == get("country", env), year]
     if (!(year %in% avail_years)) {
       stop(paste("Currently the package only stores population data for ", country,
@@ -208,7 +230,6 @@ package_cohort <- function(country, year) {
                  Please set `year` to a value within this period.", sep = ""))
     }
   }
-
 
   cohort <- populations[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
 
