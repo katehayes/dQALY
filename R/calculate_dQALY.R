@@ -6,32 +6,52 @@
 #' @param country `[string]`
 #'
 #' The name of a country (for which data is available & stored in the package).
-#'
 #' Case-sensitive - please use function `hrqol_norms` to see the list of permissible country names.
-#'
-#' Defaults to `NULL` - if `NULL` then the user must supply own life tables and utility norms.
+#' Defaults to `NULL`.
 #'
 #' @param year `[integer]`
 #'
 #' A year (for which data is available & stored in the package).
-#'
-#' Defaults to `NULL` - if `NULL` then the user must supply own life tables.
+#' Defaults to `NULL`.
 #'
 #' @param life_table `[data frame]` or `[tibble]` or `[data table]`
 #'
-#' Allows users to supply their own life tables to the function, instead of using packaged life tables.
+#' The life table data that will be used in the QALY loss calculation.
 #'
-#' Must have columns named 'sex', 'age', and 'q' (probability of death).
+#' The default value for this argument is a call to a function - `package_lt(country, year)` -
+#' which returns life table data stored by the package.
 #'
-#' Defaults to `NULL`.
+#' We can see that this default depends on the user having specified values for
+#' arguments `country` and `year`. Alternatively, the user can specify values for
+#' `country` and `year` within the `package_lt` arguments. See examples & the
+#' documentation for `package_lt` for more details.
 #'
-#' @param norms Null or string or data.frame (or tibble or data.table)
-#' MAKING CHANGES HERE - WILL WRITE
+#' Additionally, users can supply their own life table data to the function, if they
+#' want to perform the calculation with something other than the life table data
+#' stored by the package. The life tables can be given in the form of a data frame, tibble,
+#' or data table, and must have columns named 'sex', 'age', and 'q' (probability of death).
+#'
+#' @param norms `[data frame]` or `[tibble]` or `[data table]`
+#'
+#' The HRQoL data that will be used in the QALY loss calculation.
+#'
+#' The default value for this argument is a call to a function - `package_norms(country)` -
+#' which returns HRQoL norms stored by the package.
+#'
+#' We can see that this default depends on the user having specified values for
+#' arguments `country` . Alternatively, the user can specify values for
+#' `country` within the `package_norms` arguments. See examples & the
+#' documentation for `package_norms` for more details.
+#'
+#' Additionally, users can supply their own norms to the function, if they
+#' want to perform the calculation with something other than the HRQoL data
+#' stored by the package. The norms can be given in the form of a data frame, tibble,
+#' or data table, and must have columns named 'lower' (lower bound of age band),
+#' 'upper' (upper bound of age band), 'sex', and 'avg_hrqol' (utility score).
 #'
 #' @param r `[numeric]` or `[function]`
 #'
 #' Represents the discount rate that will be used in the calculation.
-#'
 #' Defaults to 0.035 - the NICE reference case discount rate of 3.5%
 #'
 #' If `r` is numeric, it must be a numeric scalar between 0 and 1.
@@ -69,42 +89,6 @@
 #' health related quality of life in the selected country.
 #'
 #'
-#' @param lt_extend `[boolean]` or `[numeric]`
-#'
-#' Allows users to control whether/ the way in which assumptions are made about
-#' mortality rates among people older than 99, for whom data is not available.
-#'
-#' If `FALSE`, no assumption is made, and the function assumes no people live
-#' beyond 99.
-#'
-#' If `TRUE` (default), the function assumes that people can live up to 120
-#' and calculates a mortality rate for the older ages by assuming that
-#' mortality rates increase year on year by a constant increment - which is
-#' set equal to the average rate of increase over the last 10 years for which
-#' data is available.
-#'
-#' Alternatively, the user can specify their own increment, instead of allowing
-#' the function to calculate an increment automatically based on existing data.
-#' This is done by passing `lt_extend` a numeric value greater than 1 - for
-#' example, letting `lt_extend` to 1.05 means the function assumes mortality rates
-#' will increase by 5% year on year after the last year for which data is available.
-#'
-#'
-#' @param avg_hrqol_young `[numeric]`
-#'
-#' Allows users to control the way in which assumptions are made about the average
-#' health-related quality of life of those under 18, for whom data is not typically
-#' available.
-#'
-#' Defaults to `NULL`. In this case the youngest age group is assumed to have
-#' the same average utility score as that of the next youngest group.
-#'
-#' Alternatively, the user can make their own assumption about the HRQoL score
-#' given to the youngest group, by passing `avg_hrqol_young` a numeric value
-#' between 0 and 1, where 1 would be equivalent to assuming the youngest age
-#' group is in perfect health.
-#'
-#'
 #' @param collapse_age `[boolean]` or `[data frame]` or `[tibble]` or `[data table]`
 #'
 #' Allows users to control how function outputs are grouped by age.
@@ -135,19 +119,23 @@
 #'
 #' @param cohort `[data frame]` or `[tibble]` or `[data table]`
 #'
-#' If the user chooses to have the function output grouped estimates,
-#' then the function needs to assume a distribution for the population in order
-#' to calculate weighted averages.
+#' The cohort data that will be used to calculate weighted averages iff the user
+#' chooses to have the function output grouped estimates, as in that case we need
+#' to assume a distribution for the population.
 #'
-#' If `cohort` is `NULL` (default), then (if the user has specified a value for
-#' `country` and `year` in order to use packaged life tables) the calculation
-#' will use packaged population data, selecting the appropriate country and year.
+#' The default value for this argument is a call to a function -
+#' `package_cohort(country, year)` - which returns cohort data stored by the package.
 #'
-#' Alternatively, the user can specify a population distribution across age and
-#' sex to be used in the grouping by passing a  data frame, tibble or data table
-#' to `cohort`, with columns 'sex', 'age', and 'count'. Note that if the
-#' user supplied custom life tables to the function, they will be required to
-#' supply a custom cohort too.
+#' We can see that this default depends on the user having specified values for
+#' arguments `country` and `year`. Alternatively, the user can specify values for
+#' `country` and `year` within the `package_cohort` arguments. See examples & the
+#' documentation for `package_lt` for more details.
+#'
+#' Additionally, users can supply their own cohort data to the function, specifying
+#' a population distribution across age and sex, if they want to perform the
+#' calculation with something other than the cohort data stored by the package.
+#' Cohort data can be given in the form of a data frame, tibble,
+#' or data table, and must have columns named 'sex', 'age', and 'count'.
 #'
 # -------------------------------------------------------------------------
 #' @returns
@@ -164,13 +152,14 @@
 #' calculate_dQALY(country = "United Kingdom", year = 2019)
 #'
 #'
-#' #Output a table of dQALY values for all ages/genders, specifying year, country and norm by name
+#' #Output a table of dQALY values for all ages/genders, specifying year, country and
+#' #selecting a set of norms other than the default set for that country
 #' calculate_dQALY(country = "United Kingdom", year = 2019,
 #'                 norms = package_norms(country, id ="janssen_euvas"))
 #'
 #'
 #' #Output a table of dQALY values for all ages/genders, specifying year & country,
-#' #with user-specified norms
+#' #with user-supplied norms
 #' my_norms <- data.frame(sex = c(rep("male", 3), rep("female", 3)),
 #'                        lower = c(0, 20, 90),
 #'                        upper = c(19, 89, 150),
@@ -220,16 +209,20 @@
 #' calculate_dQALY(country = "United Kingdom", year = 2019,
 #'                 collapse_age = my_age_groups,
 #'                 collapse_sex = TRUE, cohort = my_cohort)
+#'
+#' #It's possible (though perhaps not often advisable) to perform the calculation
+#' #using data from various countries/years
+#' calculate_dQALY(life_table = package_lt(country = "England", year = 2019),
+#'                 norms = package_norms(country = "France"),
+#'                 cohort = package_cohort(country = "Spain", year = 2020),
+#'                 collapse_sex = TRUE)
 # -------------------------------------------------------------------------
 #' @export
 calculate_dQALY <- function(country = NULL,
                             year = NULL,
-                            life_table = package_lt(country, year,
-                                                    lt_extend = TRUE),
+                            life_table = package_lt(country, year),
                             # is it ridiculous to have three nested function calls
-                            norms = package_norms(country,
-                                                  id = default_norms(country),
-                                                  avg_hrqol_young = NULL),
+                            norms = package_norms(country),
                             r = 0.035,
                             smr = 1, qcm = 1,
                             collapse_age = FALSE,
@@ -312,6 +305,7 @@ calculate_dQALY <- function(country = NULL,
       # we're using the package data function - evaluate the expression now
       # checks for valid country, year, and extend argument happen inside the package_lt function
       life_table <- eval(exprssn) |>
+        setDT() |>
         setnames(old = c("age", "q"),
                  new = c("x", "q_x"))
     } else {
@@ -340,7 +334,8 @@ calculate_dQALY <- function(country = NULL,
       # we're using the package data function - evaluate the expression now
       # checks for valid country, norm id, and avg_hrqol_young argument
       # happen inside the package_norms function
-      utility_norms <- eval(exprssn)
+      utility_norms <- eval(exprssn) |>
+        setDT()
     } else {
       # its a function but not the package data function
       stop("Its not permitted pass function calls other than calls to package_norms to the norms argument.")
@@ -368,10 +363,11 @@ calculate_dQALY <- function(country = NULL,
       if(rlang::call_name(exprssn) == "package_cohort") {
         # we're using the package data function - evaluate the expression now
         # checks for valid country & year happen inside the package_cohort function
-        cohort <- eval(exprssn)
-        setnames(cohort,
-                 old = c("age"),
-                 new = c("x"))
+        cohort <- eval(exprssn) |>
+          setDT() |>
+          setnames(old = c("age"),
+                   new = c("x"))
+
       } else {
         # its a function but not the package data function
         stop("Its not permitted pass function calls other than calls to package_cohort to the cohort argument.")
@@ -580,27 +576,48 @@ calculate_dQALY <- function(country = NULL,
 #' @param country `[string]`
 #'
 #' The name of a country (for which data is available & stored in the package).
-#'
 #' Case-sensitive - please use function `hrqol_norms` to see the list of permissible country names.
-#'
-#' Defaults to `NULL` - if `NULL` then the user must supply own life tables and utility norms.
+#' Defaults to `NULL`.
 #'
 #' @param year `[integer]`
 #'
 #' A year (for which data is available & stored in the package).
-#'
-#' Defaults to `NULL` - if `NULL` then the user must supply own life tables.
+#' Defaults to `NULL`.
 #'
 #' @param life_table `[data frame]` or `[tibble]` or `[data table]`
 #'
-#' Allows users to supply their own life tables to the function, instead of using packaged life tables.
+#' The life table data that will be used in the QALY loss calculation.
 #'
-#' Must have columns named 'sex', 'age', and 'q' (probability of death).
+#' The default value for this argument is a call to a function - `package_lt(country, year)` -
+#' which returns life table data stored by the package.
 #'
-#' Defaults to `NULL`.
+#' We can see that this default depends on the user having specified values for
+#' arguments `country` and `year`. Alternatively, the user can specify values for
+#' `country` and `year` within the `package_lt` arguments. See examples & the
+#' documentation for `package_lt` for more details.
 #'
-#' @param norms Null or string or data.frame (or tibble or data.table)
-#' MAKING CHANGES HERE - WILL WRITE
+#' Additionally, users can supply their own life table data to the function, if they
+#' want to perform the calculation with something other than the life table data
+#' stored by the package. The life tables can be given in the form of a data frame, tibble,
+#' or data table, and must have columns named 'sex', 'age', and 'q' (probability of death).
+#'
+#' @param norms `[data frame]` or `[tibble]` or `[data table]`
+#'
+#' The HRQoL data that will be used in the QALY loss calculation.
+#'
+#' The default value for this argument is a call to a function - `package_norms(country)` -
+#' which returns HRQoL norms stored by the package.
+#'
+#' We can see that this default depends on the user having specified values for
+#' arguments `country` . Alternatively, the user can specify values for
+#' `country` within the `package_norms` arguments. See examples & the
+#' documentation for `package_norms` for more details.
+#'
+#' Additionally, users can supply their own norms to the function, if they
+#' want to perform the calculation with something other than the HRQoL data
+#' stored by the package. The norms can be given in the form of a data frame, tibble,
+#' or data table, and must have columns named 'lower' (lower bound of age band),
+#' 'upper' (upper bound of age band), 'sex', and 'avg_hrqol' (utility score).
 #'
 #' @param smr `[numeric]`
 #'
@@ -612,8 +629,8 @@ calculate_dQALY <- function(country = NULL,
 #' `smr` defaults to 1.
 #'
 #' If it is greater than/ less than 1 - for example 1.05/0.95 -
-#' the calculation will estimate QALE for a population assumed to have a
-#' mortality rate 5% greater/lower than average mortality rate in the
+#' the calculation will estimate QALY loss due to death for a population assumed
+#' to have a mortality rate 5% greater/lower than average mortality rate in the
 #' selected country.
 #'
 #' @param qcm `[numeric]`
@@ -624,63 +641,28 @@ calculate_dQALY <- function(country = NULL,
 #' `qcm` defaults to 1.
 #'
 #' If it is greater than/ less than 1 - for example 1.05/0.95 -
-#' the calculation will estimate QALE for a population assumed to experience
-#' health-related quality of life 5% greater/lower than the average
-#' health-related quality of life in the selected country.
-#'
-#'
-#' @param lt_extend `[boolean]` or `[numeric]`
-#'
-#' Allows users to control whether/ the way in which assumptions are made about
-#' mortality rates among people older than 99, for whom data is not available.
-#'
-#' If `FALSE`, no assumption is made, and the function assumes no people live
-#' beyond 99.
-#'
-#' If `TRUE` (default), the function assumes that people can live up to 120
-#' and calculates a mortality rate for the older ages by assuming that
-#' mortality rates increase year on year by a constant increment - which is
-#' set equal to the average rate of increase over the last 10 years for which
-#' data is available.
-#'
-#' Alternatively, the user can specify their own increment, instead of allowing
-#' the function to calculate an increment automatically based on existing data.
-#' This is done by passing `lt_extend` a numeric value greater than 1 - for
-#' example, letting `lt_extend` to 1.05 means the function assumes mortality rates
-#' will increase by 5% year on year after the last year for which data is available.
-#'
-#'
-#' @param avg_hrqol_young `[numeric]`
-#'
-#' Allows users to control the way in which assumptions are made about the average
-#' health-related quality of life of those under 18, for whom data is not typically
-#' available.
-#'
-#' Defaults to `NULL`. In this case the youngest age group is assumed to have
-#' the same average utility score as that of the next youngest group.
-#'
-#' Alternatively, the user can make their own assumption about the utility score
-#' given to the youngest group, by passing `avg_hrqol_young` a numeric value
-#' between 0 and 1, where 1 would be equivalent to assuming the youngest age
-#' group is in perfect health.
+#' the calculation will estimate QALY loss due to death for a population assumed
+#' experience health-related quality of life 5% greater/lower than the average
+#' health related quality of life in the selected country.
 #'
 #'
 #' @param collapse_age `[boolean]` or `[data frame]` or `[tibble]` or `[data table]`
 #'
 #' Allows users to control how function outputs are grouped by age.
 #'
-#' If `FALSE` (default), the function outputs an estimate of QALE at every year
-#' of age.
+#' If `FALSE` (default), the function outputs an estimate of QALY loss due to
+#' death for every year of age.
 #'
 #' Alternatively, if the user passes a data frame, tibble or data table that
 #' describe a set of age groups to `collapse_age`, the function will return the
-#' average QALE for those age groups. The data frame, tibble, or data table must
-#' have two columns named 'lower' and 'upper', indicating the lower and upper
-#' bounds of the desired age groups. See the examples for more details.
+#' average QALY loss due to death for those age groups. The data frame, tibble,
+#' or data table must have two columns named 'lower' and 'upper', indicating the
+#' lower and upper bounds of the desired age groups. See the examples for more
+#' details.
 #'
 #' If `collapse_age` is set to `TRUE`, the function outputs a single average
-#' estimate of QALE, aggregated across all ages - this is equivalent to
-#' supplying a single age group that encompasses all ages.
+#' estimate of QALY loss due to death, aggregated across all ages - this is
+#' equivalent to supplying a single age group that encompasses all ages.
 #'
 #'
 #' @param collapse_sex `[boolean]`
@@ -694,19 +676,24 @@ calculate_dQALY <- function(country = NULL,
 #'
 #' @param cohort `[data frame]` or `[tibble]` or `[data table]`
 #'
-#' If the user chooses to have the function output grouped estimates,
-#' then the function needs to assume a distribution for the population in order
-#' to calculate weighted averages.
+#' The cohort data that will be used to calculate weighted averages iff the user
+#' chooses to have the function output grouped estimates, as in that case we need
+#' to assume a distribution for the population.
 #'
-#' If `cohort` is `NULL` (default), then (if the user has specified a value for
-#' `country` and `year` in order to use packaged life tables) the calculation
-#' will use packaged population data, selecting the appropriate country and year.
+#' The default value for this argument is a call to a function -
+#' `package_cohort(country, year)` - which returns cohort data stored by the package.
 #'
-#' Alternatively, the user can specify a population distribution across age and
-#' sex to be used in the grouping by passing a  data frame, tibble or data table
-#' to `cohort`, with columns 'sex', 'age', and 'count'. Note that if the
-#' user supplied custom life tables to the function, they will be required to
-#' supply a custom cohort too.
+#' We can see that this default depends on the user having specified values for
+#' arguments `country` and `year`. Alternatively, the user can specify values for
+#' `country` and `year` within the `package_cohort` arguments. See examples & the
+#' documentation for `package_lt` for more details.
+#'
+#' Additionally, users can supply their own cohort data to the function, specifying
+#' a population distribution across age and sex, if they want to perform the
+#' calculation with something other than the cohort data stored by the package.
+#' Cohort data can be given in the form of a data frame, tibble,
+#' or data table, and must have columns named 'sex', 'age', and 'count'.
+#'
 #'
 # -------------------------------------------------------------------------
 #' @returns
@@ -719,6 +706,7 @@ calculate_dQALY <- function(country = NULL,
 #'
 # -------------------------------------------------------------------------
 #' @examples
+#' #See documentation for function calculate_dQALY for more examples
 #' calculate_QALE(country = "England", year = 2018)
 # -------------------------------------------------------------------------
 #' @export
@@ -834,39 +822,9 @@ calculate_QALE <- function(country = NULL, #population
 
 
 
-.is_valid_lt_extend <- function(lt_extend) {
-  if (length(lt_extend) != 1L || is.na(lt_extend) || (!(is.logical(lt_extend) || is.numeric(lt_extend)))) {
-    return(FALSE)
-  } else if(is.numeric(lt_extend)) {
-    if(lt_extend < 1) {
-      warning("The value passed to argument `lt_extend` must be greater than 1 -
-              mortality rates must increase with age for ages > 99.")
-      return(FALSE)
-    }
-  }
-  TRUE
-}
 
 
-.is_valid_avg_hrqol_young <- function(avg_hrqol_young) {
-  if (!is.null(avg_hrqol_young)) {
-    if (length(avg_hrqol_young) != 1L || !is.numeric(avg_hrqol_young)) {
-      return(FALSE)
-    } else if(avg_hrqol_young < 0 | avg_hrqol_young > 1) {
-      warning("The argument 'avg_hrqol_young' has been supplied a value that is not
-            between 0 and 1. This argument sets the utility score of the
-            youngest population group and utility scores are generally between
-            0 and 1, likely closer to 1 in younger age groups. Please reconsider
-            the value you have supplied to this argument.")
-    }
-  }
-  TRUE
-}
-
-
-
-
-# --------Checks at the single argument level when user is supplying own data----------------------------------------------------------
+# --------Checks at the single argument level when user is supplying own data---------------------------------
 # need some decisions made about how much data/how complete the data the user
 # supplies has to be/ how unlikely (data supplied for really old ages) it can be?
 

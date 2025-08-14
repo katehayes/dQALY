@@ -20,27 +20,48 @@ calculate_QALE(
 \item{country}{\verb{[string]}
 
 The name of a country (for which data is available & stored in the package).
-
 Case-sensitive - please use function \code{hrqol_norms} to see the list of permissible country names.
-
-Defaults to \code{NULL} - if \code{NULL} then the user must supply own life tables and utility norms.}
+Defaults to \code{NULL}.}
 
 \item{year}{\verb{[integer]}
 
 A year (for which data is available & stored in the package).
-
-Defaults to \code{NULL} - if \code{NULL} then the user must supply own life tables.}
+Defaults to \code{NULL}.}
 
 \item{life_table}{\verb{[data frame]} or \verb{[tibble]} or \verb{[data table]}
 
-Allows users to supply their own life tables to the function, instead of using packaged life tables.
+The life table data that will be used in the QALY loss calculation.
 
-Must have columns named 'sex', 'age', and 'q' (probability of death).
+The default value for this argument is a call to a function - \code{package_lt(country, year)} -
+which returns life table data stored by the package.
 
-Defaults to \code{NULL}.}
+We can see that this default depends on the user having specified values for
+arguments \code{country} and \code{year}. Alternatively, the user can specify values for
+\code{country} and \code{year} within the \code{package_lt} arguments. See examples & the
+documentation for \code{package_lt} for more details.
 
-\item{norms}{Null or string or data.frame (or tibble or data.table)
-MAKING CHANGES HERE - WILL WRITE}
+Additionally, users can supply their own life table data to the function, if they
+want to perform the calculation with something other than the life table data
+stored by the package. The life tables can be given in the form of a data frame, tibble,
+or data table, and must have columns named 'sex', 'age', and 'q' (probability of death).}
+
+\item{norms}{\verb{[data frame]} or \verb{[tibble]} or \verb{[data table]}
+
+The HRQoL data that will be used in the QALY loss calculation.
+
+The default value for this argument is a call to a function - \code{package_norms(country)} -
+which returns HRQoL norms stored by the package.
+
+We can see that this default depends on the user having specified values for
+arguments \code{country} . Alternatively, the user can specify values for
+\code{country} within the \code{package_norms} arguments. See examples & the
+documentation for \code{package_norms} for more details.
+
+Additionally, users can supply their own norms to the function, if they
+want to perform the calculation with something other than the HRQoL data
+stored by the package. The norms can be given in the form of a data frame, tibble,
+or data table, and must have columns named 'lower' (lower bound of age band),
+'upper' (upper bound of age band), 'sex', and 'avg_hrqol' (utility score).}
 
 \item{smr}{\verb{[numeric]}
 
@@ -52,8 +73,8 @@ which represent average life expectancy at country level.
 \code{smr} defaults to 1.
 
 If it is greater than/ less than 1 - for example 1.05/0.95 -
-the calculation will estimate QALE for a population assumed to have a
-mortality rate 5\% greater/lower than average mortality rate in the
+the calculation will estimate QALY loss due to death for a population assumed
+to have a mortality rate 5\% greater/lower than average mortality rate in the
 selected country.}
 
 \item{qcm}{\verb{[numeric]}
@@ -64,26 +85,27 @@ which represent average health-related quality of life at country level.
 \code{qcm} defaults to 1.
 
 If it is greater than/ less than 1 - for example 1.05/0.95 -
-the calculation will estimate QALE for a population assumed to experience
-health-related quality of life 5\% greater/lower than the average
-health-related quality of life in the selected country.}
+the calculation will estimate QALY loss due to death for a population assumed
+experience health-related quality of life 5\% greater/lower than the average
+health related quality of life in the selected country.}
 
 \item{collapse_age}{\verb{[boolean]} or \verb{[data frame]} or \verb{[tibble]} or \verb{[data table]}
 
 Allows users to control how function outputs are grouped by age.
 
-If \code{FALSE} (default), the function outputs an estimate of QALE at every year
-of age.
+If \code{FALSE} (default), the function outputs an estimate of QALY loss due to
+death for every year of age.
 
 Alternatively, if the user passes a data frame, tibble or data table that
 describe a set of age groups to \code{collapse_age}, the function will return the
-average QALE for those age groups. The data frame, tibble, or data table must
-have two columns named 'lower' and 'upper', indicating the lower and upper
-bounds of the desired age groups. See the examples for more details.
+average QALY loss due to death for those age groups. The data frame, tibble,
+or data table must have two columns named 'lower' and 'upper', indicating the
+lower and upper bounds of the desired age groups. See the examples for more
+details.
 
 If \code{collapse_age} is set to \code{TRUE}, the function outputs a single average
-estimate of QALE, aggregated across all ages - this is equivalent to
-supplying a single age group that encompasses all ages.}
+estimate of QALY loss due to death, aggregated across all ages - this is
+equivalent to supplying a single age group that encompasses all ages.}
 
 \item{collapse_sex}{\verb{[boolean]}
 
@@ -95,53 +117,23 @@ is set to \code{TRUE}, then the function outputs estimates aggregated across sex
 
 \item{cohort}{\verb{[data frame]} or \verb{[tibble]} or \verb{[data table]}
 
-If the user chooses to have the function output grouped estimates,
-then the function needs to assume a distribution for the population in order
-to calculate weighted averages.
+The cohort data that will be used to calculate weighted averages iff the user
+chooses to have the function output grouped estimates, as in that case we need
+to assume a distribution for the population.
 
-If \code{cohort} is \code{NULL} (default), then (if the user has specified a value for
-\code{country} and \code{year} in order to use packaged life tables) the calculation
-will use packaged population data, selecting the appropriate country and year.
+The default value for this argument is a call to a function -
+\code{package_cohort(country, year)} - which returns cohort data stored by the package.
 
-Alternatively, the user can specify a population distribution across age and
-sex to be used in the grouping by passing a  data frame, tibble or data table
-to \code{cohort}, with columns 'sex', 'age', and 'count'. Note that if the
-user supplied custom life tables to the function, they will be required to
-supply a custom cohort too.}
+We can see that this default depends on the user having specified values for
+arguments \code{country} and \code{year}. Alternatively, the user can specify values for
+\code{country} and \code{year} within the \code{package_cohort} arguments. See examples & the
+documentation for \code{package_lt} for more details.
 
-\item{lt_extend}{\verb{[boolean]} or \verb{[numeric]}
-
-Allows users to control whether/ the way in which assumptions are made about
-mortality rates among people older than 99, for whom data is not available.
-
-If \code{FALSE}, no assumption is made, and the function assumes no people live
-beyond 99.
-
-If \code{TRUE} (default), the function assumes that people can live up to 120
-and calculates a mortality rate for the older ages by assuming that
-mortality rates increase year on year by a constant increment - which is
-set equal to the average rate of increase over the last 10 years for which
-data is available.
-
-Alternatively, the user can specify their own increment, instead of allowing
-the function to calculate an increment automatically based on existing data.
-This is done by passing \code{lt_extend} a numeric value greater than 1 - for
-example, letting \code{lt_extend} to 1.05 means the function assumes mortality rates
-will increase by 5\% year on year after the last year for which data is available.}
-
-\item{avg_hrqol_young}{\verb{[numeric]}
-
-Allows users to control the way in which assumptions are made about the average
-health-related quality of life of those under 18, for whom data is not typically
-available.
-
-Defaults to \code{NULL}. In this case the youngest age group is assumed to have
-the same average utility score as that of the next youngest group.
-
-Alternatively, the user can make their own assumption about the utility score
-given to the youngest group, by passing \code{avg_hrqol_young} a numeric value
-between 0 and 1, where 1 would be equivalent to assuming the youngest age
-group is in perfect health.}
+Additionally, users can supply their own cohort data to the function, specifying
+a population distribution across age and sex, if they want to perform the
+calculation with something other than the cohort data stored by the package.
+Cohort data can be given in the form of a data frame, tibble,
+or data table, and must have columns named 'sex', 'age', and 'count'.}
 }
 \value{
 A data frame. The data frame will have column \code{QALE} (quality adjusted life
@@ -154,5 +146,6 @@ of age groups).
 Calculates quality-adjusted life expectancy for a given country and year
 }
 \examples{
+#See documentation for function calculate_dQALY for more examples
 calculate_QALE(country = "England", year = 2018)
 }

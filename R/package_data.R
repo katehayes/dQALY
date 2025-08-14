@@ -1,26 +1,44 @@
-
-# so is there any way to do it so that when you call the function within the other functions arguments,
-# and you want to change one thing, don't have to specify country again?
-# calculate_dQALY(country = "England", year = 2019, norms = package_norms(country = "England", id = "vih_secondary"))
-
-# calculate_dQALY(life_table = package_lt(country = "England", year = 2019), norms = package_norms(country = "France"), cohort = package_cohort(country = "Spain", year = 2020), collapse_sex = T)
-# you can currently do something like the above
-
-# whats the reason for the specific error this gives
-# calculate_dQALY(life_table = package_lt(country = "England", year = 2019), norms = package_norms(country = "France"), collapse_sex = T)
-#
-
 # -------------------------------------------------------------------------
 #' Use norm data stored by package
 # -------------------------------------------------------------------------
 #'
-#' @param country
-#' @param id
-#' @param avg_hrqol_young
+#' @param country `[string]`
+#'
+#' The name of a country (for which data is available & stored in the package).
+#' Case-sensitive - please use function `hrqol_norms` to see the list of permissible country names.
+#'
+#' @param id `[string]`
+#'
+#' Often, more than one set of HRQoL norms are available for a single country.
+#' The default value for this argument is a call to the function `default_norms`,
+#' which returns the ID of the default norms for the chosen country.
+#' If users wish to return an alternative set of norms belonging to the chosen
+#' country, they can pass the ID to this argument.
+#' Use function `hrqol_norms` to see the IDs for the norms available for each country.
+#'
+#' @param avg_hrqol_young `[numeric]`
+#'
+#' Allows users to control the way in which assumptions are made about the average
+#' health-related quality of life of those under 18, for whom data is not typically
+#' available.
+#'
+#' Defaults to `NULL`. In this case the youngest age group is assumed to have
+#' the same average utility score as that of the next youngest group.
+#'
+#' Alternatively, the user can make their own assumption about the HRQoL score
+#' given to the youngest group, by passing `avg_hrqol_young` a numeric value
+#' between 0 and 1, where 1 would be equivalent to assuming the youngest age
+#' group is in perfect health.
 #'
 #' @returns
 #'
+#' A data frame, containing HRQoL data.
+#'
 #' @examples
+#' package_norms(country = "Romania")
+#' package_norms(country = "Romania", id = "rom_5L")
+#' package_norms(country = "Romania", id = "rom_5L", avg_hrqol_young = 1)
+#'
 #' @export
 package_norms <- function(country,
                           id = default_norms(country),
@@ -31,6 +49,7 @@ package_norms <- function(country,
   norm_country <- norm_id <- lower <- avg_hrqol <- NULL
 
 
+  # ----------validity checks ----------------------------------------------------
   # check that country supplied is valid
   if(is.null(country)) {
     stop("No value for `country` supplied to function `package_norms`.
@@ -43,7 +62,6 @@ package_norms <- function(country,
     }
   }
 
-
   # check that the norm id they supplied is valid
   # error message referring user to norm info function - could do with re-write
   # formerly in section 1.3
@@ -51,24 +69,29 @@ package_norms <- function(country,
     stop("Invalid norm ID. Use function hrqol_norms() to see the IDs for the norms available for your chosen country.")
   }
 
-  # validity check - formerly 1.6
+  # check avg_hrqol_young - formerly 1.6
   if(!.is_valid_avg_hrqol_young(avg_hrqol_young)) {
     stop("If not set to its default value of NULL, 'avg_hrqol_young' must be
            a numeric scalar.")
   }
 
-  # retrieving norms from package data
+
+  # ----------getting data ----------------------------------------------------
+  # filtering package data to retrieving norms w chosen country, id
   utility_norms <- utility_norms[norm_country == country & norm_id == id][, c("norm_country", "norm_id"):=NULL]
 
 
-  # changing assumption re youngest group in utility norms
+
+  # ---------changing assumption re youngest group-------------------------------
   # formerly 2.2
   if(!is.null(avg_hrqol_young)) {
     utility_norms[lower == min(lower), avg_hrqol := avg_hrqol_young]
   }
 
 
-  utility_norms[]
+  # ----------return ------------------------------------------------------
+  setDF(utility_norms)
+  utility_norms
 
 }
 
@@ -78,13 +101,43 @@ package_norms <- function(country,
 #' Use life table data stored by package
 # -------------------------------------------------------------------------
 #'
-#' @param country
-#' @param year
-#' @param lt_extend
+#' @param country `[string]`
+#'
+#' The name of a country (for which data is available & stored in the package).
+#' Case-sensitive. Please use function `hrqol_norms` to see the list of permissible country names.
+#'
+#' @param year `[integer]`
+#'
+#' A year (for which data is available & stored in the package).
+#'
+#' @param lt_extend `[boolean]` or `[numeric]`
+#'
+#' Allows users to control whether/ the way in which assumptions are made about
+#' mortality rates among people older than 99, for whom data is not available.
+#'
+#' If `FALSE`, no assumption is made, and the function assumes no people live
+#' beyond 99.
+#'
+#' If `TRUE` (default), the function assumes that people can live up to 120
+#' and calculates a mortality rate for the older ages by assuming that
+#' mortality rates increase year on year by a constant increment - which is
+#' set equal to the average rate of increase over the last 10 years for which
+#' data is available.
+#'
+#' Alternatively, the user can specify their own increment, instead of allowing
+#' the function to calculate an increment automatically based on existing data.
+#' This is done by passing `lt_extend` a numeric value greater than 1 - for
+#' example, letting `lt_extend` to 1.05 means the function assumes mortality rates
+#' will increase by 5% year on year after the last year for which data is available.
 #'
 #' @returns
 #'
+#' A data frame, containing life tables for the chosen country and year.
+#'
 #' @examples
+#' package_lt(country = "Romania", year = 2022)
+#' package_lt(country = "Romania", year = 2022, lt_extend = FALSE)
+#' package_lt(country = "Romania", year = 2022, lt_extend = 1.5)
 #'
 #' @export
 package_lt <- function(country, year,
@@ -97,9 +150,7 @@ package_lt <- function(country, year,
   xmax <- age <- increment <- qmax <- sex <- NULL
 
 
-
-
-
+  # ----------validity checks ----------------------------------------------------
   # check that country supplied is valid
   if(is.null(country)) {
     stop("No value for `country` supplied to function `package_lt`.
@@ -111,7 +162,6 @@ package_lt <- function(country, year,
       countries. Use hrqol_norms() to see the list.")
     }
   }
-
 
   # check the year is valid
   if(is.null(year)) {
@@ -126,9 +176,7 @@ package_lt <- function(country, year,
     }
   }
 
-
-
-  # checking if lt_extend is valid - formerly 1.6
+  # checking if lt_extend is valid - formerly in section 1.6
   # NOTE - do I need to incorporate some guidelines into this check so users don't put silly numbers?
   if(!.is_valid_lt_extend(lt_extend)) {
     stop("'lt_extend' must be a boolean value or a numeric scalar that is
@@ -136,15 +184,19 @@ package_lt <- function(country, year,
   }
 
 
+  # ----------getting data ----------------------------------------------------
   # Filtering the package data to select life tables for the chosen country, year
   # Used to happen in section  1.3
   life_table <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
 
 
-  # Formerly section 2.1 - Extending life tables
-  # NOTE: these extensions are only applied to package data.
-  # we're assuming that the user provides the data they want (makes whatever
-  # assumptions they want already)
+
+  # ----------extending life tables-------------------------------------------
+  # Formerly section 2.1
+  # NOTE: because these extensions happen within the package_lt function,
+  # they are only applied to package data. we're assuming that the user
+  # provides the data they want (makes whatever assumptions they want already)
+  # This is also how it was done previously
 
   # Life tables given by UN and ONS only go up to 99/100 - what if we want dQALY
   # estimates for people older than that - we might want to extend life tables
@@ -152,17 +204,13 @@ package_lt <- function(country, year,
   # at the moment lt_extend controls whether we extend or not (default we do)
   # and also controls how the extension is done - the default is that, for
   # the selected life tables, the mean increase in mortality rate across the 10
-  # highest years for which mortality rates are given to us is calculated (for males and females)
+  # oldest years for which mortality rates are available is calculated (for males and females)
   # we then say that mortality rates from q(max x) onwards increases by this same amount each year
-  # (note: this is a deviation from the way Lucy & I originally were doing the extension,
-  # where, say for example the max age for which we have data is 100, then q(101) is set as 1/e(100)
-  # (life expectancy at age 100) and q(x) for x > 101 is then incremented
-  # - that's just one extra step, which I can include at the small?/large?? cost
-  # of storing an additional life expectancy column for each set of life tables (or just e(100) for m/f))
+
   # (could add the ability to set the upper age limit - doesn't have to be 120)
 
 
-  # now we know lt_extend is bool (TRUE/FALSE) or scalar numeric and we update as long as it is not FALSE
+  # we know lt_extend is bool (TRUE/FALSE) or scalar numeric and we update as long as it is not FALSE
   if (!isFALSE(lt_extend)) {
     life_table[, xmax := max(age, na.rm = TRUE), by = "sex"]
     if (is.numeric(lt_extend)) {
@@ -180,8 +228,9 @@ package_lt <- function(country, year,
     setorder(life_table, age, sex)
   }
 
-
-  life_table[]
+  # ----------return ------------------------------------------------------
+  setDF(life_table)
+  life_table
 
 }
 
@@ -191,12 +240,21 @@ package_lt <- function(country, year,
 #' Use population data stored by package
 # -------------------------------------------------------------------------
 #'
-#' @param country
-#' @param year
+#' @param country `[string]`
+#'
+#' The name of a country (for which data is available & stored in the package).
+#' Case-sensitive. Please use function `hrqol_norms` to see the list of permissible country names.
+#'
+#' @param year `[integer]`
+#'
+#' A year (for which data is available & stored in the package).
 #'
 #' @returns
 #'
+#' A data frame, containing population data for the chosen country and year.
+#'
 #' @examples
+#' package_cohort(country = "Romania", year = 2022)
 #'
 #' @export
 package_cohort <- function(country, year) {
@@ -205,6 +263,7 @@ package_cohort <- function(country, year) {
   env <- environment()
 
 
+  # ----------validity checks ----------------------------------------------------
   # check that country supplied is valid
   if(is.null(country)) {
     stop("No value for `country` supplied to function `package_cohort`.
@@ -231,9 +290,14 @@ package_cohort <- function(country, year) {
     }
   }
 
+  # ----------getting data ----------------------------------------------------
+  # Filtering the package data to select cohort for the chosen country, year
   cohort <- populations[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
 
-  cohort[]
+
+  # ----------return ------------------------------------------------------
+  setDF(cohort)
+  cohort
 
 }
 
@@ -273,11 +337,8 @@ package_cohort <- function(country, year) {
 #'
 #' @examples
 #' head(hrqol_norms())
-#'
 #' hrqol_norms(country = "England")
-#'
 #' hrqol_norms(country = "England", references = TRUE)
-#'
 #'
 #' @export
 hrqol_norms <- function(country = NULL, references = FALSE) {
@@ -343,5 +404,39 @@ default_norms <- function(country) {
 }
 
 
+
+# ------------------------------------------------------------------------- #
+# ---------------- INTERNALS - VALIDITY CHECKING -------------------------- #
+# ------------------------------------------------------------------------- #
+
+
+.is_valid_lt_extend <- function(lt_extend) {
+  if (length(lt_extend) != 1L || is.na(lt_extend) || (!(is.logical(lt_extend) || is.numeric(lt_extend)))) {
+    return(FALSE)
+  } else if(is.numeric(lt_extend)) {
+    if(lt_extend < 1) {
+      warning("The value passed to argument `lt_extend` must be greater than 1 -
+              mortality rates must increase with age for ages > 99.")
+      return(FALSE)
+    }
+  }
+  TRUE
+}
+
+
+.is_valid_avg_hrqol_young <- function(avg_hrqol_young) {
+  if (!is.null(avg_hrqol_young)) {
+    if (length(avg_hrqol_young) != 1L || !is.numeric(avg_hrqol_young)) {
+      return(FALSE)
+    } else if(avg_hrqol_young < 0 | avg_hrqol_young > 1) {
+      warning("The argument 'avg_hrqol_young' has been supplied a value that is not
+            between 0 and 1. This argument sets the utility score of the
+            youngest population group and utility scores are generally between
+            0 and 1, likely closer to 1 in younger age groups. Please reconsider
+            the value you have supplied to this argument.")
+    }
+  }
+  TRUE
+}
 
 
