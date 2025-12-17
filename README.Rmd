@@ -39,134 +39,74 @@ You can install the development version of dQALY from [GitHub](https://github.co
 
 ```{r, eval=FALSE}
 # install.packages("pak")
-pak::pak("katehayes/dQALY")
+pak::pak("katehayes/dQALY@change-arguments")
+```
+```{r, include = FALSE}
+library(dQALY)
+library(data.table)
 ```
 
-## Calculating QALY loss due to death with life expectancy & quality of life data
 
-Add overview of methods. Using life tables & HRQoL norms. HRQoL norms themselves are constructed from health state data & value sets. 
+## Calculating QALY loss due to death - get started with package data
+The function `calculate_dQALY` produces estimates of QALY loss due to death for a given population, using data on life expectancy and health-related quality of life within that population. For more details regarding how the estimates are calculated, refer to the [methods vignette](methods.html). The package stores this data for a number of countries. You have to minimally specify country and year:
+```{r}
+calculate_dQALY(country = "United Kingdom", year = 2015) |> head()
+calculate_dQALY(country = "France", year = 2020) |> head()
+```
+If country or year you choose aren't available (the package does not store sufficient data), you'll get an error message informing you of that:
+```{r, error = TRUE}
+calculate_dQALY(country = "Scotland", year = 2015)
+calculate_dQALY(country = "United Kingdom", year = 2010)
+```
+You can also output mean dQALY values for population groups. Here, we're outputting one average value for each year of age for both sexes together:
+```{r}
+calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T) |> head()
+```
+Here we're outputting average values for a set of age groups that we specify:
+```{r}
+my_age_groups <- data.table(lower = c(0, 90), upper = c(89, 99))
+calculate_dQALY(country = "United Kingdom", year = 2015, collapse_age = my_age_groups)
+```
+And lastly, here we're outputting average values for both sexes together and for the specified age groups:
+```{r}
+calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, collapse_age = my_age_groups)
+```
 
-## Health related quality of life (HRQoL) population norm data
+## Exploring and altering underlying package data
 
+
+### Health related quality of life (HRQoL) population norm data
+Using life tables & HRQoL norms. HRQoL norms themselves are constructed from health state data & value sets. 
 **[Explain norms]** Some discussion of HRQoL norms can be found on the [EuroQol website](https://euroqol.org/information-and-support/resources/population-norms/).
 
-
-For most countries, there is more than one set of HRQoL norms stored in the package data. For every country, we have chosen a set of default norms - these are the norms that will be used when the `calculate_dQALY` function is called without specifying a value for the `norms` argument. Alternatively, the user can specify what set of package norms they would like to use by passing its ID to `norms`. It is also possible for the user to supply custom norms.
-
-The list of available HRQoL norms and their IDs can be viewed using the `hrqol_norms` function. This function also returns information we have documented about the make-up ofeach set of HRQoL norms - specifically, about the EQ-5D data and value sets from which the norms are estimated. We have tried to adopt the same terminology/categorisation scheme used by the eq5d package to document information about value sets. Results can be filtered by country, and returned with or without reference information.
-<!-- Note: we could also store info about the model used to estimate the pop-level norms from the input data (eq5d profiles valued w the value sets) - e.g. in the ViH paper they use a linear model -->
-
-
-
-```{r hrqol_norms}
-library(dQALY)
-
+For most countries, there is more than one set of HRQoL norms stored in the package data. The list of available HRQoL norms and their IDs can be viewed using the `hrqol_norms` function. This function also returns information we have documented about the make-up of each set of HRQoL norms - specifically, about the EQ-5D data and value sets from which the norms are estimated. We have tried to adopt the same terminology/categorisation scheme used by the eq5d package to document information about value sets. Results can be filtered by country, and returned with or without reference information.
+```{r}
 # Return all English utility norm sets without reference information
-head(hrqol_norms(country = "England", references = F))
-
+hrqol_norms(country = "England", references = F)
 ```
-We can see that the package stores five different sets of English HRQoL population norm data. We can also see how these norms differ from each other with regards to what population the health state was data gathered from/ what population valued the health states/ when the was data collected/ what methods were used to elicit the states/values. Hopefully, being able to access this information allows the user to understand the implications of choosing one set of norms over another - and to make a judgement about the set of norms that is most appropriate for their purposes. 
+We can see that the package stores five different sets of English HRQoL population norm data. We can also see how these norms differ from each other with regards to what population the health state was data gathered from/ what population valued the health states/ when the data was collected/ what methods were used to elicit the states/values. 
 
-<!-- What modelling methods were used to estimate population averages? -->
-
-
-
-
-## Discounting
-To get the net present value to society of the quality-adjusted life years that are 'lost' when an individual dies, we apply a discount rate. In our package, the default discount rate is set at 3.5% as per the [NICE health technology evaluations manual](https://www.nice.org.uk/process/pmg36/chapter/economic-evaluation-2#discounting). However, the most appropriate discount rate to apply will differ according to the context of the evaluation/analysis. 
-
-When using the function `calculate_dQALY`, our package allows the user to specify the discount rate they would like to use in the calculation via setting the value of the argument ` r`. ` r` can be a scalar numeric (e.g. for a discount rate of 1%, set ` r = 0.01`) or, so that the discount rate can vary across time, ` r` also accepts vectorised functions (e.g. for a discount rate of 2% a year for 50 years into the future and 1% a year thereafter, set ` r = function(x) ifelse(x < 50, 0.02, 0.01)`). 
-
-[The Green Book](https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2020#a6-discounting), guidance on evaluation methods issued by the Treasury, discusses a number of discounting regimes and the reasons one might use them. 
-
-
-This package includes a number of discount rate functions, which 
-
-
-<table>
-    <tbody>
-        <tr>
-            <td>`r_none`</td>
-            <td>No discounting</td>
-        </tr>
-        <tr>
-            <td>`r_default`</td>
-            <td>NICE reference case discount rate/ Green Book standard Social Time Preference Rate</td>
-        </tr>
-        <tr>
-            <td>`r_health`</td>
-            <td>NICE alternative discount rate/Green Book recommended discount rate for health or life values</td>
-        </tr>
-        <tr>
-            <td>`r_lt_health`</td>
-            <td>Green Book recommended declining long term discount rate for health or life values</td>
-        </tr>
-        <tr>
-            <td>`r_lt_health_reduced`</td>
-            <td>Green Book recommended rate reduced by excluding pure social time preference (relevant if intervention may effect substantial/irreversible wealth transfers between generations)</td>
-        </tr>
-    </tbody>
-</table>
-
-
-
-
-```{r discounting}
-
-library(dQALY)
-library(ggplot2)
-
-years <- c(0:125)
-
-ggplot() +
-  geom_line(aes(x = years, y = r_none(years)), colour = "green") +
-  geom_line(aes(x = years, y = r_default(years)), colour = "red") +
-  geom_line(aes(x = years, y = r_health(years)), colour = "blue") +
-  geom_line(aes(x = years, y = r_lt_health(years)), colour = "purple") +
-  geom_line(aes(x = years, y = r_lt_health_reduced(years)), colour = "orange") +
-  scale_x_continuous(name = "Number of years into the future",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "Discount rate",
-                     limits = c(-0.00013, 0.0355),
-                     expand = c(0,0)) +
-  theme_classic()
-
-
-
-ggplot(data = calculate_dQALY(country = "England", year = 2019,
-                              collapse_sex = T,
-                              r = r_none),
-       aes(x = age, y = dQALY)) +
-  geom_line(colour = "green") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = r_default),
-            colour = "red") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = r_health),
-            colour = "blue") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = r_lt_health),
-            colour = "purple") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = r_lt_health_reduced),
-            colour = "orange") +
-  scale_x_continuous(name = "Age at death",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "QALY loss",
-                     limits = c(0, 80),
-                     expand = c(0,0)) +
-  theme_classic()
+So, contextual information about package norms can be returned using `hrqol_norms` - another way for the user to explore package norms is to return the actual norms themselves using the function `package_norms`:
+```{r}
+package_norms(country = "England", id = "janssen_euvas") |> head()
+package_norms(country = "England", id = "vih_secondary") |> head()
+```
+For every country, we have chosen a set of default norms. The default set is indicated in the info returned by the `hrqol_norms` function, or alternatively is returned directly by the function `default_norms` - for England, the default norms have ID "vih_primary". These are the norms that will be returned when the `package_norms` function is called without specifying a value for the `id` argument, like so: 
+```{r}
+default_norms(country = "England")
+all.equal(package_norms(country = "England"), package_norms(country = "England", id = "vih_primary"))
 ```
 
 
+- these are the norms that will be used when the `calculate_dQALY` function is called without specifying a value for the `norms` argument. Alternatively, the user can specify what set of package norms they would like to use by passing its ID to `norms`. Hopefully, being able to access information about the package norms via `hrqol_norms` allows the user to understand the implications of choosing to use one set of norms over another - and to make a judgement about the set of norms that is most appropriate for their purposes. 
 
 
+
+
+It is also possible for the user to supply their own norm data to the calculation.
+
+
+<!-- Note: we could also store info about the model used to estimate the pop-level norms from the input data (eq5d profiles valued w the value sets) - e.g. in the ViH paper they use a linear model - What modelling methods were used to estimate population averages? -->
 
 
 

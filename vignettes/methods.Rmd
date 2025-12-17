@@ -7,6 +7,13 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  TeX: { equationNumbers: { autoNumber: "AMS" } }
+});
+</script>
+
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -21,40 +28,49 @@ knitr::opts_chunk$set(
 We want to produce an estimate of $dQALY(x)$, the QALY loss associated with death at age $x$, for particular populations (usually country-level) and particular time periods (years). Our package implements a method for calculating QALY loss due to death described by Briggs et al. in a [letter](https://onlinelibrary.wiley.com/doi/10.1002/hec.4208) published in the journal Health Economics. 
 <!-- This method requires two kinds of input data. -->
 
-## The calculation
+## Calculating QALY loss due to death
 To produce estimates of QALY loss due to death for a given population, we require data regarding life expectancy and health-related quality of life within that population. 
 
 
 Life tables report $q(x)$, the probability of dying between ages $x$ and $x+1$, for $x = 0,1,..,x_{max}$, $x_{max}$ being the max age we are interested in or have data for. With $q(x)$, we can calculate $l(x)$, the number surviving to age $x \ge 1$ for a reference population of size N,
 
-$$l(x) = N\cdot\prod_{i=0}^{x}\big(1-q(i)\big) \tag{1}$$
+$$l(x) = N\cdot\prod_{i=0}^{x}\big(1-q(i)\big)$$
 
 and then (assuming a uniform distribution of death during the year) $L(x)$, the number of years lived between ages $x$ and $x+1$, 
 
-$$L(x) = \frac{l(x) + l(x+1)}{2} \tag{2}$$
+$$L(x) = \frac{l(x) + l(x+1)}{2}$$
 
 $L(x)$ and $l(x)$ can be used to calculate $LE(x)$, life expectancy at age $x$, as follows:
 
-$$LE(x) = \frac{\sum_{i=x}^{x_{max}}L(i)}{l(x)} \tag{3}$$
+$$LE(x) = \frac{\sum_{i=x}^{x_{max}}L(i)}{l(x)}$$
 
 
-The second kind of data needed is information about the average quality of life at each age, which we can denote $Q(x)$. Life expectancy at age $x$ is the number of life years a person at age $x$ can expect to live over the remainder of their life - quality adjusted life expectancy, $QALE(x)$, is the number of quality adjusted life years or QALYs that a person at age $x$ can expect to experience. It's given by
+The second kind of data needed is information about the average health-related quality of life (expressed as a number between 0 and 1) of people within the population at each age, which we can denote $Q(x)$. We'll refer to this type of data as HRQoL norms.
 
-$$QALE(x) = \frac{\sum_{i=x}^{x_{max}}Q(i)\cdot  L(i)}{l(x)} \tag{4}$$
+Life expectancy at age $x$ is the number of life years a person at age $x$ can expect to live over the remainder of their life - quality adjusted life expectancy, $QALE(x)$, is the number of quality-adjusted life years or QALYs that a person at age $x$ can expect to experience. It's given by
 
+\begin{equation} \label{eq:qale}
+QALE(x) = \frac{\sum_{i=x}^{x_{max}}Q(i)\cdot  L(i)}{l(x)} 
+\end{equation}
+
+
+<!-- There is one -->
 When a person dies at age $x$ we don't say that the number of QALYs lost due to their death is exactly the same as the number of QALYs they were expected to experience over the remainder of their life - we apply a discount rate $r$ to the QALYs they would have accrued. This reflects the idea that to us in the present, the value of QALYs that would be experienced years into the future is less than the value of QALYs experienced today. The discount rate is usually set at 3.5%.
 
-$$dQALY(x) = \frac{\sum_{i=x}^{x_{max}}Q(i)\cdot  L(i)\cdot \frac{1}{(1+r)^{(i-x)}}}{l(x)} \tag{5}$$
+\begin{equation} \label{eq:dqaly}
+dQALY(x) = \frac{\sum_{i=x}^{x_{max}}Q(i)\cdot  L(i)\cdot \frac{1}{(1+r)^{(i-x)}}}{l(x)}
+\end{equation}
+
 <br/>
 <br/>
-With the `dQALY` package we have functions `calculate_QALE` and `calculate_dQALY` - for more practical details on the use of these functions see the [demo vignette](demo.html).
+With the `dQALY` package, the functions `calculate_QALE` and `calculate_dQALY` implement the calculations described above. For more practical details on the use of these functions see the function documentation or the [demo vignette](demo.html).
 
 <!-- Note that we follow Briggs et al. in using the terms $QALE$ to denote quality-adjusted life expectancy, and $dQALY$ to denote QALY loss due to death. We differ on this from McNamara.. -->
 
 
 ## Adjusting mortality and morbidity 
 
-The method described above could in theory be applied to any population. However, in practice, life tables and population average life expectancy data are most commonly available at national level. If we would like to calculate QALY loss due to death in a population that we expect to have mortality and morbidity rates that are significantly different from the national average, then our method allows for adjustment.<br/>
+The method described above can be applied to any population for which we have life expectancy and health-related quality of life data. However, in practice, life tables and HRQoL norms are most commonly available at national level. If we would like to calculate QALY loss due to death in a population that we expect to have mortality and morbidity rates that are significantly different from the national average (e.g. people with Type I diabetes), then we can make adjustments to our calculation in order to reflect this difference.<br/>
 
 A standardised mortality ratio $(SMR)$ is a measure that describes how mortality rates in a specific group differ with respect to some standard or reference population, after standardisation by age and sex. If the $SMR$ is greater than / lesser than 1, mortality rates in the group are greater than / lesser than rates in the reference population. <br/>
 
@@ -65,7 +81,6 @@ If we let $q_{adj}(x) = SMR \cdot q(x)$, then it would be possible that where $x
 The relationship between $q(x)$ and $d(x)$ is the relationship between a probability and a rate:
 
 $$q(x) =1 - e^{-d(x)} \iff d(x) = -ln\big(1-q(x)\big)$$ 
-
 
  
 Instead of adjusting $q(x)$ directly, we apply our adjustment to $d(x)$, letting $d_{adj}(x) = SMR \cdot d(x)$ - so we can express $q_{adj}(x)$ in terms of $q(x)$ and $SMR$ as follows:<br/>
@@ -90,9 +105,11 @@ $$LE_{adj}(x) = \frac{l_{adj}(x) + l_{adj}(x+1)}{2}$$
 <br/>
 <br/>
 
-Next, we'll use parameter $qCM$ to express our assumptions about how morbidity or health related quality of life in the population of interest differs from the reference population. With $qCM$, we try to quantify the impact of pre-existing comorbidities on quality of life. If $qCM$ is greater than / lesser than 1, then quality of life in the population of interest is better than / worse than quality of life in the reference population. We can adjust $Q(x)$, average quality of life in the reference population directly, letting $Q_{adj}(x) = qCM \cdot Q(x)$. 
+Next, we'll use parameter $qCM$ to express our assumptions about how morbidity or health related quality of life in the population of interest differs from the reference population. With $qCM$, we try to quantify the impact of pre-existing comorbidities on quality of life. If $qCM$ is greater than / lesser than 1, then quality of life in the population of interest is better than / worse than quality of life in the reference population. We can adjust $Q(x)$, average quality of life in the reference population directly, letting 
+
+$$Q_{adj}(x) = qCM \cdot Q(x)$$ 
 
 
-From this point on, $QALE(x)$ and $dQALY(x)$ for the group of interest are derived from $l_{adj}(x)$, $LE_{adj}(x)$, and $Q_{adj}(x)$ exactly as shown previously in equations (4) and (5).
+From this point on, $QALE(x)$ and $dQALY(x)$ for the group of interest are derived from $l_{adj}(x)$, $LE_{adj}(x)$, and $Q_{adj}(x)$ exactly as shown previously in equations (1) and (2).<br/><br/>
 
-In this package, the functions `calculate_QALE` and `calculate_dQALY` have arguments `smr` and `qcm`, which allow the user to adjust for mortality and morbidity as described (again, see the [demo vignette](demo.html) for examples of this adjustment in practice.)
+In this package, the functions `calculate_QALE` and `calculate_dQALY` have arguments `smr` and `qcm`, which allow the user to adjust for mortality and morbidity as described. Again, see the function documentation or the [demo vignette](demo.html) for examples of this adjustment in practice.

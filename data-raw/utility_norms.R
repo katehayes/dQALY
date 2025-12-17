@@ -220,14 +220,19 @@ rom_3L <- rbind(yg, rom_3L)
 # -------------------------------------------------------------------------
 # LA-level utility norms
 # -------------------------------------------------------------------------
-
-# should I change norm_country to norm_location?
+# https://bmjopen.bmj.com/content/14/3/e076704
+# note - if we used the regression output we could get better info then using the
+# age group tables?
+# add in the LA life tables to the life tables section too???
 
 temp <- tempfile()
 download.file(url = "https://osf.io/download/cx2w8/", temp)
 
-la_code2name <- as.data.table(utils::read.csv(temp))[, .(norm_country = geography_name, geography_code)] |>
+la_code2name <- as.data.table(utils::read.csv(temp))[, .(norm_country = ctr_code, norm_region = geography_name, geography_code)] |>
   unique()
+la_code2name[, norm_country := fcase(norm_country == "E", "England",
+                                     norm_country == "S", "Scotland",
+                                     norm_country == "W", "Wales")]
 
 
 temp <- tempfile()
@@ -238,7 +243,7 @@ la_utils <- as.data.table(utils::read.csv(temp))[, .(sex = sex_name, geography_c
 
 la_utils <- la_code2name[la_utils,
                          on = .(geography_code),
-                         .(norm_country, sex, age_name, avg_hrqol)][
+                         .(norm_id = geography_code, norm_country, norm_region, sex, age_name, avg_hrqol)][
                            , sex := ifelse(sex == "Female", "female", "male")
                          ][
                            , lower := as.numeric(substring(age_name, 1, 2))
@@ -276,28 +281,36 @@ write.csv(utility_norms, file.path(root, "utility_norms.csv"))
 
 
 
-
 # -------------------------------------------------------------------------
 # Long term conditions in UK
+# Unlike the other WPs, this study included participants with any of the WtW-specified LTCs, not just those with a T2DM diagnosis.
 # -------------------------------------------------------------------------
 # NOTE FOR LATER
 # if we only have values for older age groups for specific population groups like disease groups,
 # we could just output dQALY measures for those years on?
+# maybe a warning message if you select that norm id
 
-# ltc_norms <- extract_html_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK592229/table/table18/?report=objectonly")
-#
-# names <- ltc_norms[1, ] |>
-#   unlist()
-#
-# setnames(ltc_norms, new = names)
-#
-# ltc_norms <- ltc_norms[4, -c(1,3,5,7,9:11)] |>
-#   melt(measure.vars = patterns("years"),
-#        variable.name = "lower",
-#        value.name = "avg_hrqol")
-#
-# ltc_norms[, avg_hrqol := as.numeric(substring(avg_hrqol, 1, 5))]
-# ltc_norms[, upper := as.numeric(substring(lower, 4, 5))]
-# ltc_norms[, lower := as.numeric(substring(lower, 1, 2))]
+
+ltc_norms <- extract_html_norms(url = "https://www.ncbi.nlm.nih.gov/books/NBK592229/table/table18/?report=objectonly")
+
+names <- ltc_norms[1, ] |>
+  unlist()
+
+setnames(ltc_norms, new = names)
+
+ltc_norms <- ltc_norms[4, -c(1,3,5,7,9:11)] |>
+  melt(measure.vars = patterns("years"),
+       variable.name = "lower",
+       value.name = "avg_hrqol")
+
+ltc_norms[, avg_hrqol := as.numeric(substring(avg_hrqol, 1, 5))]
+ltc_norms[, upper := as.numeric(substring(lower, 4, 5))]
+ltc_norms[, lower := as.numeric(substring(lower, 1, 2))]
+
+ltc_norms <- ltc_norms[, .(sex = c("male", "female")), by = c("lower", "upper", "avg_hrqol")]
+ltc_norms[, norm_id := "spring_ltc"]
+ltc_norms[, norm_country := "England"]
+
+
 
 

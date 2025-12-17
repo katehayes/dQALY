@@ -1,3 +1,12 @@
+# I wonder if some kind of integration with eq5d package - so eq5d data could be converted to
+# index scores using the eq5d functions & then output fed straight into dQALY calculation
+# as utility norm values?
+# there is also handling uncertainty..
+# I am also seeing some descriptions of HRQoL scores across populations being
+# given in terms of regression output rather than tables
+
+# we could also have a series of disutility weights????? for various conditions??
+
 # -------------------------------------------------------------------------
 #' Use norm data stored by package
 # -------------------------------------------------------------------------
@@ -46,7 +55,7 @@ package_norms <- function(country,
 
 
   # due to NSE notes in R CMD check
-  norm_country <- norm_id <- lower <- avg_hrqol <- NULL
+  norm_country <- lower <- avg_hrqol <- norm_id <- NULL
 
 
   # ----------validity checks ----------------------------------------------------
@@ -65,9 +74,15 @@ package_norms <- function(country,
   # check that the norm id they supplied is valid
   # error message referring user to norm info function - could do with re-write
   # formerly in section 1.3
-  if(!(id %in% norm_info[norm_country == country, norm_id])) {
-    stop("Invalid norm ID. Use function hrqol_norms() to see the IDs for the norms available for your chosen country.")
+  if(is.null(id)) {
+    stop("No value for `id` supplied to function `package_norms`.
+         Use function `hrqol_norms` to see the list of available countries and corresponding norm IDs.")
+  } else {
+    if(!(id %in% norm_info[norm_country == country, norm_id])) {
+      stop("Invalid norm ID. Use function hrqol_norms() to see the IDs for the norms available for your chosen country.")
+    }
   }
+
 
   # check avg_hrqol_young - formerly 1.6
   if(!.is_valid_avg_hrqol_young(avg_hrqol_young)) {

@@ -40,43 +40,110 @@ You can install the development version of dQALY from
 
 ``` r
 # install.packages("pak")
-pak::pak("katehayes/dQALY")
+pak::pak("katehayes/dQALY@change-arguments")
 ```
 
-## Calculating QALY loss due to death with life expectancy & quality of life data
+## Calculating QALY loss due to death - get started with package data
 
-Add overview of methods. Using life tables & HRQoL norms. HRQoL norms
-themselves are constructed from health state data & value sets.
+The function `calculate_dQALY` produces estimates of QALY loss due to
+death for a given population, using data on life expectancy and
+health-related quality of life within that population. For more details
+regarding how the estimates are calculated, refer to the [methods
+vignette](methods.html). The package stores this data for a number of
+countries. You have to minimally specify country and year:
 
-## Health related quality of life (HRQoL) population norm data
+``` r
+calculate_dQALY(country = "United Kingdom", year = 2015) |> head()
+#>      sex age    dQALY
+#> 1 female   0 25.20285
+#> 2   male   0 24.91002
+#> 3 female   1 25.19784
+#> 4   male   1 24.92008
+#> 5 female   2 25.11352
+#> 6   male   2 24.82673
+calculate_dQALY(country = "France", year = 2020) |> head()
+#>      sex age    dQALY
+#> 1 female   0 25.74592
+#> 2   male   0 25.36175
+#> 3 female   1 25.74985
+#> 4   male   1 25.36617
+#> 5 female   2 25.67541
+#> 6   male   2 25.27770
+```
 
-**\[Explain norms\]** Some discussion of HRQoL norms can be found on the
-[EuroQol
+If country or year you choose aren’t available (the package does not
+store sufficient data), you’ll get an error message informing you of
+that:
+
+``` r
+calculate_dQALY(country = "Scotland", year = 2015)
+#> Error in package_lt(country, year): Value for `country` must be chosen from the list of available
+#>       countries. Use hrqol_norms() to see the list.
+calculate_dQALY(country = "United Kingdom", year = 2010)
+#> Error in package_lt(country, year): Currently the package only stores life table data for United Kingdom for the years 2015-2023.
+#>                  Please set `year` to a value within this period.
+```
+
+You can also output mean dQALY values for population groups. Here, we’re
+outputting one average value for each year of age for both sexes
+together:
+
+``` r
+calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T) |> head()
+#>   age    dQALY
+#> 1   0 25.05262
+#> 2   1 25.05541
+#> 3   2 24.96654
+#> 4   3 24.87112
+#> 5   4 24.77174
+#> 6   5 24.66846
+```
+
+Here we’re outputting average values for a set of age groups that we
+specify:
+
+``` r
+my_age_groups <- data.table(lower = c(0, 90), upper = c(89, 99))
+calculate_dQALY(country = "United Kingdom", year = 2015, collapse_age = my_age_groups)
+#>     age lower upper    sex     dQALY
+#> 1  0-89     0    89 female 17.414236
+#> 2  0-89     0    89   male 17.237184
+#> 3 90-99    90    99 female  2.383301
+#> 4 90-99    90    99   male  2.262557
+```
+
+And lastly, here we’re outputting average values for both sexes together
+and for the specified age groups:
+
+``` r
+calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, collapse_age = my_age_groups)
+#>     age lower upper     dQALY
+#> 1  0-89     0    89 17.327103
+#> 2 90-99    90    99  2.347774
+```
+
+## Exploring and altering underlying package data
+
+### Health related quality of life (HRQoL) population norm data
+
+Using life tables & HRQoL norms. HRQoL norms themselves are constructed
+from health state data & value sets. **\[Explain norms\]** Some
+discussion of HRQoL norms can be found on the [EuroQol
 website](https://euroqol.org/information-and-support/resources/population-norms/).
 
 For most countries, there is more than one set of HRQoL norms stored in
-the package data. For every country, we have chosen a set of default
-norms - these are the norms that will be used when the `calculate_dQALY`
-function is called without specifying a value for the `norms` argument.
-Alternatively, the user can specify what set of package norms they would
-like to use by passing its ID to `norms`. It is also possible for the
-user to supply custom norms.
-
-The list of available HRQoL norms and their IDs can be viewed using the
-`hrqol_norms` function. This function also returns information we have
-documented about the make-up ofeach set of HRQoL norms - specifically,
-about the EQ-5D data and value sets from which the norms are estimated.
-We have tried to adopt the same terminology/categorisation scheme used
-by the eq5d package to document information about value sets. Results
-can be filtered by country, and returned with or without reference
-information.
-<!-- Note: we could also store info about the model used to estimate the pop-level norms from the input data (eq5d profiles valued w the value sets) - e.g. in the ViH paper they use a linear model -->
+the package data. The list of available HRQoL norms and their IDs can be
+viewed using the `hrqol_norms` function. This function also returns
+information we have documented about the make-up of each set of HRQoL
+norms - specifically, about the EQ-5D data and value sets from which the
+norms are estimated. We have tried to adopt the same
+terminology/categorisation scheme used by the eq5d package to document
+information about value sets. Results can be filtered by country, and
+returned with or without reference information.
 
 ``` r
-library(dQALY)
-
 # Return all English utility norm sets without reference information
-head(hrqol_norms(country = "England", references = F))
+hrqol_norms(country = "England", references = F)
 #>   norm_country eq5d_data_year       norm_id eq5d_data_version value_set_country
 #> 1      England           2008 janssen_euvas          EQ-5D-3L            Europe
 #> 2      England           2008   janssen_tto          EQ-5D-3L           England
@@ -94,180 +161,97 @@ head(hrqol_norms(country = "England", references = F))
 We can see that the package stores five different sets of English HRQoL
 population norm data. We can also see how these norms differ from each
 other with regards to what population the health state was data gathered
-from/ what population valued the health states/ when the was data
+from/ what population valued the health states/ when the data was
 collected/ what methods were used to elicit the states/values.
-Hopefully, being able to access this information allows the user to
-understand the implications of choosing one set of norms over another -
-and to make a judgement about the set of norms that is most appropriate
-for their purposes.
 
-<!-- What modelling methods were used to estimate population averages? -->
-
-## Discounting
-
-To get the net present value to society of the quality-adjusted life
-years that are ‘lost’ when an individual dies, we apply a discount rate.
-In our package, the default discount rate is set at 3.5% as per the
-[NICE health technology evaluations
-manual](https://www.nice.org.uk/process/pmg36/chapter/economic-evaluation-2#discounting).
-However, the most appropriate discount rate to apply will differ
-according to the context of the evaluation/analysis.
-
-When using the function `calculate_dQALY`, our package allows the user
-to specify the discount rate they would like to use in the calculation
-via setting the value of the argument `r`. `r` can be a scalar numeric
-(e.g. for a discount rate of 1%, set `r = 0.01`) or, so that the
-discount rate can vary across time, `r` also accepts vectorised
-functions (e.g. for a discount rate of 2% a year for 50 years into the
-future and 1% a year thereafter, set
-`r = function(x) ifelse(x < 50, 0.02, 0.01)`).
-
-[The Green
-Book](https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2020#a6-discounting),
-guidance on evaluation methods issued by the Treasury, discusses a
-number of discounting regimes and the reasons one might use them.
-
-This package includes a number of discount rate functions, which
-
-<table>
-
-<tbody>
-
-<tr>
-
-<td>
-
-`r_none`
-</td>
-
-<td>
-
-No discounting
-</td>
-
-</tr>
-
-<tr>
-
-<td>
-
-`r_default`
-</td>
-
-<td>
-
-NICE reference case discount rate/ Green Book standard Social Time
-Preference Rate
-</td>
-
-</tr>
-
-<tr>
-
-<td>
-
-`r_health`
-</td>
-
-<td>
-
-NICE alternative discount rate/Green Book recommended discount rate for
-health or life values
-</td>
-
-</tr>
-
-<tr>
-
-<td>
-
-`r_lt_health`
-</td>
-
-<td>
-
-Green Book recommended declining long term discount rate for health or
-life values
-</td>
-
-</tr>
-
-<tr>
-
-<td>
-
-`r_lt_health_reduced`
-</td>
-
-<td>
-
-Green Book recommended rate reduced by excluding pure social time
-preference (relevant if intervention may effect substantial/irreversible
-wealth transfers between generations)
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
+So, contextual information about package norms can be returned using
+`hrqol_norms` - another way for the user to explore package norms is to
+return the actual norms themselves using the function `package_norms`:
 
 ``` r
-
-library(dQALY)
-library(ggplot2)
-
-years <- c(0:125)
-
-ggplot() +
-  geom_line(aes(x = years, y = r_none(years)), colour = "green") +
-  geom_line(aes(x = years, y = r_default(years)), colour = "red") +
-  geom_line(aes(x = years, y = r_health(years)), colour = "blue") +
-  geom_line(aes(x = years, y = r_lt_health(years)), colour = "purple") +
-  geom_line(aes(x = years, y = r_lt_health_reduced(years)), colour = "orange") +
-  scale_x_continuous(name = "Number of years into the future",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "Discount rate",
-                     limits = c(-0.00013, 0.0355),
-                     expand = c(0,0)) +
-  theme_classic()
+package_norms(country = "England", id = "janssen_euvas")
+#>    lower upper    sex avg_hrqol
+#> 1      0    17 female     0.922
+#> 2      0    17   male     0.922
+#> 3     18    24 female     0.922
+#> 4     18    24   male     0.922
+#> 5     25    34 female     0.915
+#> 6     25    34   male     0.915
+#> 7     35    44 female     0.891
+#> 8     35    44   male     0.891
+#> 9     45    54 female     0.857
+#> 10    45    54   male     0.857
+#> 11    55    64 female     0.819
+#> 12    55    64   male     0.819
+#> 13    65    74 female     0.785
+#> 14    65    74   male     0.785
+#> 15    75   200 female     0.720
+#> 16    75   200   male     0.720
+package_norms(country = "England", id = "vih_secondary")
+#>    lower upper    sex avg_hrqol
+#> 1      0    15 female     0.881
+#> 2      0    15   male     0.916
+#> 3     16    17 female     0.881
+#> 4     16    17   male     0.916
+#> 5     18    19 female     0.864
+#> 6     18    19   male     0.933
+#> 7     20    24 female     0.866
+#> 8     20    24   male     0.895
+#> 9     25    29 female     0.873
+#> 10    25    29   male     0.895
+#> 11    30    34 female     0.870
+#> 12    30    34   male     0.916
+#> 13    35    39 female     0.857
+#> 14    35    39   male     0.862
+#> 15    40    44 female     0.850
+#> 16    40    44   male     0.870
+#> 17    45    49 female     0.815
+#> 18    45    49   male     0.824
+#> 19    50    54 female     0.805
+#> 20    50    54   male     0.837
+#> 21    55    59 female     0.802
+#> 22    55    59   male     0.817
+#> 23    60    64 female     0.784
+#> 24    60    64   male     0.809
+#> 25    65    69 female     0.782
+#> 26    65    69   male     0.798
+#> 27    70    74 female     0.787
+#> 28    70    74   male     0.802
+#> 29    75    79 female     0.741
+#> 30    75    79   male     0.791
+#> 31    80    84 female     0.717
+#> 32    80    84   male     0.773
+#> 33    85    89 female     0.665
+#> 34    85    89   male     0.718
+#> 35    90   200 female     0.665
+#> 36    90   200   male     0.663
 ```
 
-<img src="man/figures/README-discounting-1.png" width="100%" />
+For every country, we have chosen a set of default norms. The default
+set is indicated in the info returned by the `hrqol_norms` function, or
+alternatively is returned directly by the function `default_norms` - for
+England, the default norms have ID “vih_primary”. These are the norms
+that will be returned when the `package_norms` function is called
+without specifying a value for the `id` argument, like so:
 
 ``` r
-
-
-
-ggplot(data = calculate_dQALY(country = "England", year = 2019,
-                              collapse_sex = T,
-                              r = r_none),
-       aes(x = age, y = dQALY)) +
-  geom_line(colour = "green") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = r_default),
-            colour = "red") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = r_health),
-            colour = "blue") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = r_lt_health),
-            colour = "purple") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = r_lt_health_reduced),
-            colour = "orange") +
-  scale_x_continuous(name = "Age at death",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "QALY loss",
-                     limits = c(0, 80),
-                     expand = c(0,0)) +
-  theme_classic()
+default_norms(country = "England")
+#> [1] "vih_primary"
+all.equal(package_norms(country = "England"), package_norms(country = "England", id = "vih_primary"))
+#> [1] TRUE
 ```
 
-<img src="man/figures/README-discounting-2.png" width="100%" />
+- these are the norms that will be used when the `calculate_dQALY`
+  function is called without specifying a value for the `norms`
+  argument. Alternatively, the user can specify what set of package
+  norms they would like to use by passing its ID to `norms`. Hopefully,
+  being able to access information about the package norms via
+  `hrqol_norms` allows the user to understand the implications of
+  choosing to use one set of norms over another - and to make a
+  judgement about the set of norms that is most appropriate for their
+  purposes.
+
+It is also possible for the user to supply their own norm data to the
+calculation.
+
+<!-- Note: we could also store info about the model used to estimate the pop-level norms from the input data (eq5d profiles valued w the value sets) - e.g. in the ViH paper they use a linear model - What modelling methods were used to estimate population averages? -->

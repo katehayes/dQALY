@@ -1,3 +1,16 @@
+# age utils - don't need to specify the upper bound - last one is assumed to go to infinity
+# how you treat the last one is a bit up in the air.
+# always use lower to calculate upper on the fly
+# why do we need to give the upper as well
+
+# see here for an uncertainty approach
+# https://bmjopen.bmj.com/content/14/3/e076704
+# Approached via the Sullivan method, the uncertainty of health expectancies
+# arises from the sum of its two component parts: the health and the mortality
+# components.31 We estimated the uncertainty of QALE point estimates considering
+# these two components and as described by Jagger et al.31
+
+
 # -------------------------------------------------------------------------
 #' Calculating QALY loss on death
 # -------------------------------------------------------------------------
@@ -221,16 +234,15 @@
 calculate_dQALY <- function(country = NULL,
                             year = NULL,
                             life_table = package_lt(country, year),
-                            # is it ridiculous to have three nested function calls
-                            norms = package_norms(country),
+                            norms = package_norms(country), # is it ridiculous to have three nested function calls
                             r = 0.035,
                             smr = 1, qcm = 1,
                             collapse_age = FALSE,
                             collapse_sex = FALSE,
                             cohort = package_cohort(country, year)) {
-  # if you specify a country and a year argument, those are the default for the get package data functions
-  # but you can override with the country/year args in the package functions if you want
-  # is that a sensible set up?
+  # if you specify a country and a year argument, those are the default for the
+  # get package data function args- but you can override with the country/year
+  # args in the package functions if you want. is that a sensible set up?
 
 
   # Capturing the environment here because we're using data.table
@@ -246,7 +258,6 @@ calculate_dQALY <- function(country = NULL,
   # # # # # # # # # # # # 1.Validity checks # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-  # all validity checking is moved to the top of the function
   # lots of the checks are done with internal functions, found at the end of
   # this script
   # While doing validity checks on life tables, norms, cohort, we also set
@@ -296,6 +307,23 @@ calculate_dQALY <- function(country = NULL,
   # I don't have a good working understanding of environments/evaluation and so on
   # so I have little confidence in this set-up - but, as I said, will ask about it
   # in next meeting
+
+  # for example, here's a problem:
+  # norm_id <- "vih_primary"
+  # calculate_dQALY(country = "England",
+  #                 year = 2020,
+  #                 norms = package_norms(country, id = "vih_primary"))
+  # calculate_dQALY(country = "England",
+  #                 year = 2020,
+  #                 norms = package_norms(country, id = norm_id))
+  # the first call works fine but the second errors
+  # presumably because I'm delaying the evaluation of the expression passed to the
+  # norms argument --
+  # and since norm_id is one of the objects that gets set to null at the beginning
+  # of the function to avoid the check flags, then when it gets evaluated it is
+  # evaluated as NULL?
+  # could we just not set things to NULL?
+
 
 
   # Setting up the life table that will be used in the calculation
