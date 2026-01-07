@@ -8,7 +8,7 @@
 # we could also have a series of disutility weights????? for various conditions??
 
 # -------------------------------------------------------------------------
-#' Use norm data stored by package
+#' Return norm data stored by package
 # -------------------------------------------------------------------------
 #'
 #' @param country `[string]`
@@ -23,7 +23,7 @@
 #' which returns the ID of the default norms for the chosen country.
 #' If users wish to return an alternative set of norms belonging to the chosen
 #' country, they can pass the ID to this argument.
-#' Use function `hrqol_norms` to see the IDs for the norms available for each country.
+#' Use function `hrqol_norms` to see the IDs of the norms available for each country.
 #'
 #' @param avg_hrqol_young `[numeric]`
 #'
@@ -113,7 +113,7 @@ package_norms <- function(country,
 
 
 # -------------------------------------------------------------------------
-#' Use life table data stored by package
+#' Return life table data stored by package
 # -------------------------------------------------------------------------
 #'
 #' @param country `[string]`
@@ -128,22 +128,23 @@ package_norms <- function(country,
 #' @param lt_extend `[boolean]` or `[numeric]`
 #'
 #' Allows users to control whether/ the way in which assumptions are made about
-#' mortality rates among people older than 99, for whom data is not available.
+#' mortality rates among people older than 99, for whom data is not typically available.
 #'
 #' If `FALSE`, no assumption is made, and the function assumes no people live
 #' beyond 99.
 #'
 #' If `TRUE` (default), the function assumes that people can live up to 120
 #' and calculates a mortality rate for the older ages by assuming that
-#' mortality rates increase year on year by a constant increment - which is
+#' mortality rates increase year on year by a constant increment, which is
 #' set equal to the average rate of increase over the last 10 years for which
 #' data is available.
 #'
 #' Alternatively, the user can specify their own increment, instead of allowing
 #' the function to calculate an increment automatically based on existing data.
-#' This is done by passing `lt_extend` a numeric value greater than 1 - for
-#' example, letting `lt_extend` to 1.05 means the function assumes mortality rates
-#' will increase by 5% year on year after the last year for which data is available.
+#' This is done by passing `lt_extend` a numeric value greater than or equal to 1 - for
+#' example, setting `lt_extend` to 1.05 means the function assumes mortality rates
+#' will increase by 5% with every additional year of age gained after the last
+#' year for which data is available.
 #'
 #' @returns
 #'
@@ -252,7 +253,7 @@ package_lt <- function(country, year,
 
 
 # -------------------------------------------------------------------------
-#' Use population data stored by package
+#' Return population data stored by package
 # -------------------------------------------------------------------------
 #'
 #' @param country `[string]`
@@ -327,7 +328,7 @@ package_cohort <- function(country, year) {
 
 
 # -------------------------------------------------------------------------
-#' Get info on the available HRQoL population norms
+#' Return info on the available HRQoL population norms
 # -------------------------------------------------------------------------
 #'
 #' @param country `[string]`
@@ -341,7 +342,6 @@ package_cohort <- function(country, year) {
 #'
 #' Case-sensitive - users can view the list of permissible country names by
 #' calling the function without specifying a value for `country`.
-#'
 #'
 #' @param references `[boolean]`
 #'
@@ -384,7 +384,7 @@ hrqol_norms <- function(country = NULL, references = FALSE) {
 
 
 # -------------------------------------------------------------------------
-#' Inspect the default HRQoL norms for a given country
+#' Return the default HRQoL norm ID for a given country
 # -------------------------------------------------------------------------
 #'
 #' @param country `[string]`

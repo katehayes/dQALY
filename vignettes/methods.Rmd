@@ -113,3 +113,13 @@ $$Q_{adj}(x) = qCM \cdot Q(x)$$
 From this point on, $QALE(x)$ and $dQALY(x)$ for the group of interest are derived from $l_{adj}(x)$, $LE_{adj}(x)$, and $Q_{adj}(x)$ exactly as shown previously in equations (1) and (2).<br/><br/>
 
 In this package, the functions `calculate_QALE` and `calculate_dQALY` have arguments `smr` and `qcm`, which allow the user to adjust for mortality and morbidity as described. Again, see the function documentation or the [demo vignette](demo.html) for examples of this adjustment in practice.
+
+
+## Note on deviations from the Briggs method
+
+
+
+
+
+
+

@@ -10,7 +10,7 @@
 <!-- badges: end -->
 
 <span style="color:red"> ***This package is currently under active
-development and the code is subject to change.*** </span>
+development and the code/documentation is subject to change.*** </span>
 
 The quality-adjusted life year, or QALY, is a widely used outcome
 measure in the field of health economics. When evaluating the impact of
@@ -18,8 +18,21 @@ a policy/programme/intervention, we often want to express the health
 impacts of preventing or failing to prevent a death in terms of the
 QALYs that would be gained or lost.
 
-The goal of the dQALY package is to provide an easy and flexible way of
-calculating the number of QALYs that are ‘lost’ when a person dies.
+We can make an estimate of the number of QALYs that might be lost when a
+person dies using data that describes the life expectancy and
+health-related quality of life of the population that the person came
+from. We can estimate average QALY loss values across population age/sex
+subgroups if we additionally have information on the age/sex
+distribution of the population.
+
+In the dQALY package, we provide a function that performs this
+calculation using life expectancy, HRQoL, and (when needed) population
+distribution data. We have also gathered, cleaned and stored these three
+types of data for a range of countries and years. For convenience, users
+can quickly/easily produce QALY loss estimates with the data stored by
+the package. For flexibility, users can choose to make adjustments to
+the default or package data, or to supply entirely new data inputs to
+the calculation.
 
 This package has been built using code adapted from the
 [COVID19_QALY_App](https://github.com/LSHTM-GHECO/COVID19_QALY_App),
@@ -30,8 +43,14 @@ tool](https://avalonecon.com/estimating-qaly-losses-associated-with-deaths-in-ho
 built by Andrew Briggs to operationalise the methods for calculating
 QALY loss due to death that he & others set out in a
 [letter](https://onlinelibrary.wiley.com/doi/10.1002/hec.4208) published
-in the journal Health Economics in 2020.
+in the journal Health Economics in 2020. For more details on the
+calculation that produces the estimates, refer to the [methods
+vignette](methods.html).
 <!-- Some of the setup borrowed from qalytools & eq5d packages -->
+
+<!-- The goal of the dQALY package is to provide an easy and flexible way of calculating the number of QALYs that are 'lost' when a person dies.  -->
+
+<!-- Researchers previously have needed to gather the relevant data and then write code that will implement the calculation.  -->
 
 ## Installation
 
@@ -43,14 +62,16 @@ You can install the development version of dQALY from
 pak::pak("katehayes/dQALY@change-arguments")
 ```
 
-## Calculating QALY loss due to death - get started with package data
+## Calculating QALY loss due to death: get started using package data
 
 The function `calculate_dQALY` produces estimates of QALY loss due to
-death for a given population, using data on life expectancy and
-health-related quality of life within that population. For more details
-regarding how the estimates are calculated, refer to the [methods
-vignette](methods.html). The package stores this data for a number of
-countries. You have to minimally specify country and year:
+death for a given population. We’ll call this quantity dQALY
+(i.e. difference in QALYs, like Leibniz notation).
+
+To use the function, you have to minimally specify a country and year
+for which you want the calculation performed, and then by default the
+function uses data on life expectancy and health-related quality of life
+for that country that has been stored in the package:
 
 ``` r
 calculate_dQALY(country = "United Kingdom", year = 2015) |> head()
@@ -71,9 +92,8 @@ calculate_dQALY(country = "France", year = 2020) |> head()
 #> 6   male   2 25.27770
 ```
 
-If country or year you choose aren’t available (the package does not
-store sufficient data), you’ll get an error message informing you of
-that:
+If data for the country or year you specified aren’t stored in the
+package, you’ll get an error message informing you of that.
 
 ``` r
 calculate_dQALY(country = "Scotland", year = 2015)
@@ -84,9 +104,15 @@ calculate_dQALY(country = "United Kingdom", year = 2010)
 #>                  Please set `year` to a value within this period.
 ```
 
-You can also output mean dQALY values for population groups. Here, we’re
-outputting one average value for each year of age for both sexes
-together:
+Instead of returning estimates by sex and age at death, the function can
+also output *mean* dQALY values for user-specified population groups by
+using population data to take weighted averages. Note: for every country
+with HRQoL norms available, the package stores life expectancy and
+population distribution data.
+
+Here, we’re using the argument `collapse_sex` to output an estimate of
+QALY loss due to death for each year of age regardless of sex (i.e. for
+both sexes together):
 
 ``` r
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T) |> head()
@@ -99,8 +125,10 @@ calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T) |> he
 #> 6   5 24.66846
 ```
 
-Here we’re outputting average values for a set of age groups that we
-specify:
+Here we’re using the argument `collapse_age` to output average values
+for a set of age groups. To do this we need to specify our age groups as
+follows (in the form of a dataframe, tibble or datatable with columns
+‘lower’ and ‘upper’):
 
 ``` r
 my_age_groups <- data.table(lower = c(0, 90), upper = c(89, 99))
@@ -112,8 +140,8 @@ calculate_dQALY(country = "United Kingdom", year = 2015, collapse_age = my_age_g
 #> 4 90-99    90    99   male  2.262557
 ```
 
-And lastly, here we’re outputting average values for both sexes together
-and for the specified age groups:
+Lastly, here we’re outputting average values for both sexes together and
+for the specified age groups:
 
 ``` r
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, collapse_age = my_age_groups)
@@ -122,24 +150,51 @@ calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, colla
 #> 2 90-99    90    99  2.347774
 ```
 
-## Exploring and altering underlying package data
+## Functions for interacting with package data
+
+Here we’ll introduce some functions that will be referred to
+collectively as *package data functions* - i.e. functions that allow the
+user to interact with the data stored by the package. Two functions -
+`hrqol_norms` and `default_norms` - return information about the package
+HRQoL data. Three functions - `package_lt`, `package_norms` and
+`package_cohort` - return or can make small adjustments to package data,
+to life tables, HRQoL norms and cohort data respectively.
+
+We’ve seen that, for convenience, the function `calculate_dQALY` can be
+called by specifying values for arguments `country` and `year`, and the
+calculation will be performed using input data stored within the
+package. Flexibility is provided by the arguments `life_table`, `norms`
+and `cohort` - with these three arguments the user can adjust/change the
+input data supplied to the calculation.
+
+The default value of each of these arguments is a call to the package
+data function which returns the relevant type of package data, with the
+package data functions inheriting values from their arguments from the
+values for `country` and (when needed) `year` supplied to
+`calculate_dQALY`. In other words, the function call
+`calculate_dQALY(country = "England", year = 2020)` is equivalent to the
+call
+`calculate_dQALY(life_table = package_lt(country = "England", year = "2020"), norms = package_norms(country = "England"), cohort = package_cohort(country = "England", year = "2020"))`.
+
+<!-- We can see that this default depends on the user having specified values for arguments `country` and `year`. Alternatively, the user can specify values for `country` and `year` within the `package_lt` arguments. See examples & the documentation for `package_lt` for more details. -->
 
 ### Health related quality of life (HRQoL) population norm data
 
-Using life tables & HRQoL norms. HRQoL norms themselves are constructed
-from health state data & value sets. **\[Explain norms\]** Some
-discussion of HRQoL norms can be found on the [EuroQol
+HRQoL norms themselves are constructed from health state data & value
+sets. Some discussion of HRQoL norms can be found on the [EuroQol
 website](https://euroqol.org/information-and-support/resources/population-norms/).
 
-For most countries, there is more than one set of HRQoL norms stored in
-the package data. The list of available HRQoL norms and their IDs can be
-viewed using the `hrqol_norms` function. This function also returns
-information we have documented about the make-up of each set of HRQoL
-norms - specifically, about the EQ-5D data and value sets from which the
-norms are estimated. We have tried to adopt the same
-terminology/categorisation scheme used by the eq5d package to document
-information about value sets. Results can be filtered by country, and
-returned with or without reference information.
+Unlike life tables and population data, country-level norm data is not
+released regularly/yearly - however, many countries have more than one
+set of HRQoL norms stored in the package data. The list of available
+HRQoL norms and their IDs can be viewed using the `hrqol_norms`
+function. This function also returns information we have documented
+about the make-up of each set of HRQoL norms - specifically, about the
+health state data and value sets from which the norms are constructed
+(note: we have tried to adopt the same terminology/categorisation scheme
+used by the eq5d package to document information about value sets).
+Results can be filtered by country, and returned with or without
+reference information:
 
 ``` r
 # Return all English utility norm sets without reference information
@@ -169,89 +224,171 @@ So, contextual information about package norms can be returned using
 return the actual norms themselves using the function `package_norms`:
 
 ``` r
-package_norms(country = "England", id = "janssen_euvas")
-#>    lower upper    sex avg_hrqol
-#> 1      0    17 female     0.922
-#> 2      0    17   male     0.922
-#> 3     18    24 female     0.922
-#> 4     18    24   male     0.922
-#> 5     25    34 female     0.915
-#> 6     25    34   male     0.915
-#> 7     35    44 female     0.891
-#> 8     35    44   male     0.891
-#> 9     45    54 female     0.857
-#> 10    45    54   male     0.857
-#> 11    55    64 female     0.819
-#> 12    55    64   male     0.819
-#> 13    65    74 female     0.785
-#> 14    65    74   male     0.785
-#> 15    75   200 female     0.720
-#> 16    75   200   male     0.720
-package_norms(country = "England", id = "vih_secondary")
-#>    lower upper    sex avg_hrqol
-#> 1      0    15 female     0.881
-#> 2      0    15   male     0.916
-#> 3     16    17 female     0.881
-#> 4     16    17   male     0.916
-#> 5     18    19 female     0.864
-#> 6     18    19   male     0.933
-#> 7     20    24 female     0.866
-#> 8     20    24   male     0.895
-#> 9     25    29 female     0.873
-#> 10    25    29   male     0.895
-#> 11    30    34 female     0.870
-#> 12    30    34   male     0.916
-#> 13    35    39 female     0.857
-#> 14    35    39   male     0.862
-#> 15    40    44 female     0.850
-#> 16    40    44   male     0.870
-#> 17    45    49 female     0.815
-#> 18    45    49   male     0.824
-#> 19    50    54 female     0.805
-#> 20    50    54   male     0.837
-#> 21    55    59 female     0.802
-#> 22    55    59   male     0.817
-#> 23    60    64 female     0.784
-#> 24    60    64   male     0.809
-#> 25    65    69 female     0.782
-#> 26    65    69   male     0.798
-#> 27    70    74 female     0.787
-#> 28    70    74   male     0.802
-#> 29    75    79 female     0.741
-#> 30    75    79   male     0.791
-#> 31    80    84 female     0.717
-#> 32    80    84   male     0.773
-#> 33    85    89 female     0.665
-#> 34    85    89   male     0.718
-#> 35    90   200 female     0.665
-#> 36    90   200   male     0.663
+package_norms(country = "England", id = "janssen_euvas") |> head()
+#>   lower upper    sex avg_hrqol
+#> 1     0    17 female     0.922
+#> 2     0    17   male     0.922
+#> 3    18    24 female     0.922
+#> 4    18    24   male     0.922
+#> 5    25    34 female     0.915
+#> 6    25    34   male     0.915
+package_norms(country = "England", id = "vih_secondary") |> head()
+#>   lower upper    sex avg_hrqol
+#> 1     0    15 female     0.881
+#> 2     0    15   male     0.916
+#> 3    16    17 female     0.881
+#> 4    16    17   male     0.916
+#> 5    18    19 female     0.864
+#> 6    18    19   male     0.933
 ```
 
-For every country, we have chosen a set of default norms. The default
-set is indicated in the info returned by the `hrqol_norms` function, or
-alternatively is returned directly by the function `default_norms` - for
-England, the default norms have ID “vih_primary”. These are the norms
-that will be returned when the `package_norms` function is called
-without specifying a value for the `id` argument, like so:
+For every country, we have chosen a set of default norms based on a
+range of considerations (e.g. recommendations from HTA decision-making
+bodies, how recent they are, the methodologies used in their
+construction). The default set is indicated in the info returned by the
+`hrqol_norms` function, or alternatively its ID is returned directly by
+the function `default_norms` - for England, the default norms have ID
+“vih_primary”.
+
+These are the norms that will be returned when the `package_norms`
+function is called without specifying a value for the `id` argument.
+These are also the norms that will be used when the `calculate_dQALY`
+function is called without specifying a value for the `norms` argument.
 
 ``` r
-default_norms(country = "England")
-#> [1] "vih_primary"
+all.equal(default_norms(country = "England"), "vih_primary")
+#> [1] TRUE
 all.equal(package_norms(country = "England"), package_norms(country = "England", id = "vih_primary"))
+#> [1] TRUE
+all.equal(calculate_dQALY(country = "England", year = 2020), 
+          calculate_dQALY(country = "England", year = 2020,
+                          norms = package_norms(country = "England", id = "vih_primary")))
 #> [1] TRUE
 ```
 
-- these are the norms that will be used when the `calculate_dQALY`
-  function is called without specifying a value for the `norms`
-  argument. Alternatively, the user can specify what set of package
-  norms they would like to use by passing its ID to `norms`. Hopefully,
-  being able to access information about the package norms via
-  `hrqol_norms` allows the user to understand the implications of
-  choosing to use one set of norms over another - and to make a
-  judgement about the set of norms that is most appropriate for their
-  purposes.
+Alternatively, the user can specify what set of package norms they would
+like to use in their QALY loss calculation by passing its ID to the
+`norms` argument. Hopefully, being able to access information about the
+norms that the package stores via `hrqol_norms` and `package_norms`
+functions allows the user to understand the implications of choosing to
+use one set of norms over another - and to make a judgement about the
+set of norms that is most appropriate for their purposes.
 
 It is also possible for the user to supply their own norm data to the
-calculation.
+calculation - we’ll return to this topic in the [demo
+vignette](demo.html), and guidance can also be found in function
+documentation.
+
+<!-- Norm data is rarely available for age groups under 18. For the norm data stored in this package, we've made the decision to assume that the utility scores for the youngest age group is equal to the scores in the youngest age group for whom data is available. However, the user can choose to deviate from this assumption by  -->
+
+### Life expectancy data
+
+### Population age/sex distribution data
+
+## Discounting functions
+
+The third and last type of function provided by the package is the
+discounting function.
+
+To get the net present value to society of the quality-adjusted life
+years that are ‘lost’ when an individual dies, we typically apply a
+discount rate which reflects the idea that, to us in the present, the
+value of QALYs that would be experienced years into the future is less
+than the value of QALYs experienced today. In our package, the default
+discount rate is set at 3.5% as per the [NICE health technology
+evaluations
+manual](https://www.nice.org.uk/process/pmg36/chapter/economic-evaluation-2#discounting).
+However, the most appropriate discount rate to apply will differ
+according to the context of the evaluation/analysis. [The Green
+Book](https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government/the-green-book-2020#a6-discounting),
+guidance on evaluation methods issued by the Treasury, discusses a
+number of discounting regimes and the reasons one might use them.
+
+The function `calculate_dQALY` allows the user to specify the discount
+rate they would like to use in the calculation via setting the value of
+the argument `r`. `r` can be a scalar numeric (e.g. for a discount rate
+of 1%, set `r = 0.01`) or, so that the discount rate can vary across
+time, `r` also accepts vectorised functions (e.g. for a discount rate of
+2% a year for 50 years into the future and 1% a year thereafter, set
+`r = function(x) ifelse(x < 50, 0.02, 0.01)`).
+
+This package includes four discount rate functions that users can pass
+to `calculate_dQALY`, each of which implements a particular discounting
+regime recommended by the NICE HTA manual or Green Book:
+
+<table>
+
+<tbody>
+
+<tr>
+
+<td>
+
+`r_default`
+</td>
+
+<td>
+
+NICE reference case discount rate/ Green Book standard Social Time
+Preference Rate
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+`r_health`
+</td>
+
+<td>
+
+NICE alternative discount rate/Green Book recommended discount rate for
+health or life values
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+`r_lt_health`
+</td>
+
+<td>
+
+Green Book recommended declining long term discount rate for health or
+life values
+</td>
+
+</tr>
+
+<tr>
+
+<td>
+
+`r_lt_health_reduced`
+</td>
+
+<td>
+
+Green Book recommended rate reduced by excluding pure social time
+preference (relevant if intervention may effect substantial/irreversible
+wealth transfers between generations)
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+The plots below show the values of the discount rate functions across
+time, and the impact of varying discount rates on the estimates of QALY
+loss associated with death across the life-course.
+
+<img src="man/figures/README-discounting-1.png" width="100%" /><img src="man/figures/README-discounting-2.png" width="100%" />
 
 <!-- Note: we could also store info about the model used to estimate the pop-level norms from the input data (eq5d profiles valued w the value sets) - e.g. in the ViH paper they use a linear model - What modelling methods were used to estimate population averages? -->
