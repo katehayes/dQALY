@@ -244,7 +244,6 @@ calculate_dQALY <- function(country = NULL,
   # get package data function args- but you can override with the country/year
   # args in the package functions if you want. is that a sensible set up?
 
-
   # Capturing the environment here because we're using data.table
   env <- environment()
 
@@ -255,7 +254,8 @@ calculate_dQALY <- function(country = NULL,
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-  # # # # # # # # # # # # 1.Validity checks # # # # # # # # # # # # # # # # # #
+  # # # # # #
+  # # # # # # 1.Validity checks # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
   # lots of the checks are done with internal functions, found at the end of
@@ -297,7 +297,7 @@ calculate_dQALY <- function(country = NULL,
   # the argument lt_extend of the function package_lt is set to TRUE -
   # I'd like the user to be able to write this
   # calculate_dQALY(country = "England", year = 2019,
-  #                 life_table = package_lt(country, year, lt_extend = FALSE))
+  #                 life_table = package_lt(lt_extend = FALSE))
   # rather than have to write this to avoid erroring:
   # calculate_dQALY(country = "England", year = 2019,
   #                 life_table = package_lt(country = "England", year = 2019, lt_extend = FALSE))
@@ -308,7 +308,9 @@ calculate_dQALY <- function(country = NULL,
   # so I have little confidence in this set-up - but, as I said, will ask about it
   # in next meeting
 
-  # for example, here's a problem:
+
+
+  # here's a problem caused by this evaluation thing i think:
   # norm_id <- "vih_primary"
   # calculate_dQALY(country = "England",
   #                 year = 2020,
@@ -328,21 +330,38 @@ calculate_dQALY <- function(country = NULL,
 
   # Setting up the life table that will be used in the calculation
   exprssn <- rlang::enexpr(life_table)
+
   if(is.call(exprssn)) {
     if(rlang::call_name(exprssn) == "package_lt") {
       # we're using the package data function - evaluate the expression now
       # checks for valid country, year, and extend argument happen inside the package_lt function
+      exprssn <- rlang::call_match(exprssn, package_lt)
+
+      if(is.null(exprssn$country)) {
+        exprssn$country <- country
+      }
+
+      if(is.null(exprssn$year)) {
+        exprssn$year <- year
+      }
+
       life_table <- eval(exprssn) |>
         setDT() |>
         setnames(old = c("age", "q"),
                  new = c("x", "q_x"))
+
     } else {
-      # its a function but not the package data function
-      stop("Its not permitted pass function calls other than calls to package_lt to the life_table argument.")
-      # The reason I'm doing this is because I am messing with the environment in which non-default arguments will
-      # be evaluated - so I don't want other people to pass their own functions & have those functions behave strangely/
-      # in unexpected ways?
+      # its a user supplied function (but not the package data function)
+      # check it meets standards
+      if(!.is_valid_custom_lt(life_table)) {
+        stop("User-supplied life tables have failed validity checks.")
+      } else {
+        life_table <- as.data.table(life_table) |>
+          setnames(old = c("age", "q"),
+                   new = c("x", "q_x"))
+      }
     }
+
   } else {
     # its a user supplied list-like object- check it meets standards
     if(!.is_valid_custom_lt(life_table)) {
@@ -359,6 +378,13 @@ calculate_dQALY <- function(country = NULL,
   exprssn <- rlang::enexpr(norms)
   if(is.call(exprssn)) {
     if(rlang::call_name(exprssn) == "package_norms") {
+
+      exprssn <- rlang::call_match(exprssn, package_norms)
+
+      if(is.null(exprssn$country)) {
+        exprssn$country <- country
+      }
+
       # we're using the package data function - evaluate the expression now
       # checks for valid country, norm id, and avg_hrqol_young argument
       # happen inside the package_norms function
@@ -366,7 +392,11 @@ calculate_dQALY <- function(country = NULL,
         setDT()
     } else {
       # its a function but not the package data function
-      stop("Its not permitted pass function calls other than calls to package_norms to the norms argument.")
+      if(!.are_valid_custom_norms(norms)) {
+        stop("User-supplied utility norms have failed validity checks.")
+      } else {
+        utility_norms <- as.data.table(norms)
+      }
     }
   } else {
     # its a user supplied list-like object - check it meets standards
@@ -389,6 +419,17 @@ calculate_dQALY <- function(country = NULL,
     exprssn <- rlang::enexpr(cohort)
     if(is.call(exprssn)) {
       if(rlang::call_name(exprssn) == "package_cohort") {
+
+        exprssn <- rlang::call_match(exprssn, package_cohort)
+
+        if(is.null(exprssn$country)) {
+          exprssn$country <- country
+        }
+
+        if(is.null(exprssn$year)) {
+          exprssn$year <- year
+        }
+
         # we're using the package data function - evaluate the expression now
         # checks for valid country & year happen inside the package_cohort function
         cohort <- eval(exprssn) |>
@@ -398,7 +439,15 @@ calculate_dQALY <- function(country = NULL,
 
       } else {
         # its a function but not the package data function
-        stop("Its not permitted pass function calls other than calls to package_cohort to the cohort argument.")
+        if(!.is_valid_custom_cohort(cohort)) {
+          stop("User-supplied cohort has failed validity checks.")
+        } else {
+          cohort <- as.data.table(cohort)
+          setnames(cohort,
+                   old = c("age"),
+                   new = c("x"))
+
+        }
       }
     } else {
       # its a user-supplied list-like object - check it meets standards
