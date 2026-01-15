@@ -17,8 +17,9 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(dQALY)
-library(ggplot2)
 library(data.table)
+library(readxl)
+library(ggplot2)
 ```
 
 

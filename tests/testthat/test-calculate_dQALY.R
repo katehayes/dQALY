@@ -1,4 +1,4 @@
-#testthat::test_file("tests/testthat/test-calculate_dQALY.R")
+# testthat::test_file("tests/testthat/test-calculate_dQALY.R")
 
 # --------Making objects for testing--------------------------------------------
 ## --------Valid & invalid custom data inputs-----------------------------------
@@ -63,18 +63,12 @@ temp <- tempfile(fileext = ".xlsx")
 download.file(url = "https://www.lshtm.ac.uk/media/42556",
               temp, mode = "wb")
 
-briggs_1_1_0035 <- readxl::read_xlsx(temp, sheet = 2, range = "J17:J27")
+briggs_1_1_0035 <- readxl::read_xlsx(temp, sheet = 2, range = "J17:J27")$dQALY
 
-avg_lt <- readxl::read_xlsx(temp, sheet = 6, range = "R6:S127") %>%
-  mutate(q = 1 - lead(smrlx)/smrlx) %>%
-  mutate(q = ifelse(is.na(q), lag(q), q)) %>%
-  rename(age = Age) %>%
-  select(age, q)
-
-lt <- rbind(avg_lt %>%
-              mutate(sex = "male"),
-            avg_lt %>%
-              mutate(sex = "female"))
+lt <- as.data.table(readxl::read_xlsx(temp, sheet = 6, range = "R6:S127"))
+lt[, q := 1 - shift(smrlx, type = "lead")/smrlx]
+lt[, q := ifelse(is.na(q), shift(q, type = "lag"), q)]
+lt <- lt[, .(age = Age, q)][, .(sex = c("male", "female")), by = .(age, q)]
 
 age_grps <- data.frame(lower = seq(0, 90, 10),
                        upper = seq(10, 101, 10)-1)
@@ -149,7 +143,7 @@ test_that("calculate_dQALY gives same results as Briggs when tweaked so methods 
                                                      avg_hrqol_young = 1),
                                collapse_sex = T,
                                collapse_age = age_grps,
-                               cohort = chrt) |> select(dQALY),
+                               cohort = chrt)$dQALY,
                briggs_1_1_0035,
                ignore_attr = TRUE)
 })
@@ -165,16 +159,16 @@ test_that("calculate_dQALY with no discounting gives same results as calculate_Q
 
 
 ## --------Unfinished test------------------------------------------------------
-lt_test <- data.frame(sex = c(rep("male", 101), rep("female", 101)),
-                      age = c(0:100, 0:100),
-                      q = c(rep(0, 99), 1, 1))
-
-norms_no_qa <- data.frame(sex = c("male", "female"),
-                          lower= 0,
-                          upper = 100,
-                          avg_hrqol = 1)
-
-calculate_dQALY(life_table = lt_test, norms = norms_no_qa, r = 0)
+# lt_test <- data.frame(sex = c(rep("male", 101), rep("female", 101)),
+#                       age = c(0:100, 0:100),
+#                       q = c(rep(0, 99), 1, 1))
+#
+# norms_no_qa <- data.frame(sex = c("male", "female"),
+#                           lower= 0,
+#                           upper = 100,
+#                           avg_hrqol = 1)
+#
+# calculate_dQALY(life_table = lt_test, norms = norms_no_qa, r = 0)
 
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/package_data.R
 \name{package_lt}
 \alias{package_lt}
-\title{Use life table data stored by package}
+\title{Return life table data stored by package}
 \usage{
 package_lt(country, year, lt_extend = TRUE)
 }
@@ -19,28 +19,29 @@ A year (for which data is available & stored in the package).}
 \item{lt_extend}{\verb{[boolean]} or \verb{[numeric]}
 
 Allows users to control whether/ the way in which assumptions are made about
-mortality rates among people older than 99, for whom data is not available.
+mortality rates among people older than 99, for whom data is not typically available.
 
 If \code{FALSE}, no assumption is made, and the function assumes no people live
 beyond 99.
 
 If \code{TRUE} (default), the function assumes that people can live up to 120
 and calculates a mortality rate for the older ages by assuming that
-mortality rates increase year on year by a constant increment - which is
+mortality rates increase year on year by a constant increment, which is
 set equal to the average rate of increase over the last 10 years for which
 data is available.
 
 Alternatively, the user can specify their own increment, instead of allowing
 the function to calculate an increment automatically based on existing data.
-This is done by passing \code{lt_extend} a numeric value greater than 1 - for
-example, letting \code{lt_extend} to 1.05 means the function assumes mortality rates
-will increase by 5\% year on year after the last year for which data is available.}
+This is done by passing \code{lt_extend} a numeric value greater than or equal to 1 - for
+example, setting \code{lt_extend} to 1.05 means the function assumes mortality rates
+will increase by 5\% with every additional year of age gained after the last
+year for which data is available.}
 }
 \value{
 A data frame, containing life tables for the chosen country and year.
 }
 \description{
-Use life table data stored by package
+Return life table data stored by package
 }
 \examples{
 package_lt(country = "Romania", year = 2022)

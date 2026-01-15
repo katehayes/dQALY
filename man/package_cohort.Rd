@@ -2,7 +2,7 @@
 % Please edit documentation in R/package_data.R
 \name{package_cohort}
 \alias{package_cohort}
-\title{Use population data stored by package}
+\title{Return population data stored by package}
 \usage{
 package_cohort(country, year)
 }
@@ -20,7 +20,7 @@ A year (for which data is available & stored in the package).}
 A data frame, containing population data for the chosen country and year.
 }
 \description{
-Use population data stored by package
+Return population data stored by package
 }
 \examples{
 package_cohort(country = "Romania", year = 2022)

@@ -60,7 +60,7 @@ To use the function, you have to minimally specify a country and year for which 
 calculate_dQALY(country = "United Kingdom", year = 2015) |> head()
 calculate_dQALY(country = "France", year = 2020) |> head()
 ```
-If data for the country or year you specified aren't stored in the package, you'll get an error message informing you of that. 
+If data for the country or year you specified isn't stored in the package, you'll get an error message informing you of that. 
 ```{r, error = TRUE}
 calculate_dQALY(country = "Scotland", year = 2015)
 calculate_dQALY(country = "United Kingdom", year = 2010)

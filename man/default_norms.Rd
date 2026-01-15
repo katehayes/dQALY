@@ -2,7 +2,7 @@
 % Please edit documentation in R/package_data.R
 \name{default_norms}
 \alias{default_norms}
-\title{Inspect the default HRQoL norms for a given country}
+\title{Return the default HRQoL norm ID for a given country}
 \usage{
 default_norms(country)
 }
@@ -19,7 +19,7 @@ A string - the ID given to the set of HRQoL norms that have been
 selected as the default norms for the chosen country.
 }
 \description{
-Inspect the default HRQoL norms for a given country
+Return the default HRQoL norm ID for a given country
 }
 \examples{
 default_norms(country = "England")

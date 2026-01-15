@@ -92,15 +92,15 @@ calculate_dQALY(country = "France", year = 2020) |> head()
 #> 6   male   2 25.27770
 ```
 
-If data for the country or year you specified aren’t stored in the
+If data for the country or year you specified isn’t stored in the
 package, you’ll get an error message informing you of that.
 
 ``` r
 calculate_dQALY(country = "Scotland", year = 2015)
-#> Error in package_lt(country, year): Value for `country` must be chosen from the list of available
+#> Error in package_lt(country = country, year = year): Value for `country` must be chosen from the list of available
 #>       countries. Use hrqol_norms() to see the list.
 calculate_dQALY(country = "United Kingdom", year = 2010)
-#> Error in package_lt(country, year): Currently the package only stores life table data for United Kingdom for the years 2015-2023.
+#> Error in package_lt(country = country, year = year): Currently the package only stores life table data for United Kingdom for the years 2015-2023.
 #>                  Please set `year` to a value within this period.
 ```
 

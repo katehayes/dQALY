@@ -2,7 +2,7 @@
 % Please edit documentation in R/package_data.R
 \name{hrqol_norms}
 \alias{hrqol_norms}
-\title{Get info on the available HRQoL population norms}
+\title{Return info on the available HRQoL population norms}
 \usage{
 hrqol_norms(country = NULL, references = FALSE)
 }
@@ -28,7 +28,7 @@ of HRQoL data (DOIs/URLs).}
 A data frame containing information about available HRQoL norms.
 }
 \description{
-Get info on the available HRQoL population norms
+Return info on the available HRQoL population norms
 }
 \examples{
 head(hrqol_norms())

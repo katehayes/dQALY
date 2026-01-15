@@ -2,7 +2,7 @@
 % Please edit documentation in R/package_data.R
 \name{package_norms}
 \alias{package_norms}
-\title{Use norm data stored by package}
+\title{Return norm data stored by package}
 \usage{
 package_norms(country, id = default_norms(country), avg_hrqol_young = NULL)
 }
@@ -19,7 +19,7 @@ The default value for this argument is a call to the function \code{default_norm
 which returns the ID of the default norms for the chosen country.
 If users wish to return an alternative set of norms belonging to the chosen
 country, they can pass the ID to this argument.
-Use function \code{hrqol_norms} to see the IDs for the norms available for each country.}
+Use function \code{hrqol_norms} to see the IDs of the norms available for each country.}
 
 \item{avg_hrqol_young}{\verb{[numeric]}
 
@@ -39,7 +39,7 @@ group is in perfect health.}
 A data frame, containing HRQoL data.
 }
 \description{
-Use norm data stored by package
+Return norm data stored by package
 }
 \examples{
 package_norms(country = "Romania")
