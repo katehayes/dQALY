@@ -9,3 +9,4 @@ inst/doc
 docs
 _pkgdown.yml
 notes.R
+data-raw/draft.R

@@ -1,0 +1,15 @@
+bibentry(
+  bibtype = "Misc",
+  title = "dQALY: Calculating QALY Loss Due to Death",
+  author = c(person(given = "Kate",
+                    family = "Hayes"),
+             person(given = "Tim",
+                    family = "Taylor"),
+             person(given = "Lucy",
+                    family = "Miller"),
+             person(given = "Edwin",
+                    family = "van Leeuwen")),
+  url = "https://github.com/katehayes/dQALY",
+  version = "0.9.0",
+  year = 2026
+)
