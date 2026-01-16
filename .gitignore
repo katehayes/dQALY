@@ -10,3 +10,4 @@ docs
 _pkgdown.yml
 notes.R
 data-raw/draft.R
+CITATION.cff
