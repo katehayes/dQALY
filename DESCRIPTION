@@ -33,3 +33,4 @@ Suggests:
 BugReports: https://github.com/katehayes/dQALY/issues
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+URL: https://katehayes.github.io/dQALY/
