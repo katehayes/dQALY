@@ -55,7 +55,7 @@ package_norms <- function(country,
 
 
   # due to NSE notes in R CMD check
-  norm_country <- lower <- avg_hrqol <- norm_id <- NULL
+  # norm_country <- lower <- avg_hrqol <- norm_id <- NULL
 
 
   # ----------validity checks ----------------------------------------------------
@@ -163,7 +163,7 @@ package_lt <- function(country, year,
   env <- environment()
 
   # due to NSE notes in R CMD check
-  xmax <- age <- increment <- qmax <- sex <- NULL
+  # xmax <- age <- increment <- qmax <- sex <- NULL
 
 
   # ----------validity checks ----------------------------------------------------
@@ -358,7 +358,7 @@ package_cohort <- function(country, year) {
 #' @export
 hrqol_norms <- function(country = NULL, references = FALSE) {
 
-  norm_country <- NULL # due to NSE notes in R CMD check
+  # norm_country <- NULL # due to NSE notes in R CMD check
 
   norm_copy <- copy(norm_info)
 
@@ -404,7 +404,7 @@ hrqol_norms <- function(country = NULL, references = FALSE) {
 #' @export
 default_norms <- function(country) {
 
-  default <- norm_country <- NULL # due to NSE notes in R CMD check
+  # default <- norm_country <- NULL # due to NSE notes in R CMD check
 
   # we could also make it more complicated & allow user to choose between rules for selecting the default?
   # eg most recent study, largest sample size, & so on

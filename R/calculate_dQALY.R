@@ -248,9 +248,9 @@ calculate_dQALY <- function(country = NULL,
   env <- environment()
 
   # due to NSE notes in R CMD check
-  . <-  avg_hrqol <- count <- default <- dQALY_x <- increment <- lower <- NULL
-  l_x <- L_x <- norm_country <- norm_id <- qmax <- q_x <- r_col <- sex <- NULL
-  upper <- x <- xmax <- NULL
+  # . <-  avg_hrqol <- count <- default <- dQALY_x <- increment <- lower <- NULL
+  # l_x <- L_x <- norm_country <- norm_id <- qmax <- q_x <- r_col <- sex <- NULL
+  # upper <- x <- xmax <- NULL
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
