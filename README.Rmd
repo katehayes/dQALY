@@ -43,7 +43,7 @@ You can install the development version of dQALY from [GitHub](https://github.co
 
 ```{r, eval=FALSE}
 # install.packages("pak")
-pak::pak("katehayes/dQALY@change-arguments")
+pak::pak("katehayes/dQALY")
 ```
 ```{r, include = FALSE}
 library(dQALY)

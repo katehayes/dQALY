@@ -5,9 +5,9 @@
 .DS_Store
 .quarto
 inst/doc
-.html
-docs
-_pkgdown.yml
+
+
+
 notes.R
 data-raw/draft.R
 CITATION.cff

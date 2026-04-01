@@ -1,0 +1,25 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>/404.html</loc></url>
+<url><loc>/articles/demo.html</loc></url>
+<url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/methods.html</loc></url>
+<url><loc>/authors.html</loc></url>
+<url><loc>/index.html</loc></url>
+<url><loc>/LICENSE-text.html</loc></url>
+<url><loc>/LICENSE.html</loc></url>
+<url><loc>/reference/calculate_dQALY.html</loc></url>
+<url><loc>/reference/calculate_QALE.html</loc></url>
+<url><loc>/reference/default_norms.html</loc></url>
+<url><loc>/reference/get_norm_info.html</loc></url>
+<url><loc>/reference/hrqol_norms.html</loc></url>
+<url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/package_cohort.html</loc></url>
+<url><loc>/reference/package_lt.html</loc></url>
+<url><loc>/reference/package_norms.html</loc></url>
+<url><loc>/reference/r_default.html</loc></url>
+<url><loc>/reference/r_health.html</loc></url>
+<url><loc>/reference/r_lt_health.html</loc></url>
+<url><loc>/reference/r_lt_health_reduced.html</loc></url>
+<url><loc>/reference/r_none.html</loc></url>
+</urlset>
+

@@ -59,7 +59,7 @@ You can install the development version of dQALY from
 
 ``` r
 # install.packages("pak")
-pak::pak("katehayes/dQALY@change-arguments")
+pak::pak("katehayes/dQALY")
 ```
 
 ## Calculating QALY loss due to death: get started using package data
