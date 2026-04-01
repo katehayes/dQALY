@@ -109,16 +109,26 @@ write.csv(norm_info, file.path(root, "norm_info.csv"))
 
 
 
+ltc_info <- data.table(norm_id = "spring_ltc", norm_country = "England", norm_region = "North-East", norm_health_group = "Long term conditions",
+                       eq5d_data_year = "2018-2019", eq5d_data_version = "EQ-5D-5L",
+                       value_set_country = "England", value_set_version = "EQ-5D-5L", value_set_type = "VT (TTO & DCE)", value_set_year = "2012-2013",
+                       norm_doi = "", norm_url = "https://www.ncbi.nlm.nih.gov/books/NBK592229/")
 
 
-
-
+# USES SF-12 instead of EQ5D!
+# hs for health state instead of eq5d???
+la_info <- data.table(hs_data_year = "2018–2020", hs_data_version = "EQ-5D-5L",
+                      value_set_country = "England", value_set_version = "EQ-5D-5L", value_set_type = "VT (TTO & DCE)", value_set_year = "2012-2013",
+                      norm_doi = "", norm_url = "https://www.ncbi.nlm.nih.gov/books/NBK592229/")
 
 # Looking at the way eq5d package categorises value sets
 # Version   Type  Country
 # EQ-5D-5L	VT	  Peru_cTTO
 # EQ-5D-5L	VT	  Peru_DCE
 # in eq5d package, type isn't exactly equivalent to valuation method
+# In eq5d, VT stands for valuation technology, as in EuroQol Valuation Technology (EQ-VT)
+# maybe i need one type that is the same as eq5d and one type that is mine
+# or go reach out to the eq5d people and ask
 
 
 # should the value set link to/reference the eq5d package in some way?
@@ -160,6 +170,9 @@ write.csv(norm_info, file.path(root, "norm_info.csv"))
 # Sri Lanka
 # https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0108434
 # https://eprints.qut.edu.au/200583/
+# chronic conditions in sri lanka
+# https://www.valuehealthregionalissues.com/article/S2212-1099(24)00066-9/fulltext
+
 
 # India
 # https://jogh.org/2023/jogh-13-04018
@@ -191,6 +204,14 @@ write.csv(norm_info, file.path(root, "norm_info.csv"))
 
 # Malaysia - also, different patient groups (hypertension)
 # https://scialert.net/fulltext/?doi=jms.2011.84.89
+# this one is cancer
+# https://www.nature.com/articles/s41598-024-58844-8/tables/4
 
-# North East England, adults with type 2 diabetes
+# North East England, adults with LTCs
 # https://www.ncbi.nlm.nih.gov/books/NBK592229/
+
+# Denmark - chronic conditions & health risks (results in regression form)
+# https://journals.sagepub.com/doi/full/10.1177/23814683231159023
+
+# Cancer for a number of countries including UK (but doesn't use EQ5D - uses EORTC QLU-C10D)
+# https://www.valueinhealthjournal.com/article/S1098-3015(22)04783-0/fulltext

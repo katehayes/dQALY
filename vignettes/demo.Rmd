@@ -17,356 +17,257 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(dQALY)
-```
-
-## Calculating QALY loss due to death - get started
-
-```{r first_example}
-
-# you have to minimally specify country and year
-# calculate_dQALY(country = "United Kingdom", year = 2015)
-
-# Note: If country or year you choose aren't available, it will tell you
-# calculate_dQALY(country = "Scotland", year = 2015)
-# calculate_dQALY(country = "United Kingdom", year = 2010)
-
-
-# You can also output mean dQALY values for population groups:
-# Outputting one average value for both sexes together
-# calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T)
-
-# Outputting average values for a set of age groups you specify
-# my_age_groups <- data.table(lower = 90, upper = 100)
-# calculate_dQALY(country = "United Kingdom", year = 2015, collapse_age = my_age_groups)
-
-# Outputting average values for both sexes and for the specified age groups
-# calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, collapse_age = my_age_groups)
-
-```
-
-## Population-average health related quality of life scores (utility norms)
-
-For most countries, there is more than one set of utility norms stored in the package data. For every country, we have chosen a set of default norms - these are the norms that will be used when the `calculate_dQALY` function is called without specifying a value for the `norms` argument. Alternatively, the user specify what set of package norms they would like to use by passing its ID to `norms`. Its also possible for the user to supply their own HRQoL population norm data.
-
-The available utility norms can be viewed using the `hrqol_norms` function. Results can be filtered by country, and returned with or without reference information.
-
-```{r hrqol_norms}
-
-# Return all utility norm sets for all countries
-head(hrqol_norms())
-
-# Return all English utility norm sets with reference information
-head(hrqol_norms(country = "England", references = T))
-
-```
-
-
-
-```{r package_norm_plots}
-
-library(ggplot2)
-
-# Calculating dQALY for four different countries using the country-specific 
-# default utility norms set by the package
-ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              collapse_sex = T),
-       aes(x = age, y = dQALY)) +
-  geom_line(colour = "red") +
-  geom_line(data = calculate_dQALY(country = "Argentina", year = 2019, 
-                                   collapse_sex = T),
-            colour = "green") +
-  geom_line(data = calculate_dQALY(country = "France", year = 2019, 
-                                   collapse_sex = T),
-            colour = "blue") +
-  geom_line(data = calculate_dQALY(country = "Hungary", year = 2019, 
-                                   collapse_sex = T),
-            colour = "purple") +
-  scale_x_continuous(name = "Age at death",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "QALY loss",
-                     limits = c(0, 30),
-                     expand = c(0,0)) +
-  theme_classic()
-
-
-# Calculating dQALY using the same set of utility norms for every country
-# note that the ID used needs to be valid. e.g.:
-# calculate_dQALY(country = "England", year = 2019, norms = "invalid") won't work
-ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              collapse_sex = T,
-                              norms = "janssen_euvas"),
-       aes(x = age, y = dQALY)) +
-  geom_line(colour = "red") +
-  geom_line(data = calculate_dQALY(country = "Argentina", year = 2019, 
-                                   collapse_sex = T,
-                                   norms = "janssen_euvas"),
-            colour = "green") +
-  geom_line(data = calculate_dQALY(country = "France", year = 2019, 
-                                   collapse_sex = T,
-                                   norms = "janssen_euvas"),
-            colour = "blue") +
-  geom_line(data = calculate_dQALY(country = "Hungary", year = 2019, 
-                                   collapse_sex = T,
-                                   #in hungary's case, EUVAS norms
-                                   #are already the default
-                                   norms = "janssen_euvas"),
-            colour = "purple") +
-  scale_x_continuous(name = "Age at death",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "QALY loss",
-                     limits = c(0, 30),
-                     expand = c(0,0)) +
-  theme_classic()
-
-
-```
-
-
-```{r custom_norms}
 library(data.table)
-
-# how to specify your own set of utility norms
-my_norms <- data.table(sex = c(rep("male", 3), 
-                               rep("female", 3)),
-                       lower = c(0, 20, 90),
-                       upper = c(19, 89, 150),
-                       avg_hrqol = c(1, 0.85, 0.67,
-                                    0.99, 0.4, 0.2))
-
-
-ggplot(data = calculate_dQALY(country = "England", year = 2019,
-                              collapse_sex = T),
-       aes(x = age, y = dQALY)) +
-  geom_line(colour = "black") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   norms = my_norms),
-            colour = "red") +
-  scale_x_continuous(name = "Age at death",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "QALY loss",
-                     limits = c(0, 30),
-                     expand = c(0,0)) +
-  theme_classic()
-
-
+library(readxl)
+library(ggplot2)
 ```
 
-## Discounting
-
-
-```{r discounting}
-
-# Defining a number of different discount regimes
-# No discounting
-r_none <- 0 #equivalently, r_none <- function(x) 0
-
-# NICE reference case discount rate/ Green Book standard Social Time Preference Rate
-r_standard <- 0.035 #equivalently, r_standard <- function(x) 0.035
-# NICE alternative discount rate/Green Book recommended discount rate for health or life values
-r_health <- 0.015 #equivalently, r_health <- function(x) 0.015
-
-# Long term discounting
-# Green Book recommended declining long term discount rate for health or life values
-r_health_lt <- function(x) ifelse(x < 31, 0.015, ifelse(x > 75, 0.0107, 0.0129))
-# Green Book recommended rate reduced by excluding pure social time preference
-# (relevant if intervention may effect substantial/irreversible wealth transfers between generations)
-r_health_lt_reduced <- function(x) ifelse(x < 31, 0.01, ifelse(x > 75, 0.0071, 0.0086))
-
-
-
-# Plotting QALY loss due to death for England in 2019, 
-# as discount regimes vary
-
-ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              collapse_sex = T), #equivalently, r = r_standard
-       aes(x = age, y = dQALY)) +
-  geom_line(colour = "black") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   collapse_sex = T,
-                                   r = r_health),
-            colour = "green") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   collapse_sex = T,
-                                   r = r_health_lt),
-            colour = "blue") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   collapse_sex = T,
-                                   r = r_health_lt_reduced),
-            colour = "purple") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = r_none),
-            colour = "red") +
-  scale_x_continuous(name = "Age at death",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "QALY loss",
-                     limits = c(0, 80),
-                     expand = c(0,0)) +
-  theme_classic()
-
-
-```
-
-## Note on methods
-QALY loss at age x without discounting is equivalent to QALE at age x. QALY loss at age x without discounting or adjusting by health-related quality of life is life expectancy at age x.
-
-
-```{r equivalencies}
-
-# if we set the discount rate equal to zero, we'll be returning estimates of quality adjusted life expectancy
-no_discounting <- 0
-
-# if we ALSO set the health utility score for all ages equal to 1, we'll be returning life expectancy data
-no_quality_adjustment <- data.table(sex = c("male", "female"),
-                                    lower = 0,
-                                    upper = 150,
-                                    avg_hrqol = 1)
-
-
-ggplot(data = calculate_dQALY(country = "England", year = 2019, 
-                              collapse_sex = T), #default norms, default r
-       aes(x = age, y = dQALY)) +
-  geom_line() +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019,
-                                   collapse_sex = T,
-                                   r = no_discounting),
-            colour = "blue") +
-  # geom_line(data = calculate_QALE(country = "England", year = 2019,
-  #                                   collapse_sex = T),
-  #            colour = "green") +
-  geom_line(data = calculate_dQALY(country = "England", year = 2019, 
-                                   collapse_sex = T,
-                                   r = no_discounting,
-                                   norms = no_quality_adjustment),
-            colour = "red") +
-  scale_x_continuous(name = "Age at death",
-                     limits = c(0, 125),
-                     expand = c(0,0)) +
-  scale_y_continuous(name = "QALY loss",
-                     limits = c(0, 90),
-                     expand = c(0,0)) +
-  theme_classic()
-
-```
 
 ## Worked example: using the dQALY package to value outputs of an infectious disease model
-Imagine that we had built an infectious disease model, simulating CPE infections among hospital inpatients & the deaths resulting from those infections. Imagine that because of data availability, the model population does not have sex/age structure. We want to produce an estimate of the number of QALYs that would be lost on the death of an average hospital inpatient - this single value will be applied to all deaths. 
+Imagine that we had built an infectious disease model, simulating CPE bloodstream infections among English hospital inpatients & the deaths resulting from those infections. Imagine that because of data availability, the model population does not have sex/age structure. We want to produce a single estimate of the average number of QALYs that would be lost on the death of a person in our model - this single estimate will be used to value all deaths. 
 
-We'll use this example to demonstrate why one might use several of the features of the `calculate_dQALY` function - specifically, the features that enable the estimation of QALY losses for user-supplied cohorts and groups.
+We'll use this example to demonstrate why or how one might use several of the features of the `calculate_dQALY` function - specifically, the features that enable the estimation of QALY losses for user-supplied cohorts and groups.
+
+Firstly, we'll make the age groups we need to supply to the function. We want to group all ages together:
+```{r}
+all_ages <- data.table(lower = 0, upper = 100)
+```
 
 
-```{r worked_example_cohort}
+We could use the default data stored in the package and produce an estimate of the average number of QALYs lost on the death of a person from the English population. We supply our defined age groups to the argument `collapse_age` and set the argument `collapse_sex` to `TRUE`:  
+```{r}
+calculate_dQALY(country = "England", year = 2020,
+                collapse_age = all_ages,
+                collapse_sex = TRUE)
+```
 
+However, the average QALYs lost due to death in the general English population is probably different to the QALYs lost on the death of an English hospital inpatient. We could make several adjustments to the calculation in order to try to produce a more accurate estimate. 
 
-# # Setting my cohort - all hospital inpatients
-# # Using data on Hospital Admitted Patient Care Activity, 2019-20
-# # https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity/2019-20/summary-reports---apc---patient
-# 
-# temp <- tempfile(fileext = ".xlsx")
-# download.file(url = "https://digital.nhs.uk/binaries/content/documents/corporate-website/publication-system/statistical/hospital-admitted-patient-care-activity/2019-20/summary-reports---apc---patient/summary-reports---apc---patient/publicationsystem%3AbodySections%5B2%5D/publicationsystem%3AdataFile",
-#               temp, mode = "wb")
-# 
-# hospital_cohort <- as.data.table(readxl::read_xlsx(temp, sheet = 1)) |> 
-#   setnames(new = c("x", "male", "female")) |> 
-#   melt(measure.vars = c("male", "female"),
-#        variable.name = "sex",
-#        value.name = "count")
-# 
-# hospital_cohort <- hospital_cohort[x != "Unknown"][
-#   , lower := as.numeric(substring(x, 1, 2))
-# ][
-#   , upper := lower + 4
-# ][
-#   , .(x = c(lower:upper), count = rep(count/5, 5)), by = c("lower", "upper", "sex")
-# ][
-#   , c("lower", "upper"):=NULL
-# ]
-# 
-# 
-# # Setting my age groups - want to group all ages together
-# all_ages <- data.table(lower = 0, upper = 94)
-# 
-# 
-# # Getting my QALY loss estimate
-# calculate_dQALY(country = "England", year = 2020,
-#                 collapse_age = all_ages,
-#                 collapse_sex = TRUE,
-#                 cohort = hospital_cohort)
-# 
-# 
-# 
-# # What if we were only modelling adult inpatients?
-# adult_hospital_cohort <- hospital_cohort[x >= 18]
-# 
-# calculate_dQALY(country = "England", year = 2020,
-#                 collapse_age = all_ages,
-#                 collapse_sex = TRUE,
-#                 cohort = adult_hospital_cohort)
-# 
-# 
-# 
-# # What if mortality rates were particularly high among newborns?
-# adj_hospital_cohort <- copy(hospital_cohort)[x == 0, count := count*3]
-# 
-# calculate_dQALY(country = "England", year = 2020,
-#                 collapse_age = all_ages,
-#                 collapse_sex = TRUE,
-#                 cohort = adj_hospital_cohort)
-# 
-# 
-# # What if we wanted to account for the fact that mortality and morbidity among
-# # hospital patients is higher than it is among the general population?
-# calculate_dQALY(country = "England", year = 2020,
-#                 smr = 1.05, qcm = 0.95,
-#                 collapse_age = all_ages,
-#                 collapse_sex = TRUE,
-#                 cohort = hospital_cohort)
-# # Note: if you had your own life expectancy or health utility data for a hospital population
-# # you could supply it directly to the function
-# 
-# 
-# # Examining my estimates
-# ggplot(data = calculate_dQALY(country = "England", year = 2020, 
-#                               collapse_sex = T),
-#        aes(x = age, y = dQALY)) +
-#   geom_line(colour = "black") +
-#   geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
-#                                           collapse_age = all_ages,
-#                                           collapse_sex = TRUE,
-#                                           cohort = hospital_cohort)$dQALY, 
-#             colour = "red",
-#             linetype = "dashed") +
-#   geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
-#                                           collapse_age = all_ages,
-#                                           collapse_sex = TRUE,
-#                                           cohort = adult_hospital_cohort)$dQALY, 
-#             colour = "blue",
-#             linetype = "dashed") +
-#   geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
-#                                           collapse_age = all_ages,
-#                                           collapse_sex = TRUE,
-#                                           cohort = adj_hospital_cohort)$dQALY, 
-#             colour = "green",
-#             linetype = "dashed") +
-#   geom_hline(yintercept = calculate_dQALY(country = "England", year = 2020,
-#                                           smr = 1.05, qcm = 0.95,
-#                                           collapse_age = all_ages,
-#                                           collapse_sex = TRUE,
-#                                           cohort = hospital_cohort)$dQALY, 
-#             colour = "purple",
-#             linetype = "dashed") +
-#   scale_x_continuous(name = "Age at death",
-#                      limits = c(0, 125),
-#                      expand = c(0,0)) +
-#   scale_y_continuous(name = "QALY loss",
-#                      limits = c(0, 30),
-#                      expand = c(0,0)) +
-#   theme_classic()
+### Adjusting the cohort data
+When we use either the `collapse_age` or `collapse_sex` arguments, the function uses what we'll refer to as 'cohort data' - information on the age/sex distribution of the relevant population - to produce weighted means for the various population groups we require. When the argument `country` is set to England, the default cohort data used in the calculation is English population data from the ONS. But we know that the age/sex distribution of hospital inpatients is different from the age/sex distribution of the population at large. Instead of using the default English population data stored by the package, we'll construct a new cohort using English hospital admissions data and supply this to the function instead. 
+<!-- an average hospital inpatient  -->
+```{r}
+# Using data on Hospital Admitted Patient Care Activity, 2019-20
+# https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity/2019-20/summary-reports---apc---patient
+
+temp <- tempfile(fileext = ".xlsx")
+download.file(url = "https://digital.nhs.uk/binaries/content/documents/corporate-website/publication-system/statistical/hospital-admitted-patient-care-activity/2019-20/summary-reports---apc---patient/summary-reports---apc---patient/publicationsystem%3AbodySections%5B2%5D/publicationsystem%3AdataFile",
+              temp, mode = "wb")
+
+hospital_cohort <- as.data.table(readxl::read_xlsx(temp, sheet = 1)) |>
+  setnames(new = c("age", "male", "female")) |>
+  melt(measure.vars = c("male", "female"),
+       variable.name = "sex",
+       value.name = "count")
+
+hospital_cohort <- hospital_cohort[age != "Unknown"][
+  , lower := as.numeric(substring(age, 1, 2))
+][
+  , upper := lower + 4
+][
+  , .(age = c(lower:upper), count = rep(count/5, 5)), by = c("lower", "upper", "sex")
+][
+  , c("lower", "upper"):=NULL
+]
+```
+
+Let's examine the difference between the default cohort used in the calculation and this new hospital cohort we constructed, to get a sense of how switching cohorts will affect the output of the calculation. We can use the relevant package data function - `package_cohort` - to return the cohort data stored in the package, and then plot it against our hospital cohort:
+```{r}
+default_cohort <- package_cohort(country = "England", year = 2020)
+
+ggplot() +
+  geom_line(data = default_cohort,
+               aes(x = age, y = count/sum(count), colour = sex), linetype = 2) +
+  geom_line(data = hospital_cohort,
+               aes(x = age, y = count/sum(count), colour = sex)) +
+  theme_classic() +
+  scale_colour_manual(values = c("red", "blue"))
 
 ```
 
+Now we'll re-do the calculation, supplying the `hospital_cohort` data to the `cohort` argument of the function. We can see that when using a hospital cohort the QALY loss estimate we produce is smaller, as the hospital population is older than the population at large and QALY loss decreases with age at death:
+```{r}
+calculate_dQALY(country = "England", year = 2020,
+                collapse_age = all_ages,
+                collapse_sex = TRUE,
+                cohort = hospital_cohort)
+```
+<!-- ### Adjustment 2 -->
+
+We now have an estimate of the average QALY loss caused by the death of a patient chosen randomly from hospital inpatients. But rates of CPE infection and/or CPE mortality given infection differ by age and gender - both infection and death from infection are more likely in older age groups. Instead of using a cohort with age/sex distribution representative of all hospital inpatients, we might want to use a cohort with age/sex distribution representing hospital inpatients who die of CPE infection. Researchers with access to mortality data for those with hospital-acquired CPE could use that data to make a cohort - here we'll make very a crude adjustment, applying weights to those over 60 so that they are over-represented in the cohort, to reflect their greater risk of death:
+```{r}
+adj_hospital_cohort <- copy(hospital_cohort)[age > 60, count := count*1.5]
+
+calculate_dQALY(country = "England", year = 2020,
+                collapse_age = all_ages,
+                collapse_sex = TRUE,
+                cohort = adj_hospital_cohort)
+```
+
+### Adjusting the life expectancy data
+What if we wanted to account for the fact that life expectancy among people who are likely to be in hospital at any given time is probably worse than it is in the general population? A quick and easy way to do this is to use the argument `smr` (standard mortality ratio) to make adjustments to the default life tables used in the calculation - for details about how exactly this adjustment happens, refer to the [methods vignette](methods.html). The default value of the argument is 1 - here we're going to increase mortality rates by 5% at each year of age:
+```{r}
+calculate_dQALY(country = "England", year = 2020,
+                smr = 1.05,
+                collapse_age = all_ages,
+                collapse_sex = TRUE,
+                cohort = adj_hospital_cohort)
+```
+However, if you had your own data that you felt better represented the life expectancy of an inpatient population, you could supply it directly to the function (to the argument `life_table`) rather than adjusting the data that is already stored in the package.
+
+
+### Adjusting the utility data
+What if we wanted to account for the fact that hospital patients likely have greater morbidity than the general population? Like we used the argument `smr` to adjust the life tables, we can use the argument `qcm` to adjust the utility norms for the general English population - here we're going to make utility scores 5% lower across the board:
+```{r}
+calculate_dQALY(country = "England", year = 2020,
+                qcm = 0.95,
+                collapse_age = all_ages,
+                collapse_sex = TRUE,
+                cohort = adj_hospital_cohort)
+```
+Again, instead of making adjustments to the default utility data from the general English population, we could alternatively try to find utility data collected from a population that we think is closer to the population we'd like to represent. Here's an example of how we might go about that.
+
+```{r}
+# Retrieving data from a study that collected HRQoL of people with long term conditions in UK
+url <- "https://www.ncbi.nlm.nih.gov/books/NBK592229/table/table18/?report=objectonly"
+element <- ".large_tbl"
+
+ltc_norms <-  rvest::read_html(url) |>
+    rvest::html_element(element) |>
+    rvest::html_table(fill = T) |>
+    as.data.table()
+
+# Cleaning up the utility data, putting it in the form required by the function
+names <- ltc_norms[1, ] |>
+  unlist()
+setnames(ltc_norms, new = names)
+
+ltc_norms <- ltc_norms[4, -c(1,3,5,7,9:11)] |>
+  melt(measure.vars = patterns("years"),
+       variable.name = "lower",
+       value.name = "avg_hrqol")
+
+ltc_norms[, avg_hrqol := as.numeric(substring(avg_hrqol, 1, 5))]
+ltc_norms[, upper := as.numeric(substring(lower, 4, 5))]
+ltc_norms[, lower := as.numeric(substring(lower, 1, 2))]
+ltc_norms <- ltc_norms[, .(sex = c("male", "female")), by = c("lower", "upper", "avg_hrqol")]
+```
+This study only has utility data for age groups covering ages 40-74. We'll assume all older ages have the same utility as the oldest group for which we have data, and for younger age groups we'll use the general population norms. We can return and then manipulate those norms using the function `package_norms`:
+```{r}
+ltc_norms[upper == max(upper), upper := 200]
+
+default_norms <- package_norms(country = "England") |> as.data.table()
+ltc_norms <- rbind(default_norms[lower < 40], ltc_norms)
+```
+It's up to us to make a judgement about whether these new norms better approximate the HRQoL in the population we're modelling than the default norms for the general population. We can plot our new utility norms against the default norms (and also if we want against the norms when adjusted using the `qcm` argument) to help make this judgement:
+```{r}
+ggplot() +
+  geom_line(data = default_norms[, .(age = c(lower:upper)), by = c("lower", "upper", "sex", "avg_hrqol")],
+            aes(x = age, y = avg_hrqol, colour = sex), linetype = 2) +
+    geom_line(data = default_norms[, .(age = c(lower:upper)), by = c("lower", "upper", "sex", "avg_hrqol")],
+            aes(x = age, y = avg_hrqol*0.95, colour = sex), alpha = 0.3) +
+  geom_line(data = ltc_norms[, .(age = c(lower:upper)), by = c("lower", "upper", "sex", "avg_hrqol")],
+            aes(x = age, y = avg_hrqol, colour = sex)) +
+  theme_classic() +
+  scale_colour_manual(values = c("red", "blue"))
+```
+
+Then we can (if we judge they're more suitable) use the new norms in our calculation by supplying the data to the argument `norms`:
+```{r}
+calculate_dQALY(country = "England", year = 2020,
+                norms = ltc_norms,
+                collapse_age = all_ages,
+                collapse_sex = TRUE,
+                cohort = adj_hospital_cohort)
+```
+
+
+### Examining our various estimates
+
+```{r}
+estimates <- data.table(estimate = c("Estimate 1", "Estimate 2",
+                                     "Estimate 3", "Estimate 4",
+                                     "Estimate 5", "Estimate 6"),
+                        dQALY = c(calculate_dQALY(country = "England", year = 2020,
+                                                  collapse_age = all_ages,
+                                                  collapse_sex = TRUE)$dQALY,
+                                  calculate_dQALY(country = "England", year = 2020,
+                                                  collapse_age = all_ages,
+                                                  collapse_sex = TRUE,
+                                                  cohort = hospital_cohort)$dQALY,
+                                  calculate_dQALY(country = "England", year = 2020,
+                                                  collapse_age = all_ages,
+                                                  collapse_sex = TRUE,
+                                                  cohort = adj_hospital_cohort)$dQALY,
+                                  calculate_dQALY(country = "England", year = 2020,
+                                                  smr = 1.05,
+                                                  collapse_age = all_ages,
+                                                  collapse_sex = TRUE,
+                                                  cohort = adj_hospital_cohort)$dQALY,
+                                  calculate_dQALY(country = "England", year = 2020,
+                                                  qcm = 0.95,
+                                                  collapse_age = all_ages,
+                                                  collapse_sex = TRUE,
+                                                  cohort = adj_hospital_cohort)$dQALY,
+                                  calculate_dQALY(country = "England", year = 2020,
+                                                  norms = ltc_norms,
+                                                  collapse_age = all_ages,
+                                                  collapse_sex = TRUE,
+                                                  cohort = adj_hospital_cohort)$dQALY))
+
+
+
+ggplot(data = estimates) +
+  geom_bar(aes(x = estimate, y = dQALY,
+               fill = estimate),
+           stat = "identity") +
+  theme_classic()
+
+```
+
+### A note on default vs adjusted input data
+The `calculate_dQALY` function uses default data when only country and year are specified, but allows the user to either adjust the way package data is used or to supply their own data to the function in its place. The validity of the QALY loss estimate depends on the validity of the inputs to the calculation - the life expectancy, HRQoL and (when needed) population data. 
+
+It is up to the user to think about and justify the suitability of their chosen input data. The function does not stop people from using it in strange/unexpected ways.
+
+Below are some examples of things the user technically can do with the function (though they may not want to).
+
+
+```{r}
+calculate_dQALY(life_table = package_lt("England", 
+                                        year = 2020,
+                                        lt_extend = 1),
+                norms = package_norms(country = "Finland",
+                                      avg_hrqol_young = 0),
+                collapse_age = all_ages,
+                collapse_sex = TRUE,
+                cohort = package_cohort(country = "Belgium", year = 2017))
+```
+
+```{r}
+my_lt <- data.table(age = c(0:100, 0:100),
+                    sex = c(rep("male", 101), rep("female", 101)),
+                    q = 0.5)
+my_norms <- data.table(lower = 0, 
+                       upper = 100,
+                       sex = c("male", "female"),
+                       avg_hrqol = 0.1)
+my_cohort <- data.table(data.table(age = c(0:100, 0:100),
+                                    sex = c(rep("male", 101), rep("female", 101)),
+                                    count = 1))
+
+calculate_dQALY(life_table = my_lt,
+                norms = my_norms,
+                collapse_age = all_ages,
+                collapse_sex = TRUE,
+                cohort = my_cohort)
+```
+
+
+<!-- The below text is clipped from a description of a tool that researchers built. Useful articulation - can describe flexibility of dQALY package in similar manner -->
+
+<!-- The disease models and default parameters implemented in the present version of the BCoDE toolkit represent the result of a thorough reviewing and validation process that was performed over a time period of around 5 years involving disease-specific experts from many countries and institutions. -->
+
+<!-- However, since disease progression can be different in different populations (due to e.g. health care system, access to health care, social economic factors) and since default values within the toolkit outcome trees were chosen with the aim to reflect a European average, the software application enables the user to choose other than default parameter values and to include uncertainty in those parameters into the analysis. All disease model parameters can be thus edited by the user (see below). -->
+
+<!-- The user become then responsible for the correctness of the assumptions made and of the validation. In fact, although we see this flexibility as a great advantage of this tool for carrying out tailored research, simulation exercises, scenario analyses and more accurate national and regional disease burden estimations taking into account geographical specificities and other peculiarities of different populations, we also want to emphasize the importance for the user of always choosing parameters based on sound clinical and epidemiological evidence for the validity of the burden estimation. -->
