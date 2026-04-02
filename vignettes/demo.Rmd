@@ -46,7 +46,7 @@ However, the average QALYs lost due to death in the general English population i
 ### Adjusting the cohort data
 When we use either the `collapse_age` or `collapse_sex` arguments, the function uses what we'll refer to as 'cohort data' - information on the age/sex distribution of the relevant population - to produce weighted means for the various population groups we require. When the argument `country` is set to England, the default cohort data used in the calculation is English population data from the ONS. But we know that the age/sex distribution of hospital inpatients is different from the age/sex distribution of the population at large. Instead of using the default English population data stored by the package, we'll construct a new cohort using English hospital admissions data and supply this to the function instead. 
 <!-- an average hospital inpatient  -->
-```{r}
+```{r, eval=FALSE}
 # Using data on Hospital Admitted Patient Care Activity, 2019-20
 # https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity/2019-20/summary-reports---apc---patient
 
@@ -70,6 +70,28 @@ hospital_cohort <- hospital_cohort[age != "Unknown"][
   , c("lower", "upper"):=NULL
 ]
 ```
+
+```{r, echo = FALSE}
+
+hospital_cohort <- data.table(sex = c(rep("male", 95), rep("female", 95)),
+                              age = c(0:94, 0:94),
+                              count = c(rep(157359.6, 5),  rep(35859.4, 5),  rep(29396.8, 5),
+                                        rep(32893.8, 5),  rep(40116.2, 5),  rep(48635.6, 5),
+                                        rep(55272.6, 5),  rep(60442.4, 5),  rep(63887.6, 5),
+                                        rep(82628.2, 5), rep(108005.6, 5), rep(146383.6, 5),
+                                        rep(143415.0, 5), rep(163265.2, 5), rep(202887.8, 5),
+                                        rep(183856.0, 5), rep(161358.0, 5), rep(111043.8, 5),
+                                        rep(60886.8, 5), rep(129511.0, 5),  rep(28244.8, 5),
+                                        rep(27404.6, 5),  rep(51446.0, 5),  rep(96771.4, 5),
+                                        rep(140160.0, 5), rep(153117.0, 5), rep(122543.6, 5),
+                                        rep(89176.2, 5), rep(102067.8, 5), rep(123829.2, 5),
+                                        rep(147717.6, 5), rep(135296.4, 5), rep(147273.0, 5),
+                                        rep(184863.4, 5), rep(175484.4, 5), rep(167972.0, 5),
+                                        rep(134865.2, 5), rep(102354.4, 5)))
+
+```
+
+
 
 Let's examine the difference between the default cohort used in the calculation and this new hospital cohort we constructed, to get a sense of how switching cohorts will affect the output of the calculation. We can use the relevant package data function - `package_cohort` - to return the cohort data stored in the package, and then plot it against our hospital cohort:
 ```{r}
