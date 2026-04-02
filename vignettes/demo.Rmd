@@ -251,7 +251,7 @@ estimates <- data.table(estimate = c("Estimate 1", "Estimate 2",
 ggplot(data = estimates) +
   geom_bar(aes(x = estimate, y = dQALY),
            stat = "identity") +
-  scale_x_discrete(name = "")
+  scale_x_discrete(name = "") +
   theme_classic()
 
 ```

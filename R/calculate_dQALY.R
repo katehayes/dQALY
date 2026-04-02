@@ -514,6 +514,14 @@ calculate_dQALY <- function(country = NULL,
   max_x <- max(life_table$x)
 
 
+  # change from briggs method bc of issue raised by Neil
+  # here's the big difference - going to assume we start with n men and n women of each age - letting n = 1
+  # & will work all the intermediate variables out separately by age at the 'start' ie the first point in the time horizon of the calculation
+  # still assuming q(x) and avg_hrqol constant over time - but i think setting the calculation up like this would make it easier to change that
+  life_table <- life_table[, .(starts = c(min_x:max_x)), by = .(sex, x, q_x)] |> setorder(starts, x, sex)
+  life_table[x < starts, q_x := 0]
+
+
   # we have q(x) - probability of dying at age x
   # first calculating l(x): the number surviving to age x >= 1 (in a population of 1)
   # again we're converting the probability q(x) to an instantaneous death rate,
@@ -521,14 +529,14 @@ calculate_dQALY <- function(country = NULL,
   # (here to probability of surviving ie 1-prob of dying)
   # then calculating L(x): years lived between ages x & x+1 for x>=1: (l(x) + l(x+1))/2
   # Note: This calculation assumes a uniform distribution of deaths during the year
-  life_table[, l_x := cumprod(shift(1-q_x, fill = 1)^smr), by=.(sex)]
-  life_table[, L_x := (l_x + shift(l_x, type = "lead", fill = 0))/2, , by = .(sex)]
+  life_table[, l_x := cumprod(shift(1-q_x, fill = 1)^smr), by=.(starts, sex)]
+  life_table[, L_x := (l_x + shift(l_x, type = "lead", fill = 0))/2, , by = .(starts, sex)]
 
   # assigning the appropriate population-level utility norm to corresponding age, sex
   # dropping l(x) bc we only need L(x) for the QALY calculation
   dQALY_table <- utility_norms[life_table,
                          on = .(sex, lower <= x, upper >= x),
-                         .(sex, x, l_x, L_x, avg_hrqol)]
+                         .(starts, sex, x, q_x, l_x, L_x, avg_hrqol)]
 
   # adding this line below - so that if the calculation is involving life tables that reach
   # older age groups than the utility norm data being supplied, then we just assume
@@ -554,14 +562,13 @@ calculate_dQALY <- function(country = NULL,
 
   dQALY_table[x == 0, r_col := 0]
 
-  dQALY_table[, (paste("v", min_x:max_x, sep="")) := shift(1/cumprod(1+r_col), n = x, type = "lag", fill = 0), by = .(sex)]
-  dQALY_table[, dQALY_x := (t(.SD) %*% (L_x*avg_hrqol*qcm))/l_x, .SDcols = patterns("^v"), by = .(sex)]
+  # change away from Briggs method -
+  # no longer doing matrix multiplication because of the new data structure
+  # l(x) is no longer in the denominator (bc we said its one in all cases)
+  dQALY_table[, v := shift(1/cumprod(1+r_col), n = starts, type = "lag", fill = 0), by = .(starts, sex)]
+  dQALY_table <- dQALY_table[, .(dQALY_x = sum(L_x*avg_hrqol*v)), b= .(starts, sex)] |> setnames(old = "starts", new = "x")
 
-  # dropping cols we don't need anymore
-  dQALY_table[, c(paste("v", min_x:max_x, sep=""), "r_col", "l_x", "L_x", "avg_hrqol") := NULL]
-
-  # note - fix ordering of output - by x and then sex
-
+  # note - fix ordering of output - by x and then sex?
 
 
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
