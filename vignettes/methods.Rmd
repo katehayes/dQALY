@@ -153,7 +153,7 @@ lt <- lt[, .(age = Age, q)][, .(sex = c("male", "female")), by = .(age, q)]
 We can see in the excel tool (in the sheet called 'LookUpTables') that Briggs is using getting HRQoL norms for the UK from the Janssen paper, specifically the TTO values. This is data that we have stored in the package. 
 
 We can also see that Briggs has assumed that the HRQoL norm for the youngest age group (0-17) is 1. The default assumption this package makes is more conservative - it takes the HRQoL norm for the 0-17 group from the next youngest group. To line up with Briggs, we can use the argument `avg_hrqol_young`:
-```{r}
+```{r, eval=FALSE}
 package_norms(country = "United Kingdom", 
               id = "janssen_tto",
               avg_hrqol_young = 1)
@@ -163,7 +163,7 @@ package_norms(country = "United Kingdom",
 In the sheet called 'Results' (which looks up values in sheet 'Calculations') we can see that Briggs is outputting estimates grouped into 10 year age bands. To produce a representative dQALY estimate for an age group, the excel tool selects the dQALY estimate belonging to the median age within the interval. 
 
 The calculate_dQALY function does something different - it takes a weighted average of all the dQALY estimates in each group. By default, population-level age/sex distribution data provides the weightings. In order to mimic the Briggs output, in addition to defining 10 year age groups we need to construct a new cohort to use for the weighting which consists of one male/female aged 5, one male/female aged 15, and so on:
-```{r}
+```{r, eval=FALSE}
 age_grps <- data.frame(lower = seq(0, 90, 10),
                        upper = seq(9, 99, 10))
 chrt <- data.frame(sex = c(rep("male", 10), rep("female", 10)),
