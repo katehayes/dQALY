@@ -138,7 +138,7 @@ The basic calculation remains the same - the differences are to do with choices 
 
 ### Life tables
 Briggs is not interested in producing sex-specific estimates at any point. Instead of optionally pooling estimates at the end of the calculation he a) takes sex-specific q(x)’s, b) produces sex-specific l(x)’s, and then pools those l(x)’s together to get an average, and goes from there. We're just going to pull these values for l(x) in from the Briggs excel tool, and then - since we want to be able to use the `calculate_dQALY` function as its set up - we need the life expectancy information in terms of q(x), so we’ll back-calculate it:
-```{r}
+```{r, eval = FALSE}
 temp <- tempfile(fileext = ".xlsx")
 download.file(url = "https://www.lshtm.ac.uk/media/42556",
               temp, mode = "wb")
@@ -173,7 +173,7 @@ chrt <- data.frame(sex = c(rep("male", 10), rep("female", 10)),
 
 ### Matching Briggs output
 The output of the following function call should match the Briggs results:
-```{r}
+```{r, eval = F}
 calculate_dQALY(life_table = lt,
                 norms = package_norms(country = "United Kingdom", 
                                       id = "janssen_tto",
