@@ -27,6 +27,7 @@
       19:           United Kingdom 36.93458 35.83813 36.45421 36.15048 35.00962
       20: United States of America 34.91406 34.38186 34.91795 34.85329 34.27358
                            country    sum15    sum16    sum17    sum18    sum19
+                            <char>    <num>    <num>    <num>    <num>    <num>
              sum20    sum21    sum22    sum23
              <num>    <num>    <num>    <num>
        1: 31.25553 30.21458 32.13126 30.12326
@@ -50,6 +51,7 @@
       19: 36.79450 37.32980 36.67986 36.72518
       20: 35.76797 33.37663 36.07610 34.72573
              sum20    sum21    sum22    sum23
+             <num>    <num>    <num>    <num>
 
 ---
 
@@ -93,6 +95,7 @@
       19:           United Kingdom      242      242      242      242      242
       20: United States of America      242      242      242      242      242
                            country length15 length16 length17 length18 length19
+                            <char>    <int>    <int>    <int>    <int>    <int>
           length20 length21 length22 length23
              <int>    <int>    <int>    <int>
        1:      242      242      242      242
@@ -116,6 +119,7 @@
       19:      242      242      242      242
       20:      242      242      242      242
           length20 length21 length22 length23
+             <int>    <int>    <int>    <int>
 
 # turning off package_lt default extension works
 
@@ -147,6 +151,7 @@
       19:           United Kingdom      200      200      200      200      200
       20: United States of America      200      200      200      200      200
                            country length15 length16 length17 length18 length19
+                            <char>    <int>    <int>    <int>    <int>    <int>
           length20 length21 length22 length23
              <int>    <int>    <int>    <int>
        1:      200      200      200      200
@@ -170,6 +175,7 @@
       19:      200      200      200      200
       20:      200      200      200      200
           length20 length21 length22 length23
+             <int>    <int>    <int>    <int>
 
 # package_lt returns error if country arg is invalid
 
@@ -235,6 +241,7 @@
       20:           United Kingdom 13.740 0.8587500
       21: United States of America 13.812 0.8632500
                            country    sum      mean
+                            <char>  <num>     <num>
 
 # package_norms return (probably) same numbers for list of avail countries, after adjustment
 
@@ -267,6 +274,7 @@
       20:           United Kingdom 11.860 0.7412500
       21: United States of America 11.964 0.7477500
                            country    sum      mean
+                            <char>  <num>     <num>
 
 # package_norms returns error if country arg is invalid
 
@@ -408,6 +416,7 @@
       19:           United Kingdom   65368154   65879437   66340809   66739134
       20: United States of America  326066153  329119534  332145122  334996749
                            country      sum15      sum16      sum17      sum18
+                            <char>      <num>      <num>      <num>      <num>
                sum19      sum20      sum21      sum22      sum23
                <num>      <num>      <num>      <num>      <num>
        1:   44966898   45184999   45304911   45400226   45530389
@@ -431,6 +440,7 @@
       19:   67097053   67336596   67652373   68162167   68665374
       20:  337729542  339375646  340099456  341469642  343410702
                sum19      sum20      sum21      sum22      sum23
+               <num>      <num>      <num>      <num>      <num>
 
 ---
 
@@ -910,6 +920,7 @@
       20:           United Kingdom           mvh
       21: United States of America   janssen_tto
                            country  default_norm
+                            <char>        <char>
 
 # default_norms returns error if country arg is invalid
 

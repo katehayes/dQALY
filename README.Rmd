@@ -26,7 +26,7 @@ knitr::opts_chunk$set(
 The quality-adjusted life year, or QALY, is a widely used outcome measure in the field of health economics. 
 When evaluating the impact of a policy/programme/intervention, we often want to express the health impacts of preventing or failing to prevent a death in terms of the QALYs that would be gained or lost.
 
-We can make an estimate of the number of QALYs that might be lost when a person dies using data that describes the life expectancy and health-related quality of life of the population that the person came from. We can estimate average QALY loss values across population age/sex subgroups if we additionally have information on the age/sex distribution of the population. 
+We can make an estimate of the number of QALYs that might be lost when a person dies using data that describes the life expectancy and health-related quality of life (HRQoL) of the population that the person came from. We can estimate average QALY loss values across population age/sex subgroups if we additionally have information on the age/sex distribution of the population. 
 
 In the dQALY package, we provide a function that performs this calculation using life expectancy, HRQoL, and (when needed) population distribution data. We have also gathered, cleaned and stored these three types of data for a range of countries and years. For convenience, users can quickly/easily produce QALY loss estimates with the data stored by the package. For flexibility, users can choose to make adjustments to the default or package data, or to supply entirely new data inputs to the calculation.
 
@@ -55,7 +55,7 @@ library(ggplot2)
 ## Calculating QALY loss due to death: get started using package data
 The function `calculate_dQALY` produces estimates of QALY loss due to death for a given population. We'll call this quantity dQALY (i.e. difference in QALYs, like Leibniz notation). 
 
-To use the function, you have to minimally specify a country and year for which you want the calculation performed, and then by default the function uses data on life expectancy and health-related quality of life for that country that has been stored in the package:
+To use the function, you have to minimally specify a country and year for which you want the calculation performed. The calculation requires life expectancy and HRQoL data. By default, the function uses data on life expectancy and health-related quality of life that has been stored in the package:
 ```{r}
 calculate_dQALY(country = "United Kingdom", year = 2015) |> head()
 calculate_dQALY(country = "France", year = 2020) |> head()
