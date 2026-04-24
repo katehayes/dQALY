@@ -1,4 +1,83 @@
 
+## Working on period rather than cohort life tables ####
+
+
+
+# Starts is age @ the year we care about (?) - implement that? or something more sensible?
+# say the year we're going from is 2000
+# then starts is 2000-yob
+
+# below does not work even at all <3 but come back to it
+# ok a little better
+# but i don't have enough years
+
+qx_cohort[, starts := 2050-yob]
+qx_cohort <- qx_cohort[starts >= 0] |> setorder(starts, x, sex)
+
+
+# this is where i INSIST that someone of every age is alive at the moment we start looking at them
+qx_cohort[x < starts, q := 0]
+
+qx_cohort[, l_x := cumprod(shift(1-q, fill = 1)^smr), by=.(starts, sex)]
+qx_cohort[, L_x := (l_x + shift(l_x, type = "lead", fill = 0))/2, , by = .(starts, sex)]
+
+dQALY_table <- as.data.table(utility_norms)[qx_cohort,
+                                            on = .(sex, lower <= x, upper >= x),
+                                            .(starts, sex, x, q, l_x, L_x, avg_hrqol)]
+
+dQALY_table[, r_col := 0.035]
+
+
+# x = 0 or starts?? i guess read the textbook
+dQALY_table[x == 0, r_col := 0]
+dQALY_table[x == starts, r_col := 0]
+
+
+dQALY_table[, v := shift(1/cumprod(1+r_col), n = starts, type = "lag", fill = 0), by = .(starts, sex)]
+dQALY_table <- dQALY_table[, .(dQALY = sum(L_x*avg_hrqol*v)), b= .(starts, sex)]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Here's the collapsing thing ####
+
+
 diff <- 2
 
 
@@ -562,6 +641,15 @@ rbind(method1[, method := "end"],
 
 
 library(data.table)
+
+
+
+
+
+|> setnames(old = "starts", new = "x")
+
+
+
 
 calc_dQALY <- function(life_table, utility_norms, cohort,
                        r = 0.035, smr = 1, qcm = 1) {

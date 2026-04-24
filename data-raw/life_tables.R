@@ -2,10 +2,73 @@ root <- file.path(here::here(), "data-raw")
 utility_norms <- as.data.table(read.csv(file.path(root, "utility_norms.csv"), row.names = 1L))
 
 
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# English life tables from ONS
+# English life tables from ONS ####
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+## Projected period life tables ####
+temp <- tempfile(fileext = ".xlsx")
+download.file(url = "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/mortalityratesqxprincipalprojectionengland/2022based/enppp22qx.xlsx",
+              temp, mode = "wb")
+
+qx_male <- as.data.table(readxl::read_excel(temp, sheet = "males period qx", range = "A4:CO105")) |>
+  setnames(old = c("Year 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "year",
+       value.name = "q_x")
+
+qx_male[, q_x := q_x/100000]
+qx_male[, sex := "male"]
+
+qx_female <- as.data.table(readxl::read_excel(temp, sheet = "females period qx", range = "A4:CO105")) |>
+  setnames(old = c("Year 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "year",
+       value.name = "q_x")
+
+qx_female[, q_x := q_x/100000]
+qx_female[, sex := "female"]
+
+eng_period <- rbind(qx_male, qx_female)
+eng_period[, year := as.numeric(as.character(year))]
+eng_period[, country := "England"]
+
+# strange thing here where the life tables aren't actually exactly the same
+# as the old ones i had before from the other ONS release below.
+# will have to investigate that?
+
+
+## English - investigating cohort life expectancy ####
+
+temp <- tempfile(fileext = ".xlsx")
+download.file(url = "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/mortalityratesqxprincipalprojectionengland/2022based/enppp22qx.xlsx",
+              temp, mode = "wb")
+
+qx_male <- as.data.table(readxl::read_excel(temp, sheet = "males cohort qx", range = "A4:CO105")) |>
+  setnames(old = c("Year of birth 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "yob",
+       value.name = "q")
+
+qx_male[, q := q/100000]
+qx_male[, sex := "male"]
+
+qx_female <- as.data.table(readxl::read_excel(temp, sheet = "females cohort qx", range = "A4:CO105")) |>
+  setnames(old = c("Year of birth 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "yob",
+       value.name = "q")
+
+qx_female[, q := q/100000]
+qx_female[, sex := "female"]
+qx_cohort <- rbind(qx_male, qx_female)
+qx_cohort[, yob := as.numeric(as.character(yob))]
+qx_cohort[, age_x_in_year_ := yob + x]
+
+
+
+## OLD -  English life tables from ONS ####
 temp <- tempfile(fileext = ".xlsx")
 download.file(url = "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/nationallifetablesenglandreferencetables/current/nlte198020213.xlsx",
               temp, mode = "wb")
@@ -34,6 +97,56 @@ for (n in 5:9) {
 
 eng_lt  <- eng_lt |>
   setnames(new = c("sex", "x","q_x", "year", "country"))
+
+
+
+
+
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# UK life tables from ONS ####
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+## Projected period life tables 1981 - 2072 ####
+temp <- tempfile(fileext = ".xlsx")
+download.file(url = "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/mortalityratesqxprincipalprojectionunitedkingdom/2022based/ukppp22qx.xlsx",
+              temp, mode = "wb")
+
+qx_male <- as.data.table(readxl::read_excel(temp, sheet = "males period qx", range = "A4:CO105")) |>
+  setnames(old = c("Year 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "year",
+       value.name = "q_x")
+
+qx_male[, q_x := q_x/100000]
+qx_male[, sex := "male"]
+
+qx_female <- as.data.table(readxl::read_excel(temp, sheet = "females period qx", range = "A4:CO105")) |>
+  setnames(old = c("Year 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "year",
+       value.name = "q_x")
+
+qx_female[, q_x := q_x/100000]
+qx_female[, sex := "female"]
+
+uk_period <- rbind(qx_male, qx_female)
+uk_period[, year := as.numeric(as.character(year))]
+uk_period[, country := "United Kingdom"]
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -81,6 +194,10 @@ un_lt <- rbind(lt_male, lt_female)[
   setnames(new = c("country", "year", "sex", "x", "q_x"))
 
 
+# going to start adding in lts for the UK from the ONS - can include projections etc
+un_lt <- un_lt[country != "United Kingdom"]
+
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # LA-level life tables
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -101,7 +218,7 @@ la_lts <- as.data.table(utils::read.csv(temp))[, .(country = geography_name, yea
 # Collecting together
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-life_tables <- rbind(eng_lt, un_lt) |>
+life_tables <- rbind(eng_period, uk_period, un_lt) |>
   setcolorder(c("country", "year", "sex", "x", "q_x")) |>
   setorder(country, year, x, sex) |>
   # should make a long term fix to this
