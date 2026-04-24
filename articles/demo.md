@@ -39,7 +39,7 @@ calculate_dQALY(country = "England", year = 2020,
                 collapse_age = all_ages,
                 collapse_sex = TRUE)
 #>     age lower upper    dQALY
-#> 1 0-100     0   100 16.58649
+#> 1 0-100     0   100 16.50278
 ```
 
 However, the average QALYs lost due to death in the general English
@@ -118,8 +118,8 @@ calculate_dQALY(country = "England", year = 2020,
                 collapse_age = all_ages,
                 collapse_sex = TRUE,
                 cohort = hospital_cohort)
-#>     age lower upper   dQALY
-#> 1 0-100     0   100 12.7969
+#>     age lower upper    dQALY
+#> 1 0-100     0   100 12.68668
 ```
 
 We now have an estimate of the average QALY loss caused by the death of
@@ -143,7 +143,7 @@ calculate_dQALY(country = "England", year = 2020,
                 collapse_sex = TRUE,
                 cohort = adj_hospital_cohort)
 #>     age lower upper    dQALY
-#> 1 0-100     0   100 11.63132
+#> 1 0-100     0   100 11.51243
 ```
 
 ### Adjusting the life expectancy data
@@ -165,7 +165,7 @@ calculate_dQALY(country = "England", year = 2020,
                 collapse_sex = TRUE,
                 cohort = adj_hospital_cohort)
 #>     age lower upper    dQALY
-#> 1 0-100     0   100 11.53195
+#> 1 0-100     0   100 11.41354
 ```
 
 However, if you had your own data that you felt better represented the
@@ -188,7 +188,7 @@ calculate_dQALY(country = "England", year = 2020,
                 collapse_sex = TRUE,
                 cohort = adj_hospital_cohort)
 #>     age lower upper    dQALY
-#> 1 0-100     0   100 11.63132
+#> 1 0-100     0   100 11.51243
 ```
 
 Again, instead of making adjustments to the default utility data from
@@ -266,7 +266,7 @@ calculate_dQALY(country = "England", year = 2020,
                 collapse_sex = TRUE,
                 cohort = adj_hospital_cohort)
 #>     age lower upper    dQALY
-#> 1 0-100     0   100 9.886051
+#> 1 0-100     0   100 9.780467
 ```
 
 ### Examining our various estimates
@@ -339,7 +339,7 @@ calculate_dQALY(life_table = package_lt("England",
                 collapse_sex = TRUE,
                 cohort = package_cohort(country = "Belgium", year = 2017))
 #>     age lower upper    dQALY
-#> 1 0-100     0   100 13.43769
+#> 1 0-100     0   100 13.36557
 ```
 
 ``` r

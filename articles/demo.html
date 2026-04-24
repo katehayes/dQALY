@@ -99,7 +99,7 @@ argument <code>collapse_age</code> and set the argument
 <span>                collapse_age <span class="op">=</span> <span class="va">all_ages</span>,</span>
 <span>                collapse_sex <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     age lower upper    dQALY</span></span>
-<span><span class="co">#&gt; 1 0-100     0   100 16.58649</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 0-100     0   100 16.50278</span></span></code></pre></div>
 <p>However, the average QALYs lost due to death in the general English
 population is probably different to the QALYs lost on the death of an
 English hospital inpatient. We could make several adjustments to the
@@ -169,8 +169,8 @@ the population at large and QALY loss decreases with age at death:</p>
 <span>                collapse_age <span class="op">=</span> <span class="va">all_ages</span>,</span>
 <span>                collapse_sex <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                cohort <span class="op">=</span> <span class="va">hospital_cohort</span><span class="op">)</span></span>
-<span><span class="co">#&gt;     age lower upper   dQALY</span></span>
-<span><span class="co">#&gt; 1 0-100     0   100 12.7969</span></span></code></pre></div>
+<span><span class="co">#&gt;     age lower upper    dQALY</span></span>
+<span><span class="co">#&gt; 1 0-100     0   100 12.68668</span></span></code></pre></div>
 <!-- ### Adjustment 2 -->
 <p>We now have an estimate of the average QALY loss caused by the death
 of a patient chosen randomly from hospital inpatients. But rates of CPE
@@ -192,7 +192,7 @@ of death:</p>
 <span>                collapse_sex <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                cohort <span class="op">=</span> <span class="va">adj_hospital_cohort</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     age lower upper    dQALY</span></span>
-<span><span class="co">#&gt; 1 0-100     0   100 11.63132</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 0-100     0   100 11.51243</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="adjusting-the-life-expectancy-data">Adjusting the life expectancy data<a class="anchor" aria-label="anchor" href="#adjusting-the-life-expectancy-data"></a>
@@ -212,7 +212,7 @@ each year of age:</p>
 <span>                collapse_sex <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                cohort <span class="op">=</span> <span class="va">adj_hospital_cohort</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     age lower upper    dQALY</span></span>
-<span><span class="co">#&gt; 1 0-100     0   100 11.53195</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 0-100     0   100 11.41354</span></span></code></pre></div>
 <p>However, if you had your own data that you felt better represented
 the life expectancy of an inpatient population, you could supply it
 directly to the function (to the argument <code>life_table</code>)
@@ -235,7 +235,7 @@ across the board:</p>
 <span>                collapse_sex <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                cohort <span class="op">=</span> <span class="va">adj_hospital_cohort</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     age lower upper    dQALY</span></span>
-<span><span class="co">#&gt; 1 0-100     0   100 11.63132</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 0-100     0   100 11.51243</span></span></code></pre></div>
 <p>Again, instead of making adjustments to the default utility data from
 the general English population, we could alternatively try to find
 utility data collected from a population that we think is closer to the
@@ -302,7 +302,7 @@ our calculation by supplying the data to the argument
 <span>                collapse_sex <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                cohort <span class="op">=</span> <span class="va">adj_hospital_cohort</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     age lower upper    dQALY</span></span>
-<span><span class="co">#&gt; 1 0-100     0   100 9.886051</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 0-100     0   100 9.780467</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="examining-our-various-estimates">Examining our various estimates<a class="anchor" aria-label="anchor" href="#examining-our-various-estimates"></a>
@@ -371,7 +371,7 @@ the function (though they may not want to).</p>
 <span>                collapse_sex <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>                cohort <span class="op">=</span> <span class="fu"><a href="../reference/package_cohort.html">package_cohort</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"Belgium"</span>, year <span class="op">=</span> <span class="fl">2017</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     age lower upper    dQALY</span></span>
-<span><span class="co">#&gt; 1 0-100     0   100 13.43769</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 0-100     0   100 13.36557</span></span></code></pre></div>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_lt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/data.table/man/data.table.html" class="external-link">data.table</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span><span class="op">:</span><span class="fl">100</span>, <span class="fl">0</span><span class="op">:</span><span class="fl">100</span><span class="op">)</span>,</span>
 <span>                    sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"male"</span>, <span class="fl">101</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"female"</span>, <span class="fl">101</span><span class="op">)</span><span class="op">)</span>,</span>
