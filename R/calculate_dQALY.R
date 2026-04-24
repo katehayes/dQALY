@@ -11,6 +11,10 @@
 # these two components and as described by Jagger et al.31
 
 
+# feels possibly relevant:
+# https://www.sciencedirect.com/science/article/pii/S0895435622001639
+
+
 # -------------------------------------------------------------------------
 #' Calculating QALY loss on death
 # -------------------------------------------------------------------------

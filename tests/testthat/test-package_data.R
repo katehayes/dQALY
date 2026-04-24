@@ -40,7 +40,7 @@ test_that("package_lt returns error if country arg is invalid", {
 
 
 test_that("package_lt returns error if year arg is invalid", {
-  expect_snapshot(package_lt(country = "England", year = 1990), error = TRUE)
+  expect_snapshot(package_lt(country = "England", year = 3), error = TRUE)
   expect_snapshot(package_lt(country = "England", year = NULL), error = TRUE)
 })
 
@@ -100,7 +100,7 @@ test_that("package_cohort returns error if country arg is invalid", {
 
 
 test_that("package_cohort returns error if year arg is invalid", {
-  expect_snapshot(package_cohort(country = "England", year = 1990), error = TRUE)
+  expect_snapshot(package_cohort(country = "England", year = 1890), error = TRUE)
   expect_snapshot(package_cohort(country = "England", year = NULL), error = TRUE)
 })
 

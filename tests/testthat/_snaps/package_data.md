@@ -24,7 +24,7 @@
       16:                    Spain 36.14294 35.71151 36.12404 36.12620 35.03488
       17:                   Sweden 37.25443 37.79158 37.57887 37.53420 36.93092
       18:                 Thailand 29.13581 28.72659 28.40631 28.42046 26.03441
-      19:           United Kingdom 36.93458 35.83813 36.45421 36.15048 35.00962
+      19:           United Kingdom 36.99899 35.65564 36.12675 36.12944 32.79211
       20: United States of America 34.91406 34.38186 34.91795 34.85329 34.27358
                            country    sum15    sum16    sum17    sum18    sum19
                             <char>    <num>    <num>    <num>    <num>    <num>
@@ -48,7 +48,7 @@
       16: 37.30423 36.86070 37.35912 35.64878
       17: 38.79205 36.67423 38.12563 37.64094
       18: 26.42801 28.37464 30.15532 29.64032
-      19: 36.79450 37.32980 36.67986 36.72518
+      19: 37.20273 35.22993 36.48725 35.17129
       20: 35.76797 33.37663 36.07610 34.72573
              sum20    sum21    sum22    sum23
              <num>    <num>    <num>    <num>
@@ -59,12 +59,12 @@
       copy(country_list[country == "England"])[, paste0("sum", c(15:23)) := lapply(c(
         2018:2022), function(x) sum(package_lt(country, year = x)$q, na.rm = T)), by = country]
     Output
-         country    sum15    sum16    sum17    sum18    sum19    sum20    sum21
-          <char>    <num>    <num>    <num>    <num>    <num>    <num>    <num>
-      1: England 36.28119 36.55472 36.20258 36.56531 36.19015 36.28119 36.55472
+         country   sum15    sum16    sum17    sum18    sum19   sum20    sum21
+          <char>   <num>    <num>    <num>    <num>    <num>   <num>    <num>
+      1: England 36.0367 32.78579 37.11972 35.26434 36.47752 36.0367 32.78579
             sum22    sum23
             <num>    <num>
-      1: 36.20258 36.56531
+      1: 37.11972 35.26434
 
 # package_lt default extension to 120 works
 
@@ -148,7 +148,7 @@
       16:                    Spain      200      200      200      200      200
       17:                   Sweden      200      200      200      200      200
       18:                 Thailand      200      200      200      200      200
-      19:           United Kingdom      200      200      200      200      200
+      19:           United Kingdom      202      202      202      202      202
       20: United States of America      200      200      200      200      200
                            country length15 length16 length17 length18 length19
                             <char>    <int>    <int>    <int>    <int>    <int>
@@ -172,7 +172,7 @@
       16:      200      200      200      200
       17:      200      200      200      200
       18:      200      200      200      200
-      19:      200      200      200      200
+      19:      202      202      202      202
       20:      200      200      200      200
           length20 length21 length22 length23
              <int>    <int>    <int>    <int>
@@ -197,10 +197,10 @@
 # package_lt returns error if year arg is invalid
 
     Code
-      package_lt(country = "England", year = 1990)
+      package_lt(country = "England", year = 3)
     Condition
       Error in `package_lt()`:
-      ! Currently the package only stores life table data for England for the years 2018-2022.
+      ! Currently the package only stores life table data for England for the years 1981-2072.
                        Please set `year` to a value within this period.
 
 ---
@@ -413,7 +413,7 @@
       16:                    Spain   46674186   46723028   46858594   47082520
       17:                   Sweden    9797617    9921369   10055887   10173368
       18:                 Thailand   70534527   70852933   71152602   71367825
-      19:           United Kingdom   65368154   65879437   66340809   66739134
+      19:           United Kingdom   65086376   65605175   65963609   66286051
       20: United States of America  326066153  329119534  332145122  334996749
                            country      sum15      sum16      sum17      sum18
                             <char>      <num>      <num>      <num>      <num>
@@ -437,7 +437,7 @@
       16:   47424295   47668041   47723483   47815238   47897309
       17:   10276990   10351371   10413601   10484694   10548796
       18:   71513176   71631339   71716241   71723553   71689921
-      19:   67097053   67336596   67652373   68162167   68665374
+      19:   66626780   66739224   66977321  135237654  137017529
       20:  337729542  339375646  340099456  341469642  343410702
                sum19      sum20      sum21      sum22      sum23
                <num>      <num>      <num>      <num>      <num>
@@ -449,12 +449,12 @@
         2018:2022), function(x) sum(package_cohort(country, year = x)$count, na.rm = T)),
       by = country]
     Output
-         country    sum15    sum16    sum17    sum18    sum19    sum20    sum21
-          <char>    <num>    <num>    <num>    <num>    <num>    <num>    <num>
-      1: England 55923931 56229410 56325380 56554275 57111986 55923931 56229410
+         country    sum15    sum16    sum17    sum18     sum19    sum20    sum21
+          <char>    <num>    <num>    <num>    <num>     <num>    <num>    <num>
+      1: England 55923921 56229430 56325360 56554325 114255793 55923921 56229430
             sum22    sum23
             <num>    <num>
-      1: 56325380 56554275
+      1: 56325360 56554325
 
 # package_cohort returns error if country arg is invalid
 
@@ -476,10 +476,10 @@
 # package_cohort returns error if year arg is invalid
 
     Code
-      package_cohort(country = "England", year = 1990)
+      package_cohort(country = "England", year = 1890)
     Condition
       Error in `package_cohort()`:
-      ! Currently the package only stores population data for England for the years 2015-2023.
+      ! Currently the package only stores population data for England for the years 1981-2024.
                        Please set `year` to a value within this period.
 
 ---
