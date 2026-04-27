@@ -59,7 +59,7 @@
 <!-- badges: end -->
 <p><span style="color:red"> <strong><em>This package is currently under active development and the code/documentation is subject to change.</em></strong> </span></p>
 <p>The quality-adjusted life year, or QALY, is a widely used outcome measure in the field of health economics. When evaluating the impact of a policy/programme/intervention, we often want to express the health impacts of preventing or failing to prevent a death in terms of the QALYs that would be gained or lost.</p>
-<p>We can make an estimate of the number of QALYs that might be lost when a person dies using data that describes the life expectancy and health-related quality of life of the population that the person came from. We can estimate average QALY loss values across population age/sex subgroups if we additionally have information on the age/sex distribution of the population.</p>
+<p>We can make an estimate of the number of QALYs that might be lost when a person dies using data that describes the life expectancy and health-related quality of life (HRQoL) of the population that the person came from. We can estimate average QALY loss values across population age/sex subgroups if we additionally have information on the age/sex distribution of the population.</p>
 <p>In the dQALY package, we provide a function that performs this calculation using life expectancy, HRQoL, and (when needed) population distribution data. We have also gathered, cleaned and stored these three types of data for a range of countries and years. For convenience, users can quickly/easily produce QALY loss estimates with the data stored by the package. For flexibility, users can choose to make adjustments to the default or package data, or to supply entirely new data inputs to the calculation.</p>
 <p>This package has been built using code adapted from the <a href="https://github.com/LSHTM-GHECO/COVID19_QALY_App" class="external-link">COVID19_QALY_App</a>, written by Nichola Naylor at LSHTM. The <a href="https://github.com/LSHTM-GHECO/COVID19_QALY_App" class="external-link">COVID19_QALY_App</a> was itself adapted from an <a href="https://avalonecon.com/estimating-qaly-losses-associated-with-deaths-in-hospital-covid-19/" class="external-link">Excel tool</a> built by Andrew Briggs to operationalise the methods for calculating QALY loss due to death that he &amp; others set out in a <a href="https://onlinelibrary.wiley.com/doi/10.1002/hec.4208" class="external-link">letter</a> published in the journal Health Economics in 2020. For more details on the calculation that produces the estimates, refer to the <a href="methods.html">methods vignette</a>. <!-- Some of the setup borrowed from qalytools & eq5d packages --></p>
 <!-- The goal of the dQALY package is to provide an easy and flexible way of calculating the number of QALYs that are 'lost' when a person dies.  -->
@@ -76,7 +76,7 @@
 <h2 id="calculating-qaly-loss-due-to-death-get-started-using-package-data">Calculating QALY loss due to death: get started using package data<a class="anchor" aria-label="anchor" href="#calculating-qaly-loss-due-to-death-get-started-using-package-data"></a>
 </h2>
 <p>The function <code>calculate_dQALY</code> produces estimates of QALY loss due to death for a given population. We’ll call this quantity dQALY (i.e. difference in QALYs, like Leibniz notation).</p>
-<p>To use the function, you have to minimally specify a country and year for which you want the calculation performed, and then by default the function uses data on life expectancy and health-related quality of life for that country that has been stored in the package:</p>
+<p>To use the function, you have to minimally specify a country and year for which you want the calculation performed. The calculation requires life expectancy and HRQoL data. By default, the function uses data on life expectancy and health-related quality of life that has been stored in the package:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">2015</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      sex age    dQALY</span></span>
@@ -97,10 +97,12 @@
 <p>If data for the country or year you specified isn’t stored in the package, you’ll get an error message informing you of that.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"Scotland"</span>, year <span class="op">=</span> <span class="fl">2015</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in package_lt(country = country, year = year): Value for `country` must be chosen from the list of available</span></span>
+<span><span class="co">#&gt; Error in `package_lt()`:</span></span>
+<span><span class="co">#&gt; ! Value for `country` must be chosen from the list of available</span></span>
 <span><span class="co">#&gt;       countries. Use hrqol_norms() to see the list.</span></span>
 <span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">2010</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in package_lt(country = country, year = year): Currently the package only stores life table data for United Kingdom for the years 2015-2023.</span></span>
+<span><span class="co">#&gt; Error in `package_lt()`:</span></span>
+<span><span class="co">#&gt; ! Currently the package only stores life table data for United Kingdom for the years 2015-2023.</span></span>
 <span><span class="co">#&gt;                  Please set `year` to a value within this period.</span></span></code></pre></div>
 <p>Instead of returning estimates by sex and age at death, the function can also output <em>mean</em> dQALY values for user-specified population groups by using population data to take weighted averages. Note: for every country with HRQoL norms available, the package stores life expectancy and population distribution data.</p>
 <p>Here, we’re using the argument <code>collapse_sex</code> to output an estimate of QALY loss due to death for each year of age regardless of sex (i.e. for both sexes together):</p>
@@ -128,6 +130,11 @@
 <span><span class="co">#&gt;     age lower upper     dQALY</span></span>
 <span><span class="co">#&gt; 1  0-89     0    89 17.327103</span></span>
 <span><span class="co">#&gt; 2 90-99    90    99  2.347774</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">rbindlist</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">2000</span><span class="op">:</span><span class="fl">2050</span>, <span class="kw">function</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="fu">as.data.table</span><span class="op">(</span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">2015</span>, collapse_sex <span class="op">=</span> <span class="cn">T</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>, <span class="va">year</span> <span class="op">:=</span> <span class="va">y</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_line</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">age</span>, y <span class="op">=</span> <span class="va">dQALY</span>, colour <span class="op">=</span> <span class="va">year</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-9-1.png" alt="" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="functions-for-interacting-with-package-data">Functions for interacting with package data<a class="anchor" aria-label="anchor" href="#functions-for-interacting-with-package-data"></a>
@@ -141,7 +148,7 @@
 </h3>
 <p>HRQoL norms themselves are constructed from health state data &amp; value sets. Some discussion of HRQoL norms can be found on the <a href="https://euroqol.org/information-and-support/resources/population-norms/" class="external-link">EuroQol website</a>.</p>
 <p>Unlike life tables and population data, country-level norm data is not released regularly/yearly - however, many countries have more than one set of HRQoL norms stored in the package data. The list of available HRQoL norms and their IDs can be viewed using the <code>hrqol_norms</code> function. This function also returns information we have documented about the make-up of each set of HRQoL norms - specifically, about the health state data and value sets from which the norms are constructed (note: we have tried to adopt the same terminology/categorisation scheme used by the eq5d package to document information about value sets). Results can be filtered by country, and returned with or without reference information:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Return all English utility norm sets without reference information</span></span>
 <span><span class="fu"><a href="reference/hrqol_norms.html">hrqol_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span>, references <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   norm_country eq5d_data_year       norm_id eq5d_data_version value_set_country</span></span>
@@ -158,7 +165,7 @@
 <span><span class="co">#&gt; 5          EQ-5D-3L             CW           1993   FALSE</span></span></code></pre></div>
 <p>We can see that the package stores five different sets of English HRQoL population norm data. We can also see how these norms differ from each other with regards to what population the health state was data gathered from/ what population valued the health states/ when the data was collected/ what methods were used to elicit the states/values.</p>
 <p>So, contextual information about package norms can be returned using <code>hrqol_norms</code> - another way for the user to explore package norms is to return the actual norms themselves using the function <code>package_norms</code>:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/package_norms.html">package_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span>, id <span class="op">=</span> <span class="st">"janssen_euvas"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   lower upper    sex avg_hrqol</span></span>
 <span><span class="co">#&gt; 1     0    17 female     0.922</span></span>
@@ -177,7 +184,7 @@
 <span><span class="co">#&gt; 6    18    19   male     0.933</span></span></code></pre></div>
 <p>For every country, we have chosen a set of default norms based on a range of considerations (e.g. recommendations from HTA decision-making bodies, how recent they are, the methodologies used in their construction). The default set is indicated in the info returned by the <code>hrqol_norms</code> function, or alternatively its ID is returned directly by the function <code>default_norms</code> - for England, the default norms have ID “vih_primary”.</p>
 <p>These are the norms that will be returned when the <code>package_norms</code> function is called without specifying a value for the <code>id</code> argument. These are also the norms that will be used when the <code>calculate_dQALY</code> function is called without specifying a value for the <code>norms</code> argument.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="reference/default_norms.html">default_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span><span class="op">)</span>, <span class="st">"vih_primary"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="reference/package_norms.html">package_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span><span class="op">)</span>, <span class="fu"><a href="reference/package_norms.html">package_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span>, id <span class="op">=</span> <span class="st">"vih_primary"</span><span class="op">)</span><span class="op">)</span></span>
@@ -241,7 +248,7 @@ Green Book recommended rate reduced by excluding pure social time preference (re
 </tr>
 </tbody></table>
 <p>The plots below show the values of the discount rate functions across time, and the impact of varying discount rates on the estimates of QALY loss associated with death across the life-course.</p>
-<p><img src="reference/figures/README-discounting-1.png" width="100%"><img src="reference/figures/README-discounting-2.png" width="100%"></p>
+<p><img src="reference/figures/README-discounting-1.png" alt="" width="100%"><img src="reference/figures/README-discounting-2.png" alt="" width="100%"></p>
 <!-- Note: we could also store info about the model used to estimate the pop-level norms from the input data (eq5d profiles valued w the value sets) - e.g. in the ViH paper they use a linear model - What modelling methods were used to estimate population averages? -->
 </div>
 </div>

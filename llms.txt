@@ -11,9 +11,9 @@ QALYs that would be gained or lost.
 
 We can make an estimate of the number of QALYs that might be lost when a
 person dies using data that describes the life expectancy and
-health-related quality of life of the population that the person came
-from. We can estimate average QALY loss values across population age/sex
-subgroups if we additionally have information on the age/sex
+health-related quality of life (HRQoL) of the population that the person
+came from. We can estimate average QALY loss values across population
+age/sex subgroups if we additionally have information on the age/sex
 distribution of the population.
 
 In the dQALY package, we provide a function that performs this
@@ -55,9 +55,10 @@ death for a given population. We’ll call this quantity dQALY
 (i.e. difference in QALYs, like Leibniz notation).
 
 To use the function, you have to minimally specify a country and year
-for which you want the calculation performed, and then by default the
-function uses data on life expectancy and health-related quality of life
-for that country that has been stored in the package:
+for which you want the calculation performed. The calculation requires
+life expectancy and HRQoL data. By default, the function uses data on
+life expectancy and health-related quality of life that has been stored
+in the package:
 
 ``` r
 calculate_dQALY(country = "United Kingdom", year = 2015) |> head()
@@ -83,10 +84,12 @@ package, you’ll get an error message informing you of that.
 
 ``` r
 calculate_dQALY(country = "Scotland", year = 2015)
-#> Error in package_lt(country = country, year = year): Value for `country` must be chosen from the list of available
+#> Error in `package_lt()`:
+#> ! Value for `country` must be chosen from the list of available
 #>       countries. Use hrqol_norms() to see the list.
 calculate_dQALY(country = "United Kingdom", year = 2010)
-#> Error in package_lt(country = country, year = year): Currently the package only stores life table data for United Kingdom for the years 2015-2023.
+#> Error in `package_lt()`:
+#> ! Currently the package only stores life table data for United Kingdom for the years 2015-2023.
 #>                  Please set `year` to a value within this period.
 ```
 
@@ -135,6 +138,14 @@ calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, colla
 #> 1  0-89     0    89 17.327103
 #> 2 90-99    90    99  2.347774
 ```
+
+``` r
+rbindlist(lapply(2000:2050, function(y) as.data.table(calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T))[, year := y])) |> 
+  ggplot() +
+  geom_line(aes(x = age, y = dQALY, colour = year))
+```
+
+![](reference/figures/README-unnamed-chunk-9-1.png)
 
 ## Functions for interacting with package data
 

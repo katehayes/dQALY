@@ -3,6 +3,11 @@
 ``` r
 library(dQALY)
 library(data.table)
+#> 
+#> Attaching package: 'data.table'
+#> The following object is masked from 'package:base':
+#> 
+#>     %notin%
 library(readxl)
 library(ggplot2)
 ```
