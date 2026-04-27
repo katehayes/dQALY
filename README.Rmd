@@ -81,6 +81,7 @@ Lastly, here we're outputting average values for both sexes together and for the
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, collapse_age = my_age_groups)
 ```
 
+
 ## Functions for interacting with package data
 Here we'll introduce some functions that will be referred to collectively as *package data functions* - i.e. functions that allow the user to interact with the data stored by the package. Two functions - `hrqol_norms` and `default_norms` - return information about the package HRQoL data. Three functions - `package_lt`, `package_norms` and `package_cohort` - return or can make small adjustments to package data, to life tables, HRQoL norms and cohort data respectively. 
 

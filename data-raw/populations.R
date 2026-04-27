@@ -111,7 +111,7 @@ extend[, count := count*pc_left/sum(pc_left), by = .(sex, year)]
 # going to take from past rather than the projected data for the 2 years they
 # overlap (2023 & 2024)
 
-uk_pop <- rbind(uk_pop_proj[year < 2024],
+uk_pop <- rbind(uk_pop_proj[year > 2024],
                 pop_sub90[x != "90+"],
                 pop_90plus[x != "105 \nand over"],
                 extend[, .(year, sex, x, count)])[
@@ -234,7 +234,7 @@ extend[, count := count*pc_left/sum(pc_left), by = .(sex, year)]
 # going to take from past rather than the projected data for the 2 years they
 # overlap (2023 & 2024)
 
-eng_pop <- rbind(eng_pop_proj[year < 2024],
+eng_pop <- rbind(eng_pop_proj[year > 2024],
                 pop_sub90[x != "90+"],
                 pop_90plus[x != "105 and over"],
                 extend[, .(year, sex, x, count)])[

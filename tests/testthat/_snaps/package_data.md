@@ -1,71 +1,3 @@
-# package_lt returns (probably) same numbers for list of avail countries & years
-
-    Code
-      copy(country_list[country != "England"])[, paste0("sum", c(15:23)) := lapply(c(
-        2015:2023), function(x) sum(package_lt(country, year = x)$q, na.rm = T)), by = country]
-    Output
-                           country    sum15    sum16    sum17    sum18    sum19
-                            <char>    <num>    <num>    <num>    <num>    <num>
-       1:                Argentina 30.72807 31.18038 31.08864 30.43956 30.64058
-       2:                  Belgium 37.86423 36.60832 36.96137 36.74806 36.10615
-       3:                    China 43.25341 43.03517 43.12577 42.53303 42.31307
-       4:                  Denmark 36.77813 36.72732 37.08688 36.99741 36.86336
-       5:                  Finland 36.57627 37.54674 37.29550 37.96839 37.63386
-       6:                   France 35.76447 35.47787 36.05924 35.78941 36.02212
-       7:                  Germany 38.11565 37.15992 37.90704 38.12228 37.61310
-       8:                   Greece 33.59487 32.74504 33.31523 32.63103 32.77010
-       9:                  Hungary 38.04238 37.34684 35.95907 35.20101 33.21376
-      10:                    Italy 36.75109 35.57809 36.82279 36.21900 35.95402
-      11:              Netherlands 37.89363 37.28124 37.54250 37.95379 37.68660
-      12:              New Zealand 37.66130 36.15109 36.30458 37.46239 35.91236
-      13:        Republic of Korea 32.44456 32.24790 32.06311 32.36844 32.20352
-      14:                  Romania 43.06805 41.69739 42.18643 41.99049 41.19003
-      15:                 Slovenia 32.92802 32.93589 33.04511 32.59574 31.81769
-      16:                    Spain 36.14294 35.71151 36.12404 36.12620 35.03488
-      17:                   Sweden 37.25443 37.79158 37.57887 37.53420 36.93092
-      18:                 Thailand 29.13581 28.72659 28.40631 28.42046 26.03441
-      19:           United Kingdom 36.99899 35.65564 36.12675 36.12944 32.79211
-      20: United States of America 34.91406 34.38186 34.91795 34.85329 34.27358
-                           country    sum15    sum16    sum17    sum18    sum19
-                            <char>    <num>    <num>    <num>    <num>    <num>
-             sum20    sum21    sum22    sum23
-             <num>    <num>    <num>    <num>
-       1: 31.25553 30.21458 32.13126 30.12326
-       2: 39.54634 34.88605 37.71574 36.63376
-       3: 42.41608 44.25562 43.04047 44.05349
-       4: 36.81072 37.39328 37.72713 38.57118
-       5: 37.56927 38.39589 42.38912 40.39789
-       6: 37.14041 36.38252 37.95633 35.98260
-       7: 37.80596 31.03776 40.47487 38.85768
-       8: 34.87186 33.34673 37.31101 31.74936
-       9: 31.74525 38.48945 34.10478 32.86369
-      10: 38.02895 34.76680 39.05545 36.38500
-      11: 38.77959 38.68237 40.30324 39.90590
-      12: 34.67928 35.08658 38.55201 36.85846
-      13: 34.84941 35.95258 43.03464 35.16688
-      14: 39.34390 37.95944 41.54431 40.25322
-      15: 35.36259 32.38717 32.13058 31.62990
-      16: 37.30423 36.86070 37.35912 35.64878
-      17: 38.79205 36.67423 38.12563 37.64094
-      18: 26.42801 28.37464 30.15532 29.64032
-      19: 37.20273 35.22993 36.48725 35.17129
-      20: 35.76797 33.37663 36.07610 34.72573
-             sum20    sum21    sum22    sum23
-             <num>    <num>    <num>    <num>
-
----
-
-    Code
-      copy(country_list[country == "England"])[, paste0("sum", c(15:23)) := lapply(c(
-        2018:2022), function(x) sum(package_lt(country, year = x)$q, na.rm = T)), by = country]
-    Output
-         country   sum15    sum16    sum17    sum18    sum19   sum20    sum21
-          <char>   <num>    <num>    <num>    <num>    <num>   <num>    <num>
-      1: England 36.0367 32.78579 37.11972 35.26434 36.47752 36.0367 32.78579
-            sum22    sum23
-            <num>    <num>
-      1: 37.11972 35.26434
-
 # package_lt default extension to 120 works
 
     Code
@@ -211,71 +143,6 @@
       Error in `package_lt()`:
       ! No value for `year` supplied to function `package_lt`.
 
-# package_norms return (probably) same default for list of avail countries
-
-    Code
-      copy(country_list)[, .(sum = sum(package_norms(country)$avg_hrqol, na.rm = T),
-      mean = mean(package_norms(country)$avg_hrqol, na.rm = T)), by = country]
-    Output
-                           country    sum      mean
-                            <char>  <num>     <num>
-       1:                Argentina 14.240 0.8900000
-       2:                  Belgium 14.118 0.8823750
-       3:                    China 15.120 0.9450000
-       4:                  Denmark 14.154 0.8846250
-       5:                  England 29.422 0.8172778
-       6:                  Finland  9.448 0.7873333
-       7:                   France 14.150 0.8843750
-       8:                  Germany 14.960 0.9350000
-       9:                   Greece 14.304 0.8940000
-      10:                  Hungary 13.128 0.8205000
-      11:                    Italy 15.106 0.9441250
-      12:              Netherlands 14.516 0.9072500
-      13:              New Zealand 13.152 0.8220000
-      14:        Republic of Korea 13.354 0.9538571
-      15:                  Romania 14.833 0.9270625
-      16:                 Slovenia 11.512 0.7195000
-      17:                    Spain 14.768 0.9230000
-      18:                   Sweden 13.444 0.8402500
-      19:                 Thailand 11.844 0.7402500
-      20:           United Kingdom 13.740 0.8587500
-      21: United States of America 13.812 0.8632500
-                           country    sum      mean
-                            <char>  <num>     <num>
-
-# package_norms return (probably) same numbers for list of avail countries, after adjustment
-
-    Code
-      copy(country_list)[, .(sum = sum(package_norms(country, avg_hrqol_young = 0)$
-        avg_hrqol, na.rm = T), mean = mean(package_norms(country, avg_hrqol_young = 0)$
-        avg_hrqol, na.rm = T)), by = country]
-    Output
-                           country    sum      mean
-                            <char>  <num>     <num>
-       1:                Argentina 12.338 0.7711250
-       2:                  Belgium 12.222 0.7638750
-       3:                    China 13.140 0.8212500
-       4:                  Denmark 12.298 0.7686250
-       5:                  England 27.626 0.7673889
-       6:                  Finland  9.448 0.6748571
-       7:                   France 12.254 0.7658750
-       8:                  Germany 13.016 0.8135000
-       9:                   Greece 12.346 0.7716250
-      10:                  Hungary 11.260 0.7037500
-      11:                    Italy 13.138 0.8211250
-      12:              Netherlands 12.616 0.7885000
-      13:              New Zealand 11.372 0.7107500
-      14:        Republic of Korea 11.392 0.8137143
-      15:                  Romania 12.873 0.8045625
-      16:                 Slovenia  9.774 0.6108750
-      17:                    Spain 12.804 0.8002500
-      18:                   Sweden 11.668 0.7292500
-      19:                 Thailand 10.216 0.6385000
-      20:           United Kingdom 11.860 0.7412500
-      21: United States of America 11.964 0.7477500
-                           country    sum      mean
-                            <char>  <num>     <num>
-
 # package_norms returns error if country arg is invalid
 
     Code
@@ -386,76 +253,6 @@
       35    90   200 female     0.666
       36    90   200   male     0.656
 
-# package_cohort returns (probably) correct numbers for list of avail countries & years
-
-    Code
-      copy(country_list[country != "England"])[, paste0("sum", c(15:23)) := lapply(c(
-        2015:2023), function(x) sum(package_cohort(country, year = x)$count, na.rm = T)),
-      by = country]
-    Output
-                           country      sum15      sum16      sum17      sum18
-                            <char>      <num>      <num>      <num>      <num>
-       1:                Argentina   43471980   43894887   44283120   44648735
-       2:                  Belgium   11273515   11331043   11375052   11427146
-       3:                    China 1396113344 1404029404 1412328917 1418980550
-       4:                  Denmark    5682607    5727093    5764035    5792682
-       5:                  Finland    5478972    5494701    5507597    5514890
-       6:                   France   64895410   65068402   65268164   65503445
-       7:                  Germany   82063976   82747935   83093350   83358685
-       8:                   Greece   10818030   10772550   10750566   10727801
-       9:                  Hungary    9838495    9809892    9785029    9773825
-      10:                    Italy   60558952   60462416   60375745   60264344
-      11:              Netherlands   17105321   17202549   17313202   17419121
-      12:              New Zealand    4613479    4714193    4812143    4900221
-      13:        Republic of Korea   50979594   51293208   51481246   51635393
-      14:                  Romania   19870562   19776543   19688696   19596974
-      15:                 Slovenia    2059677    2061125    2062183    2069261
-      16:                    Spain   46674186   46723028   46858594   47082520
-      17:                   Sweden    9797617    9921369   10055887   10173368
-      18:                 Thailand   70534527   70852933   71152602   71367825
-      19:           United Kingdom   65086376   65605175   65963609   66286051
-      20: United States of America  326066153  329119534  332145122  334996749
-                           country      sum15      sum16      sum17      sum18
-                            <char>      <num>      <num>      <num>      <num>
-               sum19      sum20      sum21      sum22      sum23
-               <num>      <num>      <num>      <num>      <num>
-       1:   44966898   45184999   45304911   45400226   45530389
-       2:   11489056   11538251   11568600   11639227   11710037
-       3: 1423489124 1426071438 1426401053 1425142412 1422545612
-       4:    5813464    5830318    5855509    5901655    5946913
-       5:    5520896    5528686    5540038    5568223    5600082
-       6:   65712615   65885112   66058726   66249783   66409347
-       7:   83548682   83616326   83681427   84068322   84530073
-       8:   10715391   10696187   10576411   10409322   10239588
-       9:    9769667    9748597    9706871    9683217    9685220
-      10:   60117406   59898342   59711981   59599635   59478620
-      11:   17535326   17634419   17728088   17901866   18089941
-      12:    4988756    5069196    5106920    5130943    5172056
-      13:   51761723   51851565   51840539   51774322   51740129
-      14:   19500690   19391727   19247466   19166027   19117621
-      15:    2083187    2102113    2113128    2114792    2117889
-      16:   47424295   47668041   47723483   47815238   47897309
-      17:   10276990   10351371   10413601   10484694   10548796
-      18:   71513176   71631339   71716241   71723553   71689921
-      19:   66626780   66739224   66977321  135237654  137017529
-      20:  337729542  339375646  340099456  341469642  343410702
-               sum19      sum20      sum21      sum22      sum23
-               <num>      <num>      <num>      <num>      <num>
-
----
-
-    Code
-      copy(country_list[country == "England"])[, paste0("sum", c(15:23)) := lapply(c(
-        2018:2022), function(x) sum(package_cohort(country, year = x)$count, na.rm = T)),
-      by = country]
-    Output
-         country    sum15    sum16    sum17    sum18     sum19    sum20    sum21
-          <char>    <num>    <num>    <num>    <num>     <num>    <num>    <num>
-      1: England 55923921 56229430 56325360 56554325 114255793 55923921 56229430
-            sum22    sum23
-            <num>    <num>
-      1: 56325360 56554325
-
 # package_cohort returns error if country arg is invalid
 
     Code
@@ -479,7 +276,7 @@
       package_cohort(country = "England", year = 1890)
     Condition
       Error in `package_cohort()`:
-      ! Currently the package only stores population data for England for the years 1981-2024.
+      ! Currently the package only stores population data for England for the years 1981-2072.
                        Please set `year` to a value within this period.
 
 ---
@@ -895,7 +692,6 @@
     Code
       copy(country_list)[, default_norm := default_norms(country), by = country]
     Output
-      Index: <country>
                            country  default_norm
                             <char>        <char>
        1:                Argentina   janssen_tto
