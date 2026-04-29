@@ -63,7 +63,7 @@ calculate_dQALY(country = "France", year = 2020) |> head()
 If data for the country or year you specified isn't stored in the package, you'll get an error message informing you of that. 
 ```{r, error = TRUE}
 calculate_dQALY(country = "Scotland", year = 2015)
-calculate_dQALY(country = "United Kingdom", year = 2010)
+calculate_dQALY(country = "United Kingdom", year = 1910)
 ```
 Instead of returning estimates by sex and age at death, the function can also output *mean* dQALY values for user-specified population groups by using population data to take weighted averages. Note: for every country with HRQoL norms available, the package stores life expectancy and population distribution data.
 
@@ -80,6 +80,8 @@ Lastly, here we're outputting average values for both sexes together and for the
 ```{r}
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, collapse_age = my_age_groups)
 ```
+
+
 
 
 ## Functions for interacting with package data
@@ -126,6 +128,22 @@ It is also possible for the user to supply their own norm data to the calculatio
 <!-- Norm data is rarely available for age groups under 18. For the norm data stored in this package, we've made the decision to assume that the utility scores for the youngest age group is equal to the scores in the youngest age group for whom data is available. However, the user can choose to deviate from this assumption by  -->
 
 ### Life expectancy data
+
+Just a quick note to say we have projected life tables and population data for the UK and England in the package.Will write more about this. 
+
+```{r}
+rbindlist(lapply(2000:2050, function(y) as.data.table(calculate_dQALY(country = "United Kingdom", year = y, collapse_sex = T))[, `Year of death` := y])) |> 
+  ggplot() +
+  geom_line(aes(x = age, y = dQALY, group = `Year of death`, colour = `Year of death`)) +
+    scale_x_continuous(name = "Age at death",
+                       expand = c(0,0)) +
+    scale_y_continuous(name = "QALY loss due to death",
+                       expand = c(0,0)) +
+   theme_classic()
+```
+
+
+
 
 ### Population age/sex distribution data
 
