@@ -62,21 +62,21 @@ in the package:
 
 ``` r
 calculate_dQALY(country = "United Kingdom", year = 2015) |> head()
-#>      sex age    dQALY
-#> 1 female   0 25.20285
-#> 2   male   0 24.91002
-#> 3 female   1 25.19784
-#> 4   male   1 24.92008
-#> 5 female   2 25.11352
-#> 6   male   2 24.82673
+#>   age    sex    dQALY
+#> 1   0 female 25.20173
+#> 2   0   male 24.90751
+#> 3   1 female 25.19711
+#> 4   1   male 24.91805
+#> 5   2 female 25.11287
+#> 6   2   male 24.82482
 calculate_dQALY(country = "France", year = 2020) |> head()
-#>      sex age    dQALY
-#> 1 female   0 25.74592
-#> 2   male   0 25.36175
-#> 3 female   1 25.74985
-#> 4   male   1 25.36617
-#> 5 female   2 25.67541
-#> 6   male   2 25.27770
+#>   age    sex    dQALY
+#> 1   0 female 25.74592
+#> 2   0   male 25.36175
+#> 3   1 female 25.74985
+#> 4   1   male 25.36617
+#> 5   2 female 25.67541
+#> 6   2   male 25.27770
 ```
 
 If data for the country or year you specified isn’t stored in the
@@ -87,9 +87,9 @@ calculate_dQALY(country = "Scotland", year = 2015)
 #> Error in `package_lt()`:
 #> ! Value for `country` must be chosen from the list of available
 #>       countries. Use hrqol_norms() to see the list.
-calculate_dQALY(country = "United Kingdom", year = 2010)
+calculate_dQALY(country = "United Kingdom", year = 1910)
 #> Error in `package_lt()`:
-#> ! Currently the package only stores life table data for United Kingdom for the years 2015-2023.
+#> ! Currently the package only stores life table data for United Kingdom for the years 1981-2072.
 #>                  Please set `year` to a value within this period.
 ```
 
@@ -106,12 +106,12 @@ both sexes together):
 ``` r
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T) |> head()
 #>   age    dQALY
-#> 1   0 25.05262
-#> 2   1 25.05541
-#> 3   2 24.96654
-#> 4   3 24.87112
-#> 5   4 24.77174
-#> 6   5 24.66846
+#> 1   0 25.05070
+#> 2   1 25.05393
+#> 3   2 24.96505
+#> 4   3 24.86980
+#> 5   4 24.77026
+#> 6   5 24.66711
 ```
 
 Here we’re using the argument `collapse_age` to output average values
@@ -123,10 +123,10 @@ follows (in the form of a dataframe, tibble or datatable with columns
 my_age_groups <- data.table(lower = c(0, 90), upper = c(89, 99))
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_age = my_age_groups)
 #>     age lower upper    sex     dQALY
-#> 1  0-89     0    89 female 17.414236
-#> 2  0-89     0    89   male 17.237184
-#> 3 90-99    90    99 female  2.383301
-#> 4 90-99    90    99   male  2.262557
+#> 1  0-89     0    89 female 17.409898
+#> 2  0-89     0    89   male 17.176467
+#> 3 90-99    90    99 female  2.402833
+#> 4 90-99    90    99   male  2.317961
 ```
 
 Lastly, here we’re outputting average values for both sexes together and
@@ -135,17 +135,9 @@ for the specified age groups:
 ``` r
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, collapse_age = my_age_groups)
 #>     age lower upper     dQALY
-#> 1  0-89     0    89 17.327103
-#> 2 90-99    90    99  2.347774
+#> 1  0-89     0    89 17.294886
+#> 2 90-99    90    99  2.377674
 ```
-
-``` r
-rbindlist(lapply(2000:2050, function(y) as.data.table(calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T))[, year := y])) |> 
-  ggplot() +
-  geom_line(aes(x = age, y = dQALY, colour = year))
-```
-
-![](reference/figures/README-unnamed-chunk-9-1.png)
 
 ## Functions for interacting with package data
 
@@ -275,6 +267,22 @@ vignette](https://katehayes.github.io/dQALY/demo.md), and guidance can
 also be found in function documentation.
 
 ### Life expectancy data
+
+Just a quick note to say we have projected life tables and population
+data for the UK and England in the package.Will write more about this.
+
+``` r
+rbindlist(lapply(2000:2050, function(y) as.data.table(calculate_dQALY(country = "United Kingdom", year = y, collapse_sex = T))[, `Year of death` := y])) |> 
+  ggplot() +
+  geom_line(aes(x = age, y = dQALY, group = `Year of death`, colour = `Year of death`)) +
+    scale_x_continuous(name = "Age at death",
+                       expand = c(0,0)) +
+    scale_y_continuous(name = "QALY loss due to death",
+                       expand = c(0,0)) +
+   theme_classic()
+```
+
+![](reference/figures/README-unnamed-chunk-12-1.png)
 
 ### Population age/sex distribution data
 

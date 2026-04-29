@@ -79,62 +79,57 @@
 <p>To use the function, you have to minimally specify a country and year for which you want the calculation performed. The calculation requires life expectancy and HRQoL data. By default, the function uses data on life expectancy and health-related quality of life that has been stored in the package:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">2015</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      sex age    dQALY</span></span>
-<span><span class="co">#&gt; 1 female   0 25.20285</span></span>
-<span><span class="co">#&gt; 2   male   0 24.91002</span></span>
-<span><span class="co">#&gt; 3 female   1 25.19784</span></span>
-<span><span class="co">#&gt; 4   male   1 24.92008</span></span>
-<span><span class="co">#&gt; 5 female   2 25.11352</span></span>
-<span><span class="co">#&gt; 6   male   2 24.82673</span></span>
+<span><span class="co">#&gt;   age    sex    dQALY</span></span>
+<span><span class="co">#&gt; 1   0 female 25.20173</span></span>
+<span><span class="co">#&gt; 2   0   male 24.90751</span></span>
+<span><span class="co">#&gt; 3   1 female 25.19711</span></span>
+<span><span class="co">#&gt; 4   1   male 24.91805</span></span>
+<span><span class="co">#&gt; 5   2 female 25.11287</span></span>
+<span><span class="co">#&gt; 6   2   male 24.82482</span></span>
 <span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"France"</span>, year <span class="op">=</span> <span class="fl">2020</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;      sex age    dQALY</span></span>
-<span><span class="co">#&gt; 1 female   0 25.74592</span></span>
-<span><span class="co">#&gt; 2   male   0 25.36175</span></span>
-<span><span class="co">#&gt; 3 female   1 25.74985</span></span>
-<span><span class="co">#&gt; 4   male   1 25.36617</span></span>
-<span><span class="co">#&gt; 5 female   2 25.67541</span></span>
-<span><span class="co">#&gt; 6   male   2 25.27770</span></span></code></pre></div>
+<span><span class="co">#&gt;   age    sex    dQALY</span></span>
+<span><span class="co">#&gt; 1   0 female 25.74592</span></span>
+<span><span class="co">#&gt; 2   0   male 25.36175</span></span>
+<span><span class="co">#&gt; 3   1 female 25.74985</span></span>
+<span><span class="co">#&gt; 4   1   male 25.36617</span></span>
+<span><span class="co">#&gt; 5   2 female 25.67541</span></span>
+<span><span class="co">#&gt; 6   2   male 25.27770</span></span></code></pre></div>
 <p>If data for the country or year you specified isn’t stored in the package, you’ll get an error message informing you of that.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"Scotland"</span>, year <span class="op">=</span> <span class="fl">2015</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Error in `package_lt()`:</span></span>
 <span><span class="co">#&gt; ! Value for `country` must be chosen from the list of available</span></span>
 <span><span class="co">#&gt;       countries. Use hrqol_norms() to see the list.</span></span>
-<span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">2010</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">1910</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Error in `package_lt()`:</span></span>
-<span><span class="co">#&gt; ! Currently the package only stores life table data for United Kingdom for the years 2015-2023.</span></span>
+<span><span class="co">#&gt; ! Currently the package only stores life table data for United Kingdom for the years 1981-2072.</span></span>
 <span><span class="co">#&gt;                  Please set `year` to a value within this period.</span></span></code></pre></div>
 <p>Instead of returning estimates by sex and age at death, the function can also output <em>mean</em> dQALY values for user-specified population groups by using population data to take weighted averages. Note: for every country with HRQoL norms available, the package stores life expectancy and population distribution data.</p>
 <p>Here, we’re using the argument <code>collapse_sex</code> to output an estimate of QALY loss due to death for each year of age regardless of sex (i.e. for both sexes together):</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">2015</span>, collapse_sex <span class="op">=</span> <span class="cn">T</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   age    dQALY</span></span>
-<span><span class="co">#&gt; 1   0 25.05262</span></span>
-<span><span class="co">#&gt; 2   1 25.05541</span></span>
-<span><span class="co">#&gt; 3   2 24.96654</span></span>
-<span><span class="co">#&gt; 4   3 24.87112</span></span>
-<span><span class="co">#&gt; 5   4 24.77174</span></span>
-<span><span class="co">#&gt; 6   5 24.66846</span></span></code></pre></div>
+<span><span class="co">#&gt; 1   0 25.05070</span></span>
+<span><span class="co">#&gt; 2   1 25.05393</span></span>
+<span><span class="co">#&gt; 3   2 24.96505</span></span>
+<span><span class="co">#&gt; 4   3 24.86980</span></span>
+<span><span class="co">#&gt; 5   4 24.77026</span></span>
+<span><span class="co">#&gt; 6   5 24.66711</span></span></code></pre></div>
 <p>Here we’re using the argument <code>collapse_age</code> to output average values for a set of age groups. To do this we need to specify our age groups as follows (in the form of a dataframe, tibble or datatable with columns ‘lower’ and ‘upper’):</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">my_age_groups</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="op">(</span>lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">90</span><span class="op">)</span>, upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">89</span>, <span class="fl">99</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">2015</span>, collapse_age <span class="op">=</span> <span class="va">my_age_groups</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     age lower upper    sex     dQALY</span></span>
-<span><span class="co">#&gt; 1  0-89     0    89 female 17.414236</span></span>
-<span><span class="co">#&gt; 2  0-89     0    89   male 17.237184</span></span>
-<span><span class="co">#&gt; 3 90-99    90    99 female  2.383301</span></span>
-<span><span class="co">#&gt; 4 90-99    90    99   male  2.262557</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  0-89     0    89 female 17.409898</span></span>
+<span><span class="co">#&gt; 2  0-89     0    89   male 17.176467</span></span>
+<span><span class="co">#&gt; 3 90-99    90    99 female  2.402833</span></span>
+<span><span class="co">#&gt; 4 90-99    90    99   male  2.317961</span></span></code></pre></div>
 <p>Lastly, here we’re outputting average values for both sexes together and for the specified age groups:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">2015</span>, collapse_sex <span class="op">=</span> <span class="cn">T</span>, collapse_age <span class="op">=</span> <span class="va">my_age_groups</span><span class="op">)</span></span>
 <span><span class="co">#&gt;     age lower upper     dQALY</span></span>
-<span><span class="co">#&gt; 1  0-89     0    89 17.327103</span></span>
-<span><span class="co">#&gt; 2 90-99    90    99  2.347774</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">rbindlist</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">2000</span><span class="op">:</span><span class="fl">2050</span>, <span class="kw">function</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="fu">as.data.table</span><span class="op">(</span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="fl">2015</span>, collapse_sex <span class="op">=</span> <span class="cn">T</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>, <span class="va">year</span> <span class="op">:=</span> <span class="va">y</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu">geom_line</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">age</span>, y <span class="op">=</span> <span class="va">dQALY</span>, colour <span class="op">=</span> <span class="va">year</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-9-1.png" alt="" width="100%"></p>
+<span><span class="co">#&gt; 1  0-89     0    89 17.294886</span></span>
+<span><span class="co">#&gt; 2 90-99    90    99  2.377674</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="functions-for-interacting-with-package-data">Functions for interacting with package data<a class="anchor" aria-label="anchor" href="#functions-for-interacting-with-package-data"></a>
@@ -148,7 +143,7 @@
 </h3>
 <p>HRQoL norms themselves are constructed from health state data &amp; value sets. Some discussion of HRQoL norms can be found on the <a href="https://euroqol.org/information-and-support/resources/population-norms/" class="external-link">EuroQol website</a>.</p>
 <p>Unlike life tables and population data, country-level norm data is not released regularly/yearly - however, many countries have more than one set of HRQoL norms stored in the package data. The list of available HRQoL norms and their IDs can be viewed using the <code>hrqol_norms</code> function. This function also returns information we have documented about the make-up of each set of HRQoL norms - specifically, about the health state data and value sets from which the norms are constructed (note: we have tried to adopt the same terminology/categorisation scheme used by the eq5d package to document information about value sets). Results can be filtered by country, and returned with or without reference information:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Return all English utility norm sets without reference information</span></span>
 <span><span class="fu"><a href="reference/hrqol_norms.html">hrqol_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span>, references <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   norm_country eq5d_data_year       norm_id eq5d_data_version value_set_country</span></span>
@@ -165,7 +160,7 @@
 <span><span class="co">#&gt; 5          EQ-5D-3L             CW           1993   FALSE</span></span></code></pre></div>
 <p>We can see that the package stores five different sets of English HRQoL population norm data. We can also see how these norms differ from each other with regards to what population the health state was data gathered from/ what population valued the health states/ when the data was collected/ what methods were used to elicit the states/values.</p>
 <p>So, contextual information about package norms can be returned using <code>hrqol_norms</code> - another way for the user to explore package norms is to return the actual norms themselves using the function <code>package_norms</code>:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/package_norms.html">package_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span>, id <span class="op">=</span> <span class="st">"janssen_euvas"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   lower upper    sex avg_hrqol</span></span>
 <span><span class="co">#&gt; 1     0    17 female     0.922</span></span>
@@ -184,7 +179,7 @@
 <span><span class="co">#&gt; 6    18    19   male     0.933</span></span></code></pre></div>
 <p>For every country, we have chosen a set of default norms based on a range of considerations (e.g. recommendations from HTA decision-making bodies, how recent they are, the methodologies used in their construction). The default set is indicated in the info returned by the <code>hrqol_norms</code> function, or alternatively its ID is returned directly by the function <code>default_norms</code> - for England, the default norms have ID “vih_primary”.</p>
 <p>These are the norms that will be returned when the <code>package_norms</code> function is called without specifying a value for the <code>id</code> argument. These are also the norms that will be used when the <code>calculate_dQALY</code> function is called without specifying a value for the <code>norms</code> argument.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="reference/default_norms.html">default_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span><span class="op">)</span>, <span class="st">"vih_primary"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="fu"><a href="reference/package_norms.html">package_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span><span class="op">)</span>, <span class="fu"><a href="reference/package_norms.html">package_norms</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"England"</span>, id <span class="op">=</span> <span class="st">"vih_primary"</span><span class="op">)</span><span class="op">)</span></span>
@@ -200,6 +195,17 @@
 <div class="section level3">
 <h3 id="life-expectancy-data">Life expectancy data<a class="anchor" aria-label="anchor" href="#life-expectancy-data"></a>
 </h3>
+<p>Just a quick note to say we have projected life tables and population data for the UK and England in the package.Will write more about this.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">rbindlist</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fl">2000</span><span class="op">:</span><span class="fl">2050</span>, <span class="kw">function</span><span class="op">(</span><span class="va">y</span><span class="op">)</span> <span class="fu">as.data.table</span><span class="op">(</span><span class="fu"><a href="reference/calculate_dQALY.html">calculate_dQALY</a></span><span class="op">(</span>country <span class="op">=</span> <span class="st">"United Kingdom"</span>, year <span class="op">=</span> <span class="va">y</span>, collapse_sex <span class="op">=</span> <span class="cn">T</span><span class="op">)</span><span class="op">)</span><span class="op">[</span>, <span class="va">`Year of death`</span> <span class="op">:=</span> <span class="va">y</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">geom_line</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">age</span>, y <span class="op">=</span> <span class="va">dQALY</span>, group <span class="op">=</span> <span class="va">`Year of death`</span>, colour <span class="op">=</span> <span class="va">`Year of death`</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">scale_x_continuous</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"Age at death"</span>,</span>
+<span>                       expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">scale_y_continuous</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"QALY loss due to death"</span>,</span>
+<span>                       expand <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>   <span class="fu">theme_classic</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-12-1.png" alt="" width="100%"></p>
 </div>
 <div class="section level3">
 <h3 id="population-agesex-distribution-data">Population age/sex distribution data<a class="anchor" aria-label="anchor" href="#population-agesex-distribution-data"></a>
