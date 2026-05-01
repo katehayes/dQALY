@@ -129,10 +129,10 @@ It is also possible for the user to supply their own norm data to the calculatio
 
 ### Life expectancy data
 
-Just a quick note to say we have projected life tables and population data for the UK and England in the package.Will write more about this. 
+Just a quick note to say we have projected life tables and population data from the ONS for the UK and England in the package, for the years 2025 up to 2072. Will add more detail about this. 
 
 ```{r}
-rbindlist(lapply(2000:2050, function(y) as.data.table(calculate_dQALY(country = "United Kingdom", year = y, collapse_sex = T))[, `Year of death` := y])) |> 
+rbindlist(lapply(1981:2072, function(y) as.data.table(calculate_dQALY(country = "United Kingdom", year = y, collapse_sex = T))[, `Year of death` := y])) |> 
   ggplot() +
   geom_line(aes(x = age, y = dQALY, group = `Year of death`, colour = `Year of death`)) +
     scale_x_continuous(name = "Age at death",

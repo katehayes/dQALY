@@ -4,6 +4,7 @@ Version: 0.9.0.0000
 Authors@R: 
     c(person("Kate", "Hayes", email = "kate.hayes2@ukhsa.gov.uk", role = c("aut", "cre")),
       person("Tim", "Taylor", role = "aut"),
+      person("Neil", "Wilkins", role = "aut"),
       person("Lucy", "Miller", role = "aut"),
       person("Edwin", "van Leeuwen", role = "aut"))
 Description: The quality-adjusted life year, or QALY, is a widely used outcome 

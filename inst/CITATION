@@ -5,6 +5,8 @@ bibentry(
                     family = "Hayes"),
              person(given = "Tim",
                     family = "Taylor"),
+             person(given = "Neil",
+                    family = "Wilkins"),
              person(given = "Lucy",
                     family = "Miller"),
              person(given = "Edwin",
