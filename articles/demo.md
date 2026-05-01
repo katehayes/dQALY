@@ -1,6 +1,7 @@
 # Demo
 
 ``` r
+
 library(dQALY)
 library(data.table)
 #> 
@@ -31,6 +32,7 @@ Firstly, we’ll make the age groups we need to supply to the function. We
 want to group all ages together:
 
 ``` r
+
 all_ages <- data.table(lower = 0, upper = 100)
 ```
 
@@ -40,6 +42,7 @@ from the English population. We supply our defined age groups to the
 argument `collapse_age` and set the argument `collapse_sex` to `TRUE`:
 
 ``` r
+
 calculate_dQALY(country = "England", year = 2020,
                 collapse_age = all_ages,
                 collapse_sex = TRUE)
@@ -67,6 +70,7 @@ new cohort using English hospital admissions data and supply this to the
 function instead.
 
 ``` r
+
 # Using data on Hospital Admitted Patient Care Activity, 2019-20
 # https://digital.nhs.uk/data-and-information/publications/statistical/hospital-admitted-patient-care-activity/2019-20/summary-reports---apc---patient
 
@@ -99,6 +103,7 @@ return the cohort data stored in the package, and then plot it against
 our hospital cohort:
 
 ``` r
+
 default_cohort <- package_cohort(country = "England", year = 2020)
 
 ggplot() +
@@ -119,6 +124,7 @@ hospital population is older than the population at large and QALY loss
 decreases with age at death:
 
 ``` r
+
 calculate_dQALY(country = "England", year = 2020,
                 collapse_age = all_ages,
                 collapse_sex = TRUE,
@@ -141,6 +147,7 @@ they are over-represented in the cohort, to reflect their greater risk
 of death:
 
 ``` r
+
 adj_hospital_cohort <- copy(hospital_cohort)[age > 60, count := count*1.5]
 
 calculate_dQALY(country = "England", year = 2020,
@@ -164,6 +171,7 @@ default value of the argument is 1 - here we’re going to increase
 mortality rates by 5% at each year of age:
 
 ``` r
+
 calculate_dQALY(country = "England", year = 2020,
                 smr = 1.05,
                 collapse_age = all_ages,
@@ -187,6 +195,7 @@ to adjust the utility norms for the general English population - here
 we’re going to make utility scores 5% lower across the board:
 
 ``` r
+
 calculate_dQALY(country = "England", year = 2020,
                 qcm = 0.95,
                 collapse_age = all_ages,
@@ -203,6 +212,7 @@ population we’d like to represent. Here’s an example of how we might go
 about that.
 
 ``` r
+
 # Retrieving data from a study that collected HRQoL of people with long term conditions in UK
 url <- "https://www.ncbi.nlm.nih.gov/books/NBK592229/table/table18/?report=objectonly"
 element <- ".large_tbl"
@@ -235,6 +245,7 @@ population norms. We can return and then manipulate those norms using
 the function `package_norms`:
 
 ``` r
+
 ltc_norms[upper == max(upper), upper := 200]
 
 default_norms <- package_norms(country = "England") |> as.data.table()
@@ -248,6 +259,7 @@ against the default norms (and also if we want against the norms when
 adjusted using the `qcm` argument) to help make this judgement:
 
 ``` r
+
 ggplot() +
   geom_line(data = default_norms[, .(age = c(lower:upper)), by = c("lower", "upper", "sex", "avg_hrqol")],
             aes(x = age, y = avg_hrqol, colour = sex), linetype = 2) +
@@ -265,6 +277,7 @@ Then we can (if we judge they’re more suitable) use the new norms in our
 calculation by supplying the data to the argument `norms`:
 
 ``` r
+
 calculate_dQALY(country = "England", year = 2020,
                 norms = ltc_norms,
                 collapse_age = all_ages,
@@ -277,6 +290,7 @@ calculate_dQALY(country = "England", year = 2020,
 ### Examining our various estimates
 
 ``` r
+
 estimates <- data.table(estimate = c("Estimate 1", "Estimate 2",
                                      "Estimate 3", "Estimate 4",
                                      "Estimate 5", "Estimate 6"),
@@ -335,6 +349,7 @@ Below are some examples of things the user technically can do with the
 function (though they may not want to).
 
 ``` r
+
 calculate_dQALY(life_table = package_lt("England", 
                                         year = 2020,
                                         lt_extend = 1),
@@ -348,6 +363,7 @@ calculate_dQALY(life_table = package_lt("England",
 ```
 
 ``` r
+
 my_lt <- data.table(age = c(0:100, 0:100),
                     sex = c(rep("male", 101), rep("female", 101)),
                     q = 0.5)

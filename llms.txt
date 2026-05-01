@@ -44,6 +44,7 @@ You can install the development version of dQALY from
 [GitHub](https://github.com/) with:
 
 ``` r
+
 # install.packages("pak")
 pak::pak("katehayes/dQALY")
 ```
@@ -61,6 +62,7 @@ life expectancy and health-related quality of life that has been stored
 in the package:
 
 ``` r
+
 calculate_dQALY(country = "United Kingdom", year = 2015) |> head()
 #>   age    sex    dQALY
 #> 1   0 female 25.20173
@@ -83,6 +85,7 @@ If data for the country or year you specified isn’t stored in the
 package, you’ll get an error message informing you of that.
 
 ``` r
+
 calculate_dQALY(country = "Scotland", year = 2015)
 #> Error in `package_lt()`:
 #> ! Value for `country` must be chosen from the list of available
@@ -104,6 +107,7 @@ QALY loss due to death for each year of age regardless of sex (i.e. for
 both sexes together):
 
 ``` r
+
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T) |> head()
 #>   age    dQALY
 #> 1   0 25.05070
@@ -120,6 +124,7 @@ follows (in the form of a dataframe, tibble or datatable with columns
 ‘lower’ and ‘upper’):
 
 ``` r
+
 my_age_groups <- data.table(lower = c(0, 90), upper = c(89, 99))
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_age = my_age_groups)
 #>     age lower upper    sex     dQALY
@@ -133,6 +138,7 @@ Lastly, here we’re outputting average values for both sexes together and
 for the specified age groups:
 
 ``` r
+
 calculate_dQALY(country = "United Kingdom", year = 2015, collapse_sex = T, collapse_age = my_age_groups)
 #>     age lower upper     dQALY
 #> 1  0-89     0    89 17.294886
@@ -184,6 +190,7 @@ Results can be filtered by country, and returned with or without
 reference information:
 
 ``` r
+
 # Return all English utility norm sets without reference information
 hrqol_norms(country = "England", references = F)
 #>   norm_country eq5d_data_year       norm_id eq5d_data_version value_set_country
@@ -211,6 +218,7 @@ So, contextual information about package norms can be returned using
 return the actual norms themselves using the function `package_norms`:
 
 ``` r
+
 package_norms(country = "England", id = "janssen_euvas") |> head()
 #>   lower upper    sex avg_hrqol
 #> 1     0    17 female     0.922
@@ -243,6 +251,7 @@ These are also the norms that will be used when the `calculate_dQALY`
 function is called without specifying a value for the `norms` argument.
 
 ``` r
+
 all.equal(default_norms(country = "England"), "vih_primary")
 #> [1] TRUE
 all.equal(package_norms(country = "England"), package_norms(country = "England", id = "vih_primary"))
@@ -269,10 +278,12 @@ also be found in function documentation.
 ### Life expectancy data
 
 Just a quick note to say we have projected life tables and population
-data for the UK and England in the package.Will write more about this.
+data from the ONS for the UK and England in the package, for the years
+2025 up to 2072. Will add more detail about this.
 
 ``` r
-rbindlist(lapply(2000:2050, function(y) as.data.table(calculate_dQALY(country = "United Kingdom", year = y, collapse_sex = T))[, `Year of death` := y])) |> 
+
+rbindlist(lapply(1981:2072, function(y) as.data.table(calculate_dQALY(country = "United Kingdom", year = y, collapse_sex = T))[, `Year of death` := y])) |> 
   ggplot() +
   geom_line(aes(x = age, y = dQALY, group = `Year of death`, colour = `Year of death`)) +
     scale_x_continuous(name = "Age at death",
@@ -317,11 +328,11 @@ This package includes four discount rate functions that users can pass
 to `calculate_dQALY`, each of which implements a particular discounting
 regime recommended by the NICE HTA manual or Green Book:
 
-|                       |                                                                                                                                                                                  |
-|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `r_default`           | NICE reference case discount rate/ Green Book standard Social Time Preference Rate                                                                                               |
-| `r_health`            | NICE alternative discount rate/Green Book recommended discount rate for health or life values                                                                                    |
-| `r_lt_health`         | Green Book recommended declining long term discount rate for health or life values                                                                                               |
+|  |  |
+|----|----|
+| `r_default` | NICE reference case discount rate/ Green Book standard Social Time Preference Rate |
+| `r_health` | NICE alternative discount rate/Green Book recommended discount rate for health or life values |
+| `r_lt_health` | Green Book recommended declining long term discount rate for health or life values |
 | `r_lt_health_reduced` | Green Book recommended rate reduced by excluding pure social time preference (relevant if intervention may effect substantial/irreversible wealth transfers between generations) |
 
 The plots below show the values of the discount rate functions across
