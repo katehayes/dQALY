@@ -237,7 +237,7 @@
 #' @export
 calculate_dQALY <- function(country = NULL,
                             year = NULL,
-                            life_table = package_lt(country, year),
+                            life_table = package_lt_draft(country, year),
                             norms = package_norms(country), # is it ridiculous to have three nested function calls
                             r = 0.035,
                             smr = 1, qcm = 1,
@@ -333,13 +333,14 @@ calculate_dQALY <- function(country = NULL,
 
 
   # Setting up the life table that will be used in the calculation
+
   exprssn <- rlang::enexpr(life_table)
 
   if(is.call(exprssn)) {
-    if(rlang::call_name(exprssn) == "package_lt") {
+    if(rlang::call_name(exprssn) == "package_lt_draft") {
       # we're using the package data function - evaluate the expression now
       # checks for valid country, year, and extend argument happen inside the package_lt function
-      exprssn <- rlang::call_match(exprssn, package_lt)
+      exprssn <- rlang::call_match(exprssn, package_lt_draft)
 
       if(is.null(exprssn$country)) {
         exprssn$country <- country
@@ -360,7 +361,11 @@ calculate_dQALY <- function(country = NULL,
       if(!.is_valid_custom_lt(life_table)) {
         stop("User-supplied life tables have failed validity checks.")
       } else {
-        life_table <- as.data.table(life_table) |>
+        life_table <- life_table |>
+          as.data.table() |>
+          # expanding the life tables happens here now for user-supplied lts
+          # and inside the package_lt function if not user-supplied
+          .lt_expand() |>
           setnames(old = c("age", "q"),
                    new = c("x", "q_x"))
       }
@@ -371,7 +376,11 @@ calculate_dQALY <- function(country = NULL,
     if(!.is_valid_custom_lt(life_table)) {
       stop("User-supplied life tables have failed validity checks.")
     } else {
-      life_table <- as.data.table(life_table) |>
+      life_table <- life_table |>
+        as.data.table() |>
+        # expanding the life tables happens here now for user-supplied lts
+        # and inside the package_lt function if not user-supplied
+        .lt_expand() |>
         setnames(old = c("age", "q"),
                  new = c("x", "q_x"))
     }
@@ -510,22 +519,7 @@ calculate_dQALY <- function(country = NULL,
   # 3. Calculating dQALY # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-
-  # life tables might have different lengths (UN goes to 99, ONS to 100),
-  # so taking lengths here, to be used in calculations below
-  # assuming there is the same number of years of data for men & women
-  min_x <- min(life_table$x)
-  max_x <- max(life_table$x)
-
-
-  # change from briggs method bc of issue raised by Neil
-  # here's the big difference - going to assume we start with n men and n women of each age - letting n = 1
-  # & will work all the intermediate variables out separately by age at the 'start' ie the first point in the time horizon of the calculation
-  # still assuming q(x) and avg_hrqol constant over time - but i think setting the calculation up like this would make it easier to change that
-  life_table <- life_table[, .(starts = c(min_x:max_x)), by = .(sex, x, q_x)] |> setorder(starts, x, sex)
-  life_table[x < starts, q_x := 0]
-
-
+  # note: expanding life tables used to happen here
   # we have q(x) - probability of dying at age x
   # first calculating l(x): the number surviving to age x >= 1 (in a population of 1)
   # again we're converting the probability q(x) to an instantaneous death rate,

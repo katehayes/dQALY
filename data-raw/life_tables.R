@@ -7,6 +7,172 @@ utility_norms <- as.data.table(read.csv(file.path(root, "utility_norms.csv"), ro
 # English life tables from ONS ####
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+
+## JUST EXPLORATION ####
+# English - investigating cohort life expectancy
+# https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/mortalityratesqxprincipalprojectionengland
+temp <- tempfile(fileext = ".xlsx")
+download.file(url = "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/mortalityratesqxprincipalprojectionengland/2022based/enppp22qx.xlsx",
+              temp, mode = "wb")
+
+qx_male <- as.data.table(readxl::read_excel(temp, sheet = "males cohort qx", range = "A4:CO105")) |>
+  setnames(old = c("Year of birth 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "yob",
+       value.name = "q")
+
+qx_male[, q := q/100000]
+qx_male[, sex := "male"]
+
+qx_female <- as.data.table(readxl::read_excel(temp, sheet = "females cohort qx", range = "A4:CO105")) |>
+  setnames(old = c("Year of birth 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "yob",
+       value.name = "q")
+
+qx_female[, q := q/100000]
+qx_female[, sex := "female"]
+qx_cohort <- rbind(qx_male, qx_female)
+qx_cohort[, yob := as.numeric(as.character(yob))]
+qx_cohort[, year := yob + x]
+
+
+rbind(as.data.table(calculate_dQALY(country = "England",
+                                    year = 2000,
+                                    life_table = package_lt_draft(cohort = TRUE)))[, type := "cohort"],
+      as.data.table(calculate_dQALY(country = "England",
+                                    year = 2000,
+                                    life_table = package_lt_draft(cohort = FALSE)))[, type := "period"]) |>
+  ggplot() +
+  geom_line(aes(x = age, y = dQALY, group = type, colour = type)) +
+  facet_wrap(~sex)
+
+
+
+rbind(as.data.table(calculate_dQALY(country = "England",
+                                    year = 2020,
+                                    life_table = package_lt_draft(cohort = TRUE)))[, type := "cohort"],
+      as.data.table(calculate_dQALY(country = "England",
+                                    year = 2020,
+                                    life_table = package_lt_draft(cohort = FALSE)))[, type := "period"]) |>
+  ggplot() +
+  geom_line(aes(x = age, y = dQALY, group = type, colour = type)) +
+  facet_wrap(~sex)
+
+
+
+rbind(as.data.table(calculate_dQALY(country = "England",
+                                    year = 1982,
+                                    life_table = package_lt_draft(cohort = TRUE)))[, type := "cohort"],
+      as.data.table(calculate_dQALY(country = "England",
+                                    year = 1982,
+                                    life_table = package_lt_draft(cohort = FALSE)))[, type := "period"]) |>
+  ggplot() +
+  geom_line(aes(x = age, y = dQALY, group = type, colour = type)) +
+  facet_wrap(~sex)
+
+
+
+# qx_cohort[, present_year := 2020]
+# qx_cohort[, age_in_present := present_year - yob]
+#
+#
+# min_start_cohort <- min(qx_cohort$age_in_present) #-52
+# max_start_cohort <- max(qx_cohort$age_in_present) #39
+
+# think i might have to bring in period life tables for the earlier years
+# Projected period life tables
+temp <- tempfile(fileext = ".xlsx")
+download.file(url = "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/mortalityratesqxprincipalprojectionengland/2022based/enppp22qx.xlsx",
+              temp, mode = "wb")
+
+qx_male <- as.data.table(readxl::read_excel(temp, sheet = "males period qx", range = "A4:CO105")) |>
+  setnames(old = c("Year 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "year",
+       value.name = "q_x")
+
+qx_male[, q_x := q_x/100000]
+qx_male[, sex := "male"]
+
+qx_female <- as.data.table(readxl::read_excel(temp, sheet = "females period qx", range = "A4:CO105")) |>
+  setnames(old = c("Year 1981", "Exact age (years)"), new = c("1981", "x")) |>
+  melt(measure.vars = patterns("^1|^2"),
+       variable.name = "year",
+       value.name = "q_x")
+
+qx_female[, q_x := q_x/100000]
+qx_female[, sex := "female"]
+
+eng_period <- rbind(qx_male, qx_female)
+eng_period[, year := as.numeric(as.character(year))]
+
+# eng_period[, present_year := 2020]
+# eng_period[, age_in_present := present_year - year + x]
+eng_period[, yob := year - x]
+
+# min_start_period <- min(eng_period$age_in_present) #-52
+# max_start_period <- max(eng_period$age_in_present) #139
+
+
+# we should take cohort whenever we have it?
+check <- qx_cohort[, .(sex, yob, year, x, cohort_q = q)][eng_period[, .(sex, yob, year, x, period_q = q_x)],
+                                                         on = .(sex, yob, year, x)]
+check[, diff := (cohort_q == period_q)]
+# ok so its never different?????
+# and actually the period life tables have all the info you need
+# you don't need to bring in cohort at all
+
+
+
+# ok so we set present year & then you need to take x,q,start(ie age @ year of interest)
+# will need to think about how im going to be doing the projections for cohort - like the stretching to 120
+
+# i don't think you need any of that bit where x is less than starts.
+# min(x) has to be less than or equal to starts for all starts and max x has to be max age
+
+min(yob) = 1881
+max(yob) = 2072
+
+present_year <- 1981
+
+
+check_years <- function(present_year) {
+
+  dt <- copy(eng_period)
+  dt[, starts := present_year - yob]
+  dt[, min_starts := min(starts)]
+  dt[, max_starts := max(starts)]
+  dt[, min_x := min(x), by = .(starts)]
+  dt[, max_x := max(x), by = .(starts)]
+
+
+  dt <- dt[0 <= starts & starts <= 100]
+
+
+}
+
+
+
+
+# we need present year - yob to at least be 0 and 100
+get_cohort <- function(present_year) {
+
+
+  eng_period[, starts := present_year - yob]
+  eng_period <- eng_period[0 <= starts & starts <= 100]
+
+
+
+
+}
+
+
+
+
+
+
+## ACTUAL PRESENT WORK ####
 ## Projected period life tables ####
 temp <- tempfile(fileext = ".xlsx")
 download.file(url = "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/mortalityratesqxprincipalprojectionengland/2022based/enppp22qx.xlsx",
@@ -39,32 +205,6 @@ eng_period[, country := "England"]
 # will have to investigate that?
 
 
-## English - investigating cohort life expectancy ####
-
-temp <- tempfile(fileext = ".xlsx")
-download.file(url = "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/lifeexpectancies/datasets/mortalityratesqxprincipalprojectionengland/2022based/enppp22qx.xlsx",
-              temp, mode = "wb")
-
-qx_male <- as.data.table(readxl::read_excel(temp, sheet = "males cohort qx", range = "A4:CO105")) |>
-  setnames(old = c("Year of birth 1981", "Exact age (years)"), new = c("1981", "x")) |>
-  melt(measure.vars = patterns("^1|^2"),
-       variable.name = "yob",
-       value.name = "q")
-
-qx_male[, q := q/100000]
-qx_male[, sex := "male"]
-
-qx_female <- as.data.table(readxl::read_excel(temp, sheet = "females cohort qx", range = "A4:CO105")) |>
-  setnames(old = c("Year of birth 1981", "Exact age (years)"), new = c("1981", "x")) |>
-  melt(measure.vars = patterns("^1|^2"),
-       variable.name = "yob",
-       value.name = "q")
-
-qx_female[, q := q/100000]
-qx_female[, sex := "female"]
-qx_cohort <- rbind(qx_male, qx_female)
-qx_cohort[, yob := as.numeric(as.character(yob))]
-qx_cohort[, age_x_in_year_ := yob + x]
 
 
 

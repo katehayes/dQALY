@@ -75,6 +75,31 @@ dQALY_table <- dQALY_table[, .(dQALY = sum(L_x*avg_hrqol*v)), b= .(starts, sex)]
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Here's the collapsing thing ####
 
 

@@ -84,7 +84,7 @@ pop_90plus <- rbind(pop_90plus_male, pop_90plus_female) |>
   setcolorder(c("sex", "x", "year", "count"))
 
 
-
+# extending via assumption
 # 2002 is the earliest year where we've got nice info for very old people
 # now have to just do a little bit of assumption making for the rest of the years
 # where info ends at 89/90
@@ -92,10 +92,13 @@ pop_90plus <- rbind(pop_90plus_male, pop_90plus_female) |>
 # could go further by extending the years 2002 onwards in the same way I'm about
 # to extend the earlier years.
 
-q_proj <- lm(q ~ as.character(year) - 1 + sex:x,
-             data = pop_sub90[year < 2002][, q := (shift(count, type = "lag") - count)/lag(count, type = "lag")][x %in% c(87:89)][, x := as.numeric(as.character(x))])
+# check 84
+# check against data we have
 
-extend <- CJ(year = 1972:2001, sex = c("male", "female"), x = 90:104)
+q_proj <- lm(q ~ as.character(year) - 1 + sex:x,
+             data = pop_sub90[year < 2002][, q := (shift(count, type = "lag") - count)/lag(count, type = "lag")][, x := as.numeric(as.character(x))][x %in% c(87:89)])
+
+extend <- CJ(year = 1972:2021, sex = c("male", "female"), x = 90:104)
 extend[, q := predict(q_proj, extend[, year := as.character(year)])]
 
 extend <- pop_sub90[x == "90+", .(year, sex, count)][extend,
@@ -105,6 +108,29 @@ extend[, pc_left := cumprod(1-shift(q, type = "lag", fill = 0)), by = .(sex, yea
 extend[, count := count*pc_left/sum(pc_left), by = .(sex, year)]
 
 
+
+# emily's check
+# q_proj <- lm(q ~ as.character(year) - 1 + sex:x,
+#              data = copy(pop_sub90)[, q := (shift(count, type = "lag") - count)/lag(count, type = "lag")][, x := as.numeric(as.character(x))][x %in% c(87:89)])
+#
+# extend <- CJ(year = 1972:2024, sex = c("male", "female"), x = 90:104)
+# extend[, q := predict(q_proj, extend[, year := as.character(year)])]
+#
+# extend <- pop_sub90[x == "90+", .(year, sex, count)][extend,
+#                                                      on = .(sex, year)]
+#
+# extend[, pc_left := cumprod(1-shift(q, type = "lag", fill = 0)), by = .(sex, year)]
+# extend[, count_ext := count*pc_left/sum(pc_left), by = .(sex, year)]
+#
+#
+# emilys_check <- extend[, .(year = as.numeric(year), sex, x, count_ext)][pop_90plus[!grepl("105", x)][, x := as.numeric(as.character(x))],
+#                           on = .(year, sex, x)]
+#
+#
+#
+#
+# emilys_check |>
+#   ggplot() +
 
 
 ## gathering up everything, adding projections to past data + my assumptions ####
