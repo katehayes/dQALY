@@ -237,7 +237,7 @@
 #' @export
 calculate_dQALY <- function(country = NULL,
                             year = NULL,
-                            life_table = package_lt_draft(country, year),
+                            life_table = package_lt(country, year),
                             norms = package_norms(country), # is it ridiculous to have three nested function calls
                             r = 0.035,
                             smr = 1, qcm = 1,
@@ -337,10 +337,10 @@ calculate_dQALY <- function(country = NULL,
   exprssn <- rlang::enexpr(life_table)
 
   if(is.call(exprssn)) {
-    if(rlang::call_name(exprssn) == "package_lt_draft") {
+    if(rlang::call_name(exprssn) == "package_lt") {
       # we're using the package data function - evaluate the expression now
       # checks for valid country, year, and extend argument happen inside the package_lt function
-      exprssn <- rlang::call_match(exprssn, package_lt_draft)
+      exprssn <- rlang::call_match(exprssn, package_lt)
 
       if(is.null(exprssn$country)) {
         exprssn$country <- country
@@ -358,7 +358,7 @@ calculate_dQALY <- function(country = NULL,
     } else {
       # its a user supplied function (but not the package data function)
       # check it meets standards
-      if(!.is_valid_custom_lt(life_table)) {
+      if(isFALSE(.is_valid_custom_lt(life_table))) {
         stop("User-supplied life tables have failed validity checks.")
       } else {
         life_table <- life_table |>
@@ -794,11 +794,8 @@ calculate_dQALY <- function(country = NULL,
 #' @export
 calculate_QALE <- function(country = NULL, #population
                            year = NULL,
-                           life_table = package_lt(country, year,
-                                                   lt_extend = TRUE),
-                           norms = package_norms(country,
-                                                 id = default_norms(country),
-                                                 avg_hrqol_young = NULL),
+                           life_table = package_lt(country, year),
+                           norms = package_norms(country),
                            smr = 1, qcm = 1,
                            collapse_age = FALSE,
                            collapse_sex = FALSE,
@@ -806,6 +803,8 @@ calculate_QALE <- function(country = NULL, #population
 
   QALE_table <- calculate_dQALY(country = country,
                                 year = year,
+                                # this is now SOMEHOW a user supplied life table and since
+                                # package lt now returns the expanded version, it breaks
                                 life_table = life_table,
                                 norms = norms,
                                 smr = smr,
@@ -1025,13 +1024,58 @@ calculate_QALE <- function(country = NULL, #population
 .is_valid_custom_lt <- function(life_table) {
 
   # check if there is the right number of columns
-  if(length(life_table) != 3L) {
+  if(!(length(life_table) %in% c(3L, 4L))) {
     warning("User-supplied life tables are not in correct form.
-             Life tables need to be list-like object with three columns, with names 'sex', 'age', 'q'.")
+             Period life tables should be list-like objects with three columns, names 'sex', 'age', 'q'.
+             Cohort life tables should be list-like objects with four columns, names 'sex', 'age', 'q', and 'starts'.")
     return(FALSE)
 
     # given there is the right number, check that the columns have the right names
-  } else if(any(!colnames(life_table) %in% c("sex", "age", "q"))) {
+    # and type of values - doing period first then cohort
+  } else if(length(life_table) == 3L) {
+    if(isFALSE(.is_valid_custom_period_lt(life_table))) {
+      return(FALSE)
+    }
+  } else if(length(life_table) == 4L) {
+    if(isFALSE(.is_valid_custom_cohort_lt(life_table))) {
+      return(FALSE)
+    }
+  } else {
+    # all checks are satisfied
+    TRUE
+  }
+
+}
+
+
+.is_valid_custom_cohort_lt <- function(life_table) {
+
+  # given there is the right number, check that the columns have the right names
+  if(any(!colnames(life_table) %in% c("sex", "age", "q", "starts"))) {
+    warning("User-supplied life tables are not in correct form.
+             Columns must have names 'sex', 'age', 'q', and 'starts'.")
+    return(FALSE)
+
+    # given they have the right names, check that the cols have the right type of values
+    # NEED to write a function that can properly check starts. And also can
+  } else if(.is_valid_sex_col(life_table$sex) == FALSE) {
+    return(FALSE)
+  } else if(.is_valid_lt_age_col(life_table$age) == FALSE) {
+    return(FALSE)
+  } else if(.is_valid_q_col(life_table$q) == FALSE) {
+    return(FALSE)
+  } else {
+    # all checks are satisfied
+    TRUE
+  }
+
+}
+
+
+.is_valid_custom_period_lt <- function(life_table) {
+
+  # given there is the right number, check that the columns have the right names
+  if(any(!colnames(life_table) %in% c("sex", "age", "q"))) {
     warning("User-supplied life tables are not in correct form.
              Columns must have names 'sex', 'age', 'q'.")
     return(FALSE)
@@ -1155,13 +1199,14 @@ calculate_QALE <- function(country = NULL, #population
     warning("User-supplied life tables must contain data for all ages from 0 up to and including 99
             (for both sexes).")
     return(FALSE)
-  } else if(length(age_col) != 2*length(unique(age_col))) {
-    warning("User-supplied life tables must contain data for all ages from 0 up to and including 99
-            (for both sexes). Data provided for any year of age > 99 for males must also be provided
-            for females and vice versa.")
-    # there has to be two of everything (same number of years of data supplied for men & women)
-    # confusing error message, needs re-write.
-    return(FALSE)
+  # COMMENTING OUT THIS WHOLE BIT FOR NOW bc trying to add cohort functionality
+  # } else if(length(age_col) != 2*length(unique(age_col))) {
+  #   warning("User-supplied life tables must contain data for all ages from 0 up to and including 99
+  #           (for both sexes). Data provided for any year of age > 99 for males must also be provided
+  #           for females and vice versa.")
+  #   # there has to be two of everything (same number of years of data supplied for men & women)
+  #   # confusing error message, needs re-write.
+  #   return(FALSE)
   } else if(any(!(min(age_col):max(age_col) %in% age_col))) {
     # needs to have no missing numbers between lowest and highest
     warning("User-supplied life tables must contain data for all ages from 0 up to and including 99

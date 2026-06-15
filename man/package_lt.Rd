@@ -4,7 +4,7 @@
 \alias{package_lt}
 \title{Return life table data stored by package}
 \usage{
-package_lt(country, year, lt_extend = TRUE)
+package_lt(country, year, lt_extend = TRUE, cohort = FALSE)
 }
 \arguments{
 \item{country}{\verb{[string]}
@@ -36,6 +36,10 @@ This is done by passing \code{lt_extend} a numeric value greater than or equal t
 example, setting \code{lt_extend} to 1.05 means the function assumes mortality rates
 will increase by 5\% with every additional year of age gained after the last
 year for which data is available.}
+
+\item{cohort}{\verb{[boolean]}
+
+Allows user to choose between period or cohort life tables (default is period)}
 }
 \value{
 A data frame, containing life tables for the chosen country and year.

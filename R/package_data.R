@@ -148,6 +148,12 @@ package_norms <- function(country,
 #' will increase by 5% with every additional year of age gained after the last
 #' year for which data is available.
 #'
+#'
+#' @param cohort `[boolean]`
+#'
+#' Allows user to choose between period or cohort life tables (default is period)
+#'
+#'
 #' @returns
 #'
 #' A data frame, containing life tables for the chosen country and year.
@@ -158,17 +164,21 @@ package_norms <- function(country,
 #' package_lt(country = "Romania", year = 2022, lt_extend = 1.5)
 #'
 #' @export
-package_lt_draft <- function(country, year,
-                             cohort = FALSE,
-                             lt_extend = TRUE) {
+package_lt <- function(country, year,
+                       lt_extend = TRUE,
+                       cohort = FALSE) {
+
+  # when writing tests for this, period & cohort results have to be identical for
+  # the max year - presently 2072 - because our present cohort approach uses that
+  # year once the projections run out - ie the further into the future you go
+  # the more the cohort approach becomes period approach
 
   # Should only be able to select cohort for England and UK?
   # Or just always make use of all the years we got for everyone?
 
-  # OK because we're using life tables up to 2072
-  # YOB 1972 is the earliest year that we can do everyone with the formal projections
-
   # if we add cohort then how are we going to handle people giving their own?
+  # would this be a time when we should write something that detects cohort v period life tables
+  # rather than forcing people to tell us which they're giving via argument?
 
 
   # Capturing the environment here because we're using data.table
@@ -257,6 +267,10 @@ package_lt_draft <- function(country, year,
       life_table[, increment := lt_extend]
     } else {
       life_table[, increment := .SD[age >= xmax - 10, mean(q/shift(q, type = "lag"), na.rm = T)], by = .(year, sex)]
+      life_table[, increment := ifelse(year == max(year) & age == max(age) & is.na(increment),
+                                     shift(increment, type = "lag"),
+                                     increment),
+                 by = .(sex)]
     }
     life_table <- life_table[CJ(sex = c("male", "female"),
                                 age = 0:120,
@@ -271,29 +285,23 @@ package_lt_draft <- function(country, year,
   }
 
 
-
   # here is the bit where we expand into the form that can handle cohort OR
   # equally resolved Neils q=1 issue
   if(isFALSE(cohort)) {
     life_table <- .lt_expand(life_table)
   } else {
-    # what's happening here is that for most years in the present day you choose,
-    # projections don't go far enough to cover q(x)s for all ages for all relevant yobs
-    fill_top <- life_table[year == max(year)][, year := NULL][, .(starts = c(0:max(life_table$age))), by = .(sex, age, q)]
-    fill_top <- fill_top[, yob := get("year", env) - starts][age > (max(life_table$year) - yob)]
 
-    fill_bottom <- CJ(sex = c("male", "female"),
-                      age = c(0:max(life_table$age)),
-                      starts = c(0:max(life_table$age)),
-                      q = 0)[age < starts]
+    fill_zeros <- CJ(sex = c("male", "female"),
+                     age = c(0:max(life_table$age)),
+                     starts = c(0:max(life_table$age)),
+                     q = 0)[age < starts]
 
     life_table[, yob := year - age]
     life_table[, starts := get("year", env) - yob]
-    life_table <- life_table[starts >= 0 & starts <= age]
 
+    life_table <- life_table[starts >= 0 & starts <= age]
     life_table <- life_table |>
-      rbind(fill_top,
-            fill_bottom,
+      rbind(fill_zeros,
             fill = T)
 
     life_table[, c("year", "yob") := NULL] |>
@@ -308,164 +316,6 @@ package_lt_draft <- function(country, year,
 
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# -------------------------------------------------------------------------
-#' Return life table data stored by package
-# -------------------------------------------------------------------------
-#'
-#' @param country `[string]`
-#'
-#' The name of a country (for which data is available & stored in the package).
-#' Case-sensitive. Please use function `hrqol_norms` to see the list of permissible country names.
-#'
-#' @param year `[integer]`
-#'
-#' A year (for which data is available & stored in the package).
-#'
-#' @param lt_extend `[boolean]` or `[numeric]`
-#'
-#' Allows users to control whether/ the way in which assumptions are made about
-#' mortality rates among people older than 99, for whom data is not typically available.
-#'
-#' If `FALSE`, no assumption is made, and the function assumes no people live
-#' beyond 99.
-#'
-#' If `TRUE` (default), the function assumes that people can live up to 120
-#' and calculates a mortality rate for the older ages by assuming that
-#' mortality rates increase year on year by a constant increment, which is
-#' set equal to the average rate of increase over the last 10 years for which
-#' data is available.
-#'
-#' Alternatively, the user can specify their own increment, instead of allowing
-#' the function to calculate an increment automatically based on existing data.
-#' This is done by passing `lt_extend` a numeric value greater than or equal to 1 - for
-#' example, setting `lt_extend` to 1.05 means the function assumes mortality rates
-#' will increase by 5% with every additional year of age gained after the last
-#' year for which data is available.
-#'
-#' @returns
-#'
-#' A data frame, containing life tables for the chosen country and year.
-#'
-#' @examples
-#' package_lt(country = "Romania", year = 2022)
-#' package_lt(country = "Romania", year = 2022, lt_extend = FALSE)
-#' package_lt(country = "Romania", year = 2022, lt_extend = 1.5)
-#'
-#' @export
-package_lt <- function(country, year,
-                       lt_extend = TRUE) {
-
-  # Capturing the environment here because we're using data.table
-  env <- environment()
-
-  # due to NSE notes in R CMD check
-  # xmax <- age <- increment <- qmax <- sex <- NULL
-
-
-  # ----------validity checks ----------------------------------------------------
-  # check that country supplied is valid
-  if(is.null(country)) {
-    stop("No value for `country` supplied to function `package_lt`.
-         Use function `hrqol_norms` to see the list of available countries.")
-  } else {
-    avail_countries <- life_tables$country
-    if(!(country %in% avail_countries)) {
-      stop("Value for `country` must be chosen from the list of available
-      countries. Use hrqol_norms() to see the list.")
-    }
-  }
-
-  # check the year is valid
-  if(is.null(year)) {
-    stop("No value for `year` supplied to function `package_lt`.")
-  } else {
-    avail_years <- life_tables[country == get("country", env), year]
-    if (!(year %in% avail_years)) {
-      stop(paste("Currently the package only stores life table data for ", country,
-                 " for the years ",
-                 min(avail_years), "-", max(avail_years), ".
-                 Please set `year` to a value within this period.", sep = ""))
-    }
-  }
-
-  # checking if lt_extend is valid - formerly in section 1.6
-  # NOTE - do I need to incorporate some guidelines into this check so users don't put silly numbers?
-  if(!.is_valid_lt_extend(lt_extend)) {
-    stop("'lt_extend' must be a boolean value or a numeric scalar that is
-         greater than 1.")
-  }
-
-
-  # ----------getting data ----------------------------------------------------
-  # Filtering the package data to select life tables for the chosen country, year
-  # Used to happen in section  1.3
-  life_table <- life_tables[country == get("country", env) & year == get("year", env)][, c("country", "year"):=NULL]
-
-
-
-  # ----------extending life tables-------------------------------------------
-  # Formerly section 2.1
-  # NOTE: because these extensions happen within the package_lt function,
-  # they are only applied to package data. we're assuming that the user
-  # provides the data they want (makes whatever assumptions they want already)
-  # This is also how it was done previously
-
-  # Life tables given by UN and ONS only go up to 99/100 - what if we want dQALY
-  # estimates for people older than that - we might want to extend life tables
-
-  # at the moment lt_extend controls whether we extend or not (default we do)
-  # and also controls how the extension is done - the default is that, for
-  # the selected life tables, the mean increase in mortality rate across the 10
-  # oldest years for which mortality rates are available is calculated (for males and females)
-  # we then say that mortality rates from q(max x) onwards increases by this same amount each year
-
-  # (could add the ability to set the upper age limit - doesn't have to be 120)
-
-
-  # we know lt_extend is bool (TRUE/FALSE) or scalar numeric and we update as long as it is not FALSE
-  if (!isFALSE(lt_extend)) {
-    life_table[, xmax := max(age, na.rm = TRUE), by = "sex"]
-    if (is.numeric(lt_extend)) {
-      life_table[, increment := lt_extend]
-    } else {
-      life_table[, increment := .SD[age >= xmax - 10, mean(q/shift(q, type = "lag"), na.rm = T)], by = "sex"]
-    }
-    life_table <- life_table[CJ(sex = c("male", "female"), age = 0:120), on = c("sex", "age")]
-    life_table[, c("xmax", "qmax", "increment") := lapply(list(xmax, q, increment), max, na.rm = TRUE), by = "sex"]
-    # q(x) is the probability of dying within the year at age x
-    # to increment the probability without it exceeding 1, we convert to the instantaneous death rate,
-    # apply the increment, then convert back to a probability
-    life_table[age > xmax, q :=  1 - (1 - qmax)^increment^(age - xmax)]
-    life_table[,c("xmax", "qmax", "increment") := NULL]
-    setorder(life_table, age, sex)
-  }
-
-  # ----------return ------------------------------------------------------
-  setDF(life_table)
-  life_table
-
-}
 
 
 
