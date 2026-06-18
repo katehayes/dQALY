@@ -570,7 +570,7 @@ calculate_dQALY <- function(country = NULL,
   # no longer doing matrix multiplication because of the new data structure
   # l(x) is no longer in the denominator (bc we said its one in all cases)
   dQALY_table[, v := shift(1/cumprod(1+r_col), n = starts, type = "lag", fill = 0), by = .(starts, sex)]
-  dQALY_table <- dQALY_table[, .(dQALY_x = sum(L_x*avg_hrqol*v)), b= .(starts, sex)] |> setnames(old = "starts", new = "x")
+  dQALY_table <- dQALY_table[, .(dQALY_x = sum(L_x*avg_hrqol*v)), by = .(starts, sex)] |> setnames(old = "starts", new = "x")
 
   # note - fix ordering of output - by x and then sex?
 
